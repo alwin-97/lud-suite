@@ -1,0 +1,35 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'core/css/dashboard.css' %}">
+</head>
+<body>
+    <div class="header">
+        <div class="welcome-text">
+            <h2>Welcome back,</h2>
+            <p>Always stay updated in your YCLP portal</p>
+        </div>
+        <div class="user-info">
+            <div class="user-name">{{ user.get_full_name }}</div>
+            <div class="user-email">{{ user.email }}</div>
+            <img src="{% static 'core/images/profile_icon.png.png' %}" alt="User Avatar"class="profile-img">
+        </div>
+    </div>
+
+    <div class="grid">
+    <a href="{% url 'dip_yclp' %}" class="card">DIP - YCLP</a>
+    <a href="{% url 'dip_mentee' %}" class="card">DIP - Mentee</a>
+    <a href="{% url 'profile' %}" class="card">Public Profile</a>
+    <a href="{% url 'work_diary' %}" class="card">Work Diary</a>
+    <a href="{% url 'repository' %}" class="card">Data Repository</a>
+    <a href="{% url 'notification' %}" class="card">Notification</a>
+    <a href="{% url 'transcript' %}" class="card">Transcript</a>
+    <a href="{% url 'settings' %}" class="card">Settings</a>
+</div>
+
+</body>
+</html>
