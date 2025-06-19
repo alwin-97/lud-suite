@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+Home
+{% endblock title %}
+
+{% block links %}
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+{% endblock links %}
+
+{% block content %}
+
+    {% include 'partials/_header.html' %}
+
+    <div class="grid">
+    <a href="{% url 'dip_yclp' %}" class="card">DIP - YCLP</a>
+    <a href="{% url 'dip_mentee' %}" class="card">DIP - Mentee</a>
+    <a href="{% url 'profile' %}" class="card">Public Profile</a>
+    <a href="{% url 'work_diary' %}" class="card">Work Diary</a>
+    <a href="{% url 'repository' %}" class="card">Data Repository</a>
+    <a href="{% url 'notification' %}" class="card">Notification</a>
+    <a href="{% url 'transcript' %}" class="card">Transcript</a>
+    <a href="{% url 'settings' %}" class="card">Settings</a>
+</div>
+
+{% endblock content %}

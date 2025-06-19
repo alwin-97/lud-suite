@@ -1,0 +1,48 @@
+body {
+    margin: 0;
+    font-family: 'Montserrat', sans-serif;
+    background-color: #fff;
+}
+
+.welcome-text h2 {
+    margin: 0;
+    font-size: 2rem;
+    font-family: 'Poppins', sans-serif;
+}
+
+.welcome-text p {
+    margin: 5px 0 0;
+    font-size: 0.9rem;
+}
+
+.user-info {
+    text-align: right;
+}
+
+.user-name {
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.user-email {
+    font-size: 0.9rem;
+    color: #ccc;
+}
+
+.user-info img {
+    margin-top: 5px;
+    width: 85px;
+    height: 90px;
+    border-radius: 15px;
+    background: #ccc;
+}
+
+.header {
+    background-color: #2f3b81;
+    color: white;
+    padding: 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 5px;
+}

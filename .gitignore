@@ -1,1 +1,7 @@
 db.sqlite3
+
+venv/
+
+lud-suite/__pycache__/
+core/__pycache__/
+core/migrations/*
