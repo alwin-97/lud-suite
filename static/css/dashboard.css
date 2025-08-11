@@ -1,29 +1,14 @@
-.grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 40px;
-    padding: 60px;
-    justify-items: center;
-}
 
-.card {
-    width: 120px;
-    height: 120px;
-    background-color: #d3d5dd;
+
+
+.custom-card {
+    background-color: #4b4b7b ;
     border-radius: 10px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-weight: 600;
-    text-align: center;
-    cursor: pointer;
-    transition: 0.2s ease-in-out;
-    text-decoration: none;
-    color: black;
+   
 }
 
 .card:hover {
-    background-color: #c2c4cc;
+    background-color: #4e5871;
 }
 .profile-img {
     width: 200px;

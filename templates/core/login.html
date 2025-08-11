@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load socialaccount %}  {# load allauth's tag library #}
 
 {% block title %}
 Login
@@ -15,18 +16,16 @@ Login
     <div class="left">
         <h1>Let Us Dream<br>Application Suite</h1>
         <p>
-            Let Us Dream Application Suite is a unified digital platform designed to streamline and manage the
-            initiatives, events,
-            collaborations, and impact stories of the Let Us Dream. It empowers coordinators, volunteers, and
-            stakeholders with easy
-            access to planning tools, communication channels, reports, and resources—ensuring transparency, efficiency,
-            and
-            meaningful engagement across all programs.
+            Let Us Dream Application Suite is a unified digital platform designed to streamline and manage
+            initiatives, events, collaborations, and impact stories of the Let Us Dream.
+            It empowers coordinators, volunteers, and stakeholders with easy access to planning tools,
+            communication channels, reports, and resources—ensuring transparency, efficiency,
+            and meaningful engagement across all programs.
         </p>
     </div>
     <div class="right">
         <img src="{% static 'images/lud.png' %}" alt="Let Us Dream Logo">
-        <a href="{% url 'social:begin' 'google-oauth2' %}" class="google-btn">
+        <a href="{% provider_login_url 'google' %}" class="google-btn">
             <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google Logo">
             <span>Continue with Google</span>
         </a>

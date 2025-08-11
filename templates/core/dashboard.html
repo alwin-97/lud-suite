@@ -6,22 +6,106 @@ Home
 {% endblock title %}
 
 {% block links %}
-    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
 {% endblock links %}
 
 {% block content %}
 
-    {% include 'partials/_header.html' %}
+{% include 'partials/_header.html' %}
 
-    <div class="grid">
-    <a href="{% url 'dip_yclp' %}" class="card">DIP - YCLP</a>
-    <a href="{% url 'dip_mentee' %}" class="card">DIP - Mentee</a>
-    <a href="{% url 'profile' %}" class="card">Public Profile</a>
-    <a href="{% url 'work_diary' %}" class="card">Work Diary</a>
-    <a href="{% url 'repository' %}" class="card">Data Repository</a>
-    <a href="{% url 'notification' %}" class="card">Notification</a>
-    <a href="{% url 'transcript' %}" class="card">Transcript</a>
-    <a href="{% url 'settings' %}" class="card">Settings</a>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-8 col-sm-12">
+            <div class="row">
+                
+                <div class=" col-6 col-md-3  p-4 ">
+                    <a href="{% url 'dip_yclp' %}" class="text-decoration-none">
+                        <div class="card custom-card bg-col text-center  shadow-sm h-100 ">
+                            <div class="card-body">
+                                <img src="{% static 'images/diary.png' %}" class="img-fluid mb-2" style="height: 60px;" alt="work_diary">
+                            </div>
+                        </div>
+                        <h6 class="card-title text-center ps-2 text-dark mt-2">DIP YCLP</h6>
+                    </a>
+                </div>
+                
+                <div class=" col-6 col-md-3  p-4 ">
+                    <a href="{% url 'dip_yclp' %}" class="text-decoration-none">
+                        <div class="card custom-card text-center shadow-sm h-100">
+                            <div class="card-body">
+                                <img src="{% static 'images/diary.png' %}" class="img-fluid mb-2" style="height: 60px;" alt="work_diary">
+                            </div>
+                        </div>
+                        <h6 class="card-title text-center ps-2 text-dark mt-2">DIP Mentee </h6>
+                    </a>
+                </div>
+                <div class="col-6 col-md-3  p-4">
+                    <a href="{% url 'dip_yclp' %}" class="text-decoration-none">
+                        <div class="card custom-card text-center shadow-sm h-100">
+                            <div class="card-body">
+                                <img src="{% static 'images/diary.png' %}" class="img-fluid mb-2" style="height: 60px;" alt="work_diary">
+                            </div>
+                        </div>
+                        <h6 class="card-title text-center ps-2 text-dark mt-2">Public Profile</h6>
+                    </a>
+                </div><div class="col-6 col-md-3  p-4">
+                    <a href="{% url 'dip_yclp' %}" class="text-decoration-none">
+                        <div class="card custom-card text-center shadow-sm h-100">
+                            <div class="card-body">
+                                <img src="{% static 'images/diary.png' %}" class="img-fluid mb-2" style="height: 60px;" alt="work_diary">
+                            </div>
+                        </div>
+                        <h6 class="card-title text-center ps-2 text-dark mt-2">Work Diary</h6>
+                    </a>
+                </div><div class="col-6 col-md-3 p-4">
+                    <a href="{% url 'dip_yclp' %}" class="text-decoration-none">
+                        <div class="card custom-card text-center shadow-sm h-100">
+                            <div class="card-body">
+                                <img src="{% static 'images/diary.png' %}" class="img-fluid mb-2" style="height: 60px;" alt="work_diary">
+                            </div>
+                        </div>
+                        <h6 class="card-title text-center ps-2 text-dark mt-2">Data Repository</h6>
+                    </a>
+                </div>
+                <div class="col-6 col-md-3 p-4">
+                    <a href="{% url 'dip_yclp' %}" class="text-decoration-none">
+                        <div class="card custom-card text-center shadow-sm h-100">
+                            <div class="card-body">
+                                <img src="{% static 'images/diary.png' %}" class="img-fluid mb-2" style="height: 60px;" alt="work_diary">
+                            </div>
+                        </div>
+                        <h6 class="card-title text-center ps-2 text-dark mt-2">Notifications</h6>
+                    </a>
+                </div>
+                <div class="col-6 col-md-3 p-4">
+                    <a href="{% url 'dip_yclp' %}" class="text-decoration-none">
+                        <div class="card custom-card text-center shadow-sm h-100">
+                            <div class="card-body">
+                                <img src="{% static 'images/diary.png' %}" class="img-fluid mb-2" style="height: 60px;" alt="work_diary">
+                            </div>
+                        </div>
+                        <h6 class="card-title ps-2 text-center text-dark mt-2">Transcript</h6>
+                    </a>
+                </div>
+
+                
+                
+
+            </div>   
+            </div>
+        
+
+        
+        <div class="col-lg-4 p-4 p">
+            <div class="border border-primary  rounded h-100">
+                <h6 class="text-dark mt-2 text-center">Notifications</h6>
+                
+            </div>
+        </div>
+    </div>
+    
 </div>
+
 
 {% endblock content %}

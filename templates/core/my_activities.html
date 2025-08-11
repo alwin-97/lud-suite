@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+Home
+{% endblock title %}
+
+{% block links %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+{% endblock links %}
+
+{% block content %}
+
+{% include 'partials/head.html' %}
+<div class="container mt-5">
+  <h2 class="fw-bold mt-3">My Activities</h2>
+<table class="table table-bordered mt-3">
+    <thead class="table-dark">
+        <tr>
+            <th>Date</th>
+            <th>Activity</th>
+            <th>Other Activity</th>
+            <th>Duration</th>
+            <th>Learnings</th>
+            <th>Feedback</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for activity in activities %}
+        <tr>
+            <td>{{ activity.date }}</td>
+            <td>{{ activity.activity }}</td>
+            <td>{{ activity.other_activity }}</td>
+            <td>{{ activity.duration }}</td>
+            <td>{{ activity.learnings }}</td>
+            <td>{{ activity.feedback }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="6" class="text-center">No activities found.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+{% endblock content %}

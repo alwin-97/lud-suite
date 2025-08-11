@@ -13,4 +13,6 @@ urlpatterns = [
     path('notification/', views.notification_view, name='notification'),
     path('transcript/', views.transcript_view, name='transcript'),
     path('settings/', views.settings_view, name='settings'),
+    path('dip-yclp/new-activity/', views.new_activity, name='new_activity'),
+    path('my-activities/', views.my_activities_view, name='my-activities'),
 ]

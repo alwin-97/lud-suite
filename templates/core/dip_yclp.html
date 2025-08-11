@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+Home
+{% endblock title %}
+
+{% block links %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+{% endblock links %}
+
+{% block content %}
+
+{% include 'partials/head.html' %}
+<div class="container ">
+    <div class="row p-10 ">
+        <div class="col-lg-8 col-sm-12 ">
+            <div class="row flex-fill section-25 bg-warning rounded mb-3 p-3">
+                <div class="card-custom p-8">
+                    <div class="fw-bold p-10">DIP - YCLP <span class="text-muted fw-normal">| Reflexive Report</span>
+                    </div>
+                    <div class="d-flex mt-3 gap-3">
+                        <a href="{% url 'new_activity' %}" class="btn btn-outline-dark">
+                            <span class="icon">➕</span> New Activity
+                        </a>
+                        <a href="{% url  'my-activities' %}" class="btn btn-outline-dark">                
+                            <span class="icon">📋</span> My Activities
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class=" row flex-fill section-75 bg-light border rounded p-3"> <div class="card-custom">
+                <div class="fw-bold">My Activities</div>
+                <!-- Add dynamic content here -->
+            </div>
+        </div>
+    </div>
+
+    <div class="col p-10">
+        <img src="{% static 'images/highchart.png' %}" class="img-fluid mb-5" style="height: 100%;" alt="high_chart">
+    </div>
+</div>
+</div>
+
+{% endblock content %}
