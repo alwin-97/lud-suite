@@ -2,8 +2,14 @@ db.sqlite3
 
 venv/
 
-lud-suite/__pycache__/
-core/__pycache__/
-core/migrations/*
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
 
+core/migrations/__pycache__/
+*/migrations/__pycache__/
+
+media/
 .idea/
+.vscode/

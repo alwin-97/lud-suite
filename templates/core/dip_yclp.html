@@ -29,11 +29,36 @@ Home
                     </div>
                 </div>
             </div>
-            <div class=" row flex-fill section-75 bg-light border rounded p-3"> <div class="card-custom">
-                <div class="fw-bold">My Activities</div>
-                <!-- Add dynamic content here -->
-            </div>
+            <div class="row flex-fill section-75 bg-light border rounded p-3">
+  <div class="card-custom">
+    <div class="fw-bold mb-2">My Activities</div>
+    <div class="list-group list-group-flush">
+  {% if recent_activities %}
+    {% for activity in recent_activities %}
+      <div class="list-group-item d-flex justify-content-between align-items-start">
+        <div>
+          <strong>
+            {% if activity.activity == "Others" and activity.other_activity %}
+              {{ activity.other_activity }}
+            {% else %}
+              {{ activity.activity }}
+            {% endif %}
+          </strong>
+          <br>
+          <small class="text-muted">
+            {{ activity.date|date:"M d, Y" }} • {{ activity.duration }} hrs
+          </small>
         </div>
+      </div>
+    {% endfor %}
+  {% else %}
+    <div class="list-group-item text-muted">No activities yet.</div>
+  {% endif %}
+</div>
+
+  </div>
+</div>
+
     </div>
 
     <div class="col p-10">

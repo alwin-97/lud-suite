@@ -17,71 +17,67 @@ Home
   <h1>New Activity</h1>
 
   <form method="POST" enctype="multipart/form-data">
-    {% csrf_token %}
-    {{ form.non_field_errors }}
+  {% csrf_token %}
+  
+  <div class="mb-3">
+    {{ form.date.label_tag }}
+    {{ form.date }}
+  </div>
 
-    <div class="form-group mb-3 p-2 fw-bold">
-      {{ form.date.label_tag }}
-      {{ form.date }}
-      {{ form.date.errors }}
-    </div>
-    <div class="form-group mb-3 p-2 fw-bold">
-      {{ form.duration.label_tag }}
-      {{ form.duration }}
-      {{ form.duration.errors }}
-    </div>
-    <div class="form-group mb-3 p-2 fw-bold">
-  {{ form.activity.label_tag }}
-  {{ form.activity }}
-  {{ form.activity.errors }}
-</div>
+  <div class="form-group mb-3">
+    {{ form.duration.label_tag }}
+    {{ form.duration }}
+  </div>
+
+  <div class="form-group mb-3">
+    {{ form.activity.label_tag }}
+    {{ form.activity }}
+  </div>
+
+  <div class="form-group mb-3" id="other-activity-container" style="display: none;">
+    {{ form.other_activity.label_tag }}
+    {{ form.other_activity }}
+  </div>
+
+  <div class="form-group mb-3">
+    {{ form.learnings.label_tag }}
+    {{ form.learnings }}
+  </div>
+
+  <div class="form-group mb-3">
+    {{ form.photo.label_tag }}
+    {{ form.photo }}
+  </div>
+
+  <div class="form-group mb-3">
+    {{ form.feedback.label_tag }}
+    {{ form.feedback }}
+  </div>
+
+  <div class="button ps-3 mb-3 p-1">
+    <button type="submit" class="btn btn-primary">Submit</button>
+  </div>
+</form>
 
 
-    <div class="form-group mb-3 p-2 fw-bold" id="other-activity-box" style="display: none;">
-      {{ form.other_activity.label_tag }}
-      {{ form.other_activity }}
-      {{ form.other_activity.errors }}
-    </div>
 
-    <div class="form-group mb-3 p-2 fw-bold">
-      {{ form.learnings.label_tag }} <br>
-      {{ form.learnings }}
-      {{ form.learnings.errors }}
-    </div>
-    <div class="form-group mb-3 p-2 fw-bold">
-      {{ form.photo.label_tag }}
-      {{ form.photo }}
-      {{ form.photo.errors }}
-    </div>
-    <div class="form-group mb-3 p-2 fw-bold">
-      {{ form.feedback.label_tag }}<br>
-      {{ form.feedback }}
-      {{ form.feedback.errors }}
-    </div>
-
-    <div class="button ps-3 mb-3 p-1">
-      <button type="submit" class="btn btn-primary">Submit</button>
-    </div>
-  </form>
   <script>
     function toggleOtherActivity() {
       var activitySelect = document.getElementById("id_activity");
-      var otherBox = document.getElementById("other-activity-box");
+      var otherActivityContainer = document.getElementById("other-activity-container");
 
       if (activitySelect.value === "Others") {
-        otherBox.style.display = "block";
+        otherActivityContainer.style.display = "block";
       } else {
-        otherBox.style.display = "none";
+        otherActivityContainer.style.display = "none";
       }
     }
 
-    // Run on page load in case "Others" was selected previously
     document.addEventListener("DOMContentLoaded", function () {
       toggleOtherActivity();
       document.getElementById("id_activity").addEventListener("change", toggleOtherActivity);
     });
   </script>
-
 
 </div>
 {% endblock content %}
