@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Manage Users{% endblock title %}
+
+{% block links %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
+{% endblock links %}
+
+
+{% block content %}
+<div class="page-wrapper">
+{% include 'partials/head.html' %}
+
+<!-- 🔹 Layout: sidebar + main content -->
+<div class="d-flex" style="min-height: calc(100vh - 60px);"> <!-- Adjust 60px to your header height -->
+
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <!-- Top Section -->
+    <div>
+      <!-- Home -->
+      <a href="{% url 'admin_dashboard' %}" 
+         class="nav-link" 
+         data-bs-toggle="tooltip" 
+         data-bs-placement="right" 
+         title="Home">
+         <i class="bi bi-house"></i>
+      </a>
+   
+
+  <a href="#" 
+     class="nav-link" 
+     id="sortToggle"
+     data-bs-toggle="tooltip" 
+     data-bs-placement="right" 
+     title="Sort">
+     <i class="bi bi-funnel"></i>
+  </a>
+
+</div>
+  
+
+
+    <!-- Bottom Section -->
+    <div>
+     <a href="{% url 'account_logout' %}" 
+   class="nav-link text-danger" 
+   data-bs-toggle="tooltip" 
+   data-bs-placement="right" 
+   title="Logout"
+   onclick="confirmLogout(event)">
+   <i class="bi bi-box-arrow-right"></i>
+</a>
+
+    </div>
+  </nav>
+<div class="container mt-4">
+    <h4>User: {{ viewed_user.first_name }} {{ viewed_user.last_name }}</h4>
+    <p>Email: {{ viewed_user.email }}</p>
+    <div class="d-flex justify-content-end mb-3">    
+        <a href="{% url 'export_user_activities' viewed_user.id %}" class="btn btn-success">
+            Export to Excel
+        </a>
+    </div>    
+    <h4>Activities</h4>
+    {% if activities %}
+        <ul class="list-group">
+            {% for activity in activities %}
+                <li class="list-group-item">
+                    <strong>{{ activity.activity }}</strong> <br>
+                    Duration: {{ activity.duration }} <br>
+                    Date: {{ activity.date }} <br>
+                    {% if activity.feedback %}
+                        Feedback: {{ activity.feedback }}
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No activities found for this user.</p>
+    {% endif %}
+</div>
+</div>
+{% endblock %}

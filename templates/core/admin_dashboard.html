@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+Home
+{% endblock title %}
+
+{% block links %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+{% endblock links %}
+
+{% block content %}
+{% include 'partials/_header.html' %}
+
+<div class="container-fluid py-10">
+    <div class="row ">
+        <div class="col-lg-6 col-sm-12">
+            <div class="row gx-4 , gy-3, mt-4">
+                <div class="col-6">
+                    <a href="{% url 'manage_user' %}" class="text-decoration-none">
+                        <div class="card shadow-sm text-center h-100 p-3 bg-light text-dark rounded-3">
+                            <div class="d-flex flex-column align-items-center justify-content-center h-100">
+                                <img src="{% static 'images/profile.png' %}" alt="Notification" class="img-fluid mb-2"
+                                    style="max-width: 90px;">
+                                <h6 class="fw-semibold mb-0">Manage User</h6>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+            <div class="row g-3 mt-2">
+
+                <div class="col-6 ">
+                    <a href="{% url 'manage_assignment' %}" class="text-decoration-none">
+                        <div class="dashboard-card card-blue">
+                            <div class="card shadow-sm text-center h-100 p-3 bg-light text-dark rounded-3 ">
+                                <div class="d-flex flex-column align-items-center justify-content-center h-100">
+                                    <img src="{% static 'images/profile.png' %}" alt="Notification"
+                                        class="img-fluid mb-2" style="max-width: 90px;">
+                                    <h6 class="fw-semibold mb-0">Manage Assignment</h6>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+        </div>
+        <div class="col-lg-6 col-sm-12">
+            <div class="row mt-2 g-4">
+
+                <div class="col-lg-6 col-md-12">
+                    <div class="card p-3 shadow-sm">
+                        <h5 class="card-title text-dark">Overview</h5>
+                        <canvas id="overviewChart" style="height:150px;"></canvas>
+                    </div>
+                </div>
+           
+            
+                <!-- Assigned vs Unassigned Endorsers -->
+                <div class="col-lg-6 col-md-6">
+                    <div class="card p-3 shadow-sm">
+                        <h5 class="card-title text-center">Endorsers Assignment</h5>
+                        <canvas id="endorserChart" style="height:150px;"></canvas>
+                    </div>
+                </div>
+
+                <!-- Mentors vs Endorsers -->
+                <div class="col-lg-4 col-md-6">
+                    <div class="card p-3 shadow-sm">
+                        <h5 class="card-title text-center">Mentors vs Endorsers</h5>
+                        <canvas id="mentorEndorserChart" style="height:150px;"></canvas>
+                    </div>
+                </div>
+                 </div>
+                 
+
+                
+
+                <!-- Optional: Total Counts Overview -->
+
+
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Endorsers Assignment
+        const endorserCtx = document.getElementById('endorserChart').getContext('2d');
+        new Chart(endorserCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Assigned', 'Unassigned'],
+                datasets: [{
+                    data: [{{ assigned_endorsers }}, {{ unassigned_endorsers }}],
+            backgroundColor: ['#4CAF50', '#F44336']
+        }]
+        },
+        options: {
+        responsive: true,
+        plugins: { legend: { position: 'bottom' } }
+    }
+    });
+
+    // Mentors vs Endorsers
+    const mentorEndorserCtx = document.getElementById('mentorEndorserChart').getContext('2d');
+    new Chart(mentorEndorserCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Mentors', 'Endorsers'],
+            datasets: [{
+                data: [{{ total_mentors }}, {{ total_endorsers }}],
+        backgroundColor: ['#2196F3', '#FFC107']
+    }]
+        },
+        options: {
+        responsive: true,
+        plugins: { legend: { position: 'bottom' } }
+    }
+    });
+
+    // Overview Chart (Mentors vs Endorsers)
+    const overviewCtx = document.getElementById('overviewChart').getContext('2d');
+    new Chart(overviewCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Mentors', 'Endorsers'],
+            datasets: [{
+                data: [{{ total_mentors }}, {{ total_endorsers }}],
+        backgroundColor: ['#9C27B0', '#03A9F4']
+    }]
+        },
+        options: {
+        responsive: true,
+        plugins: { legend: { position: 'bottom' } }
+    }
+    });
+});
+</script>
+
+{% endblock %}

@@ -7,12 +7,32 @@ My Activities
 
 {% block links %}
 <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
 {% endblock links %}
 
 {% block content %}
 {% include 'partials/head.html' %}
 
-<div class="container mt-5">
+<div class="d-flex" style="min-height: calc(100vh - 60px);">
+    <nav class="sidebar">
+    <!-- Top Section -->
+    <div>
+      <!-- Home -->
+      <a href="{% url 'dashboard' %}" class="nav-link" data-bs-toggle="tooltip" data-bs-placement="right"
+        title="Home">
+        <i class="bi bi-house"></i>
+      </a>
+
+
+      <!-- Bottom Section -->
+
+      <a href="{% url 'account_logout' %}" class="nav-link text-danger" data-bs-toggle="tooltip"
+        data-bs-placement="right" title="Logout">
+        <i class="bi bi-box-arrow-right"></i>
+      </a>
+    </div>
+  </nav>
+  <div class="container mt-5">
     <h2 class="fw-bold mt-3">My Activities</h2>
     <table class="table table-striped table-hover table-bordered mt-3">
         <thead class="table-dark">
@@ -54,6 +74,7 @@ My Activities
             {% endfor %}
         </tbody>
     </table>
+</div>
 </div>
 
 {% endblock content %}

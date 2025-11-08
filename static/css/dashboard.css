@@ -1,17 +1,88 @@
+/* dashboard.css - clean, high-specificity rules to override Bootstrap */
 
-
-
-.custom-card {
-    background-color: #4b4b7b ;
-    border-radius: 10px;
-   
+/* ---- Variables ---- */
+:root{
+  --accent-1: #2f3b81;
+  --accent-2: #8297c2;
+  --accent-3: #3b8151;
+  --card-radius: 16px;
 }
 
-.card:hover {
-    background-color: #4e5871;
+/* Make sure our rules win over bootstrap: use .card.custom-card selector */
+.card.custom-card {
+  background: linear-gradient(135deg, var(--accent-1) 0%, var(--accent-2) 100%);
+  color: #ffffff !important;
+  border: none;
+  border-radius: var(--card-radius);
+  padding: 22px;
+  min-height: 190px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  transition: transform .22s ease, box-shadow .22s ease, background .22s ease;
+  box-shadow: 0 6px 18px rgba(14, 30, 85, 0.10);
 }
-.profile-img {
-    width: 200px;
-    height: 150px;
-    border-radius: 25px;
+
+/* Hover */
+.card.custom-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 26px rgba(14, 30, 85, 0.18);
+  background: linear-gradient(135deg, #2f3b81 0%, #3f495c 100%);
+}
+
+/* Icon inside card */
+.card.custom-card .card-icon {
+  width: 80px;
+  height: auto;
+  margin-bottom: 12px;
+  display: block;
+  filter: none; /* remove the invert unless you need it */
+  transition: transform .2s ease, opacity .2s ease;
+  opacity: 0.95;
+}
+.card.custom-card:hover .card-icon {
+  transform: scale(1.08);
+  opacity: 1;
+}
+
+/* Title */
+.card.custom-card .card-title {
+  margin: 0;
+  font-weight: 600;
+  font-size: 1.05rem;
+  letter-spacing: 0.3px;
+  color: #fff;
+}
+
+/* Make the card take full column height inside .col-6 */
+.col-6 > .card.custom-card {
+  height: 100%;
+}
+
+/* Spacing for the two-card rows on small screens:
+   we still use bootstrap's grid and the row g-* gap for spacing */
+@media (max-width: 768px) {
+  .card.custom-card {
+    min-height: 150px;
+    padding: 16px;
+  }
+  .card.custom-card .card-icon { width: 60px; }
+  .card.custom-card .card-title { font-size: 0.95rem; }
+}
+
+/* Charts */
+.dashboard-chart {
+  height: 280px !important;
+  max-height: 280px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.10);
+  background: #fff;
+  padding: 12px;
+}
+
+/* Utility: stronger override in case bootstrap's bg/text classes still present */
+.card.custom-card.bg-light, .card.custom-card.text-dark {
+  background: none !important;
+  color: #fff !important;
 }

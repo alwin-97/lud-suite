@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+Dashboard
+{% endblock title %}
+
+{% block links %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+{% endblock links %}
+
+{% block content %}
+{% include 'partials/_header.html' %}
+
+<div class="container-fluid py-4">
+    <div class="row">
+        <!-- Left Section -->
+        <div class="col-lg-6 col-md-12">
+            <div class="row g-3">
+                <!-- Work Schedule -->
+                <div class="col-6">
+                    <a href="{% url 'endorser_work_schedule' %}" class="text-decoration-none">
+                        <div class="card shadow-sm text-center h-100 p-3 bg-light text-dark rounded-3">
+                            <div class="d-flex flex-column align-items-center justify-content-center h-100">
+                                <img src="{% static 'images/profile.png' %}" alt="Notification" class="img-fluid mb-2"
+                                    style="max-width: 60px;">
+                                <h6 class="fw-semibold mb-0">Work Schedule</h6>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- Activity Log -->
+                <div class="col-6">
+                    <a href="{% url 'manage_assignment' %}" class="text-decoration-none">
+                        <div class="card shadow-sm text-center h-100 p-3 bg-light text-dark rounded-3">
+                            <div class="d-flex flex-column align-items-center justify-content-center h-100">
+                                <img src="{% static 'images/profile.png' %}" alt="Notification" class="img-fluid mb-2"
+                                    style="max-width: 60px;">
+                                <h6 class="fw-semibold mb-0">Activity Log</h6>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-6">
+                    <a href="{% url 'endorser_profile' %}" class="text-decoration-none">
+                        <div class="card shadow-sm text-center h-100 p-3 bg-light text-dark rounded-3">
+                            <div class="d-flex flex-column align-items-center justify-content-center h-100">
+                                <img src="{% static 'images/profile.png' %}" alt="Notification" class="img-fluid mb-2"
+                                    style="max-width: 60px;">
+                                <h6 class="fw-semibold mb-0">Public Profile</h6>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <!-- Notification -->
+                <div class="col-6">
+                    <a href="{% url 'manage_assignment' %}" class="text-decoration-none">
+                        <div class="card shadow-sm text-center h-100 p-3 bg-light text-dark rounded-3">
+                            <div class="d-flex flex-column align-items-center justify-content-center h-100">
+                                <img src="{% static 'images/profile.png' %}" alt="Notification" class="img-fluid mb-2"
+                                    style="max-width: 60px;">
+                                <h6 class="fw-semibold mb-0">Notification</h6>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Section -->
+        <div class="col-lg-6 col-md-12">
+            <div class="card shadow-sm p-3 h-100 rounded-3">
+                <h6 class="fw-semibold mb-3">📊 Mentee Statistics</h6>
+                <canvas id="menteeChart" class="dashboard-chart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

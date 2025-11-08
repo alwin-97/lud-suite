@@ -6,8 +6,6 @@ SECRET_KEY = 'django-insecure-u0hed$28+_h3r50ii-ga9@1sazw!*&!8%wct8uk)wj@e$u6^ks
 DEBUG = True
 ALLOWED_HOSTS = []
 
-# SITE_ID = 1
-
 # Installed apps
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -21,11 +19,11 @@ INSTALLED_APPS = [
     # Your app
     'core',
 
-    # Allauth for authentication
-    "allauth",
-    "allauth.account",
-    "allauth.socialaccount",
-    "allauth.socialaccount.providers.google",
+    # Allauth
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
 ]
 
 MIDDLEWARE = [
@@ -37,7 +35,6 @@ MIDDLEWARE = [
     'allauth.account.middleware.AccountMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    
 ]
 
 ROOT_URLCONF = 'lud-suite.urls'
@@ -59,6 +56,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'lud-suite.wsgi.application'
 
+# Database
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -66,6 +64,7 @@ DATABASES = {
     }
 }
 
+# Password validators
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
@@ -73,11 +72,13 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
+# Localization
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
+# Static & Media
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / "static"]
 
@@ -86,19 +87,41 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Authentication settings
+# ---------------- Authentication ----------------
+AUTH_USER_MODEL = "core.CustomUser"
+
 AUTHENTICATION_BACKENDS = [
-    "django.contrib.auth.backends.ModelBackend",
-    "allauth.account.auth_backends.AuthenticationBackend",
+    "django.contrib.auth.backends.ModelBackend",            # Django default
+    "allauth.account.auth_backends.AuthenticationBackend",  # Allauth
 ]
 
-LOGIN_URL = '/accounts/login/'
-LOGIN_REDIRECT_URL = '/dashboard/'
-LOGOUT_REDIRECT_URL = '/'
+SITE_ID = 1
+SOCIALACCOUNT_ADAPTER = "core.adapters.MySocialAccountAdapter"
 
-SOCIALACCOUNT_PROVIDERS = {
-    "google": {
-        "SCOPE": ["profile", "email"],
-        "AUTH_PARAMS": {"access_type": "online"},
-    }
-}
+# Login / Logout
+LOGIN_URL = '/accounts/login/'
+LOGIN_REDIRECT_URL = "role-redirect"
+LOGOUT_REDIRECT_URL = '/'
+# Skip the "Account Connections" page and auto-login
+SOCIALACCOUNT_LOGIN_ON_GET = True
+ACCOUNT_SIGNUP_REDIRECT_URL = LOGIN_REDIRECT_URL
+ACCOUNT_SIGNUP_FORM_CLASS = None
+ACCOUNT_EMAIL_VERIFICATION = "none"
+
+# Allauth settings
+ACCOUNT_AUTHENTICATION_METHOD = "email"
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_USERNAME_REQUIRED = False
+ACCOUNT_SIGNUP_PASSWORD_ENTER_TWICE = False
+ACCOUNT_EMAIL_VERIFICATION = "none"
+ACCOUNT_SIGNUP_FORM_CLASS = None
+
+# Adapters
+ACCOUNT_ADAPTER = "core.adapters.AccountAdapter"
+SOCIALACCOUNT_ADAPTER = "core.adapters.SocialAccountAdapter"
+
+# Auto-create user account after first Google login (disabled if blocking signup in adapter)
+SOCIALACCOUNT_AUTO_SIGNUP = True
+
+# Redirect if someone tries to access signup page
+ACCOUNT_SIGNUP_REDIRECT_URL = '/accounts/login/'
