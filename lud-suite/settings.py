@@ -125,3 +125,4 @@ SOCIALACCOUNT_AUTO_SIGNUP = True
 
 # Redirect if someone tries to access signup page
 ACCOUNT_SIGNUP_REDIRECT_URL = '/accounts/login/'
+MESSAGE_STORAGE = 'django.contrib.messages.storage.session.SessionStorage'

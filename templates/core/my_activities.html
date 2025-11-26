@@ -33,6 +33,19 @@ My Activities
     </div>
   </nav>
   <div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center p-3 bg-primary text-white rounded">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item">
+              <a href="{% url 'dashboard' %}" class="text-white text-decoration-none">Home</a>
+            </li>
+            <li class="breadcrumb-item">
+              <a href="{% url 'dip_yclp' %}" class="text-white text-decoration-none">DIP YCLP</a>
+            </li>
+            <li class="breadcrumb-item active text-white" aria-current="page">MY ACTIVITY</li>
+          </ol>
+        </nav>
+      </div>
     <h2 class="fw-bold mt-3">My Activities</h2>
     <table class="table table-striped table-hover table-bordered mt-3">
         <thead class="table-dark">

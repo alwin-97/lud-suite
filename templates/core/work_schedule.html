@@ -1,6 +1,8 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block title %}Manage Assignment{% endblock %}
+
+{% block title %}Work Schedule{% endblock %}
+
 {% block links %}
 <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
 <link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
@@ -12,65 +14,114 @@
 <div class="d-flex" style="min-height: calc(100vh - 60px);">
     <!-- Sidebar -->
     <nav class="sidebar">
-        <!-- Top Section -->
         <div>
+            <br><br>
             <!-- Home -->
             <a href="{% url 'endorser_dashboard' %}" class="nav-link" data-bs-toggle="tooltip" data-bs-placement="right"
                 title="Home">
                 <i class="bi bi-house"></i>
             </a>
-
-
-            <!-- Bottom Section -->
-
+            <!-- Logout -->
             <a href="{% url 'account_logout' %}" class="nav-link text-danger" data-bs-toggle="tooltip"
                 data-bs-placement="right" title="Logout">
                 <i class="bi bi-box-arrow-right"></i>
             </a>
         </div>
     </nav>
-<div class="container py-2">
-<div class="d-flex justify-content-between align-items-center p-3 bg-primary text-white rounded">
-            <div>
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb mb-0">
-                        <li class="breadcrumb-item">
-                            <a href="{% url 'endorser_dashboard' %}" class="text-white text-decoration-none">Home</a>
-                        </li>
-                        <li class="breadcrumb-item active text-white" aria-current="page">Work Schedule</li>
-                    </ol>
-                </nav>
-            </div>
+
+    <!-- Main content -->
+    <div class="container py-4">
+        <!-- Breadcrumb -->
+        <div class="d-flex justify-content-between align-items-center p-3 bg-primary text-white rounded">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'endorser_dashboard' %}" class="text-white text-decoration-none">Home</a>
+                    </li>
+                    <li class="breadcrumb-item active text-white" aria-current="page">Work Schedule</li>
+                </ol>
+            </nav>
         </div>
-    <div class="row justify-content-center py-5">
-        <div class="col-md-6">
-            <div class="card shadow p-4 rounded-3 bg-light">
-                <h4 class="text-center text-primary  mb-4">Work Schedule</h4>
-                <form method="POST">
-                    {% csrf_token %}
-                    <div class="mb-3">
-                        <label class="form-label">Mentors</label>
-                        {{ form.mentors }}
+
+        <!-- Form card -->
+        <div class="row justify-content-center py-5">
+            <div class="col-md-8 col-lg-6">
+                <div class="card shadow p-4 rounded-3 bg-light">
+                    <h4 class="text-center text-primary mb-4">Assign Work Schedule</h4>
+                    {% if messages %}
+                    {% for message in messages %}
+                    {% if 'work_schedule' in message.tags %}
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">Role</label>
-                        {{ form.role }}
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Due Date</label>
-                        {{ form.due_date }}
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Description</label>
-                        {{ form.description }}
-                    </div>
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-primary">Send</button>
-                    </div>
-                </form>
+                    {% endif %}
+                    {% endfor %}
+                    {% endif %}
+
+
+
+
+                    <form method="POST" novalidate>
+                        {% csrf_token %}
+
+                        <!-- Mentors -->
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Select Mentors</label>
+                            <div class="form-check-group border rounded p-3 bg-white">
+                                {% for checkbox in form.mentors %}
+                                <div class="form-check mb-2">
+                                    {{ checkbox.tag }}
+                                    <label class="form-check-label ms-2">{{ checkbox.choice_label }}</label>
+                                </div>
+                                {% empty %}
+                                <p class="text-muted small">No mentors assigned to you.</p>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <!-- Role -->
+                        <div class=" form-row mb-3">
+                            <label class="form-label fw-semibold">Role </label>
+                            <div class="form-check ">
+                                {{ form.role }}
+                            </div>
+                        </div>
+
+                        <!-- Due Date -->
+                        <div class="form-row mb-3">
+                            <label class="form-label fw-semibold aligned-field">Due Date</label>
+                            <div class="form-check">
+                                {{ form.due_date }}
+                            </div>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold aligned-field">Description</label>
+                            <div class="form-check">
+                                {{ form.description }}
+                            </div>
+                        </div>
+
+                        <!-- Submit -->
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">Send</button>
+                        </div>
+                    </form>
+
+                </div>
             </div>
         </div>
     </div>
 </div>
-</div>
+<script>
+    setTimeout(() => {
+        const alert = document.querySelector('.alert');
+        if (alert) {
+            alert.classList.remove('show');
+            alert.classList.add('fade');
+        }
+    }, 3000);
+</script>
 {% endblock %}

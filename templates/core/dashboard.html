@@ -14,91 +14,96 @@ Home
 {% include 'partials/_header.html' %}
 
 
-<div class="container-fluid pt-10">
+<div class="container-fluid py-10">
     <div class="row">
         <div class="col-lg-8 col-sm-12">
-            <div class="row">                
-                <div class=" col-6 col-md-3  p-4 ">
+            <div class="row gx-4 , gy-3, mt-4">                
+                <div class="col-6">
                     <a href="{% url 'dip_yclp' %}" class="text-decoration-none">
-                        <div class="card custom-card  shadow-sm  ">
-                            <div class="card-body text-center">
-                                <img src="{% static 'images/diary.png' %}" class="img-fluid mb-2" style="height: 40px;" alt="work_diary">
-                                <h6 class="ps-2 text-dark mt-2">DIP YCLP</h6>
+                        <div class="card shadow-sm text-center h-100 p-3 bg-light text-dark rounded-3">
+                            <div class="d-flex flex-column align-items-center justify-content-center h-100">
+                                <img src="{% static 'images/diary.png' %}" alt="Notification" class="img-fluid mb-2"
+                                    style="max-width: 60px;">
+                                <h6 class="fw-semibold mb-0">DIP YCLP</h6>
                             </div>
                         </div>
                     </a>
                 </div>
-                
-                <div class=" col-6 col-md-3  p-4 ">
+                <div class="col-6">
                     <a href="{% url 'dip_yclp' %}" class="text-decoration-none">
-                        <div class="card custom-card shadow-sm ">
-                            <div class="card-body text-center">
-                                <img src="{% static 'images/diary.png' %}" class="img-fluid mb-2" style="height: 40px;" alt="work_diary">
-                                <h6 class=" ps-2 text-dark mt-2">DIP Mentee </h6>
+                        <div class="card shadow-sm text-center h-100 p-3 bg-light text-dark rounded-3">
+                            <div class="d-flex flex-column align-items-center justify-content-center h-100">
+                                <img src="{% static 'images/diary.png' %}" alt="Notification" class="img-fluid mb-2"
+                                    style="max-width: 60px;">
+                                <h6 class="fw-semibold mb-0">DIP MENTEE</h6>
                             </div>
                         </div>
-                        
                     </a>
                 </div>
-                <div class="col-6 col-md-3  p-4">
-                    <a href="{% url 'profile' %}" class="text-decoration-none">
-                        <div class="card custom-card shadow-sm ">
-                            <div class="card-body text-center">
-                                <img src="{% static 'images/diary.png' %}" class="img-fluid mb-2" style="height: 40px;" alt="work_diary">
-                                <h6 class=" ps-2 text-dark mt-2">Public Profile</h6>
-                            </div>
-                        </div>
-                        
-                    </a>
-                </div><div class="col-6 col-md-3  p-4">
-                    <a href="{% url 'dip_yclp' %}" class="text-decoration-none">
-                        <div class="card custom-card  shadow-sm">
-                            <div class="card-body text-center">
-                                <img src="{% static 'images/diary.png' %}" class="img-fluid mb-2" style="height: 40px;" alt="work_diary">
-                                <h6 class=" ps-2 text-dark mt-2">Work Diary</h6>
-                            </div>
-                        </div>
-                        
-                    </a>
-                </div><div class="col-6 col-md-3 p-4">
-                    <a href="{% url 'dip_yclp' %}" class="text-decoration-none">
-                        <div class="card custom-card  shadow-sm">
-                            <div class="card-body text-center">
-                                <img src="{% static 'images/diary.png' %}" class="img-fluid mb-2" style="height: 40px;" alt="work_diary">
-                                <h6 class=" ps-2 text-dark mt-2">Data Repository</h6>
-                            </div>
-                        </div>
-                        
-                    </a>
-                </div>
-                <div class="col-6 col-md-3 p-4">
-                    <a href="{% url 'dip_yclp' %}" class="text-decoration-none">
-                        <div class="card custom-card shadow-sm">
-                            <div class="card-body  text-center">
-                                <img src="{% static 'images/diary.png' %}" class="img-fluid mb-2" style="height: 40px;" alt="work_diary">
-                                <h6 class=" ps-2 text-dark mt-2">Notifications</h6>
-                            </div>
-                        </div>
-                        
-                    </a>
-                </div>
-                <div class="col-6 col-md-3 p-4">
-                    <a href="{% url 'dip_yclp' %}" class="text-decoration-none">
-                        <div class="card custom-card  shadow-sm ">
-                            <div class="card-body text-center">
-                                <img src="{% static 'images/diary.png' %}" class="img-fluid mb-2" style="height: 40px;" alt="work_diary">
-                                 <h6 class=" ps-2 text-dark mt-2">Transcript</h6>
-                            </div>
-                        </div>
-                       
-                    </a>
-                </div>
-
-                
-                
-
-            </div>   
             </div>
+            <div class="row gx-4 , gy-3, mt-4">
+                <div class="col-6">
+                    <a href="{% url 'mentor_profile' %}" class="text-decoration-none">
+                        <div class="card shadow-sm text-center h-100 p-3 bg-light text-dark rounded-3">
+                            <div class="d-flex flex-column align-items-center justify-content-center h-100">
+                                <img src="{% static 'images/profile.png' %}" alt="Notification" class="img-fluid mb-2"
+                                    style="max-width: 60px;">
+                                <h6 class="fw-semibold mb-0">Public Profile</h6>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-6">
+                    <a href="{% url 'dip_yclp' %}" class="text-decoration-none">
+                        <div class="card shadow-sm text-center h-100 p-3 bg-light text-dark rounded-3">
+                            <div class="d-flex flex-column align-items-center justify-content-center h-100">
+                                <img src="{% static 'images/diary.png' %}" alt="Notification" class="img-fluid mb-2"
+                                    style="max-width: 60px;">
+                                <h6 class="fw-semibold mb-0">Work Diary</h6>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                </div>
+                <div class="row gx-4 , gy-3, mt-4">
+                <div class="col-6">
+                    <a href="{% url 'dip_yclp' %}" class="text-decoration-none">
+                        <div class="card shadow-sm text-center h-100 p-3 bg-light text-dark rounded-3">
+                            <div class="d-flex flex-column align-items-center justify-content-center h-100">
+                                <img src="{% static 'images/diary.png' %}" alt="Notification" class="img-fluid mb-2"
+                                    style="max-width: 60px;">
+                                <h6 class="fw-semibold mb-0">Data Repository</h6>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-6">
+                    <a href="{% url 'dip_yclp' %}" class="text-decoration-none">
+                        <div class="card shadow-sm text-center h-100 p-3 bg-light text-dark rounded-3">
+                            <div class="d-flex flex-column align-items-center justify-content-center h-100">
+                                <img src="{% static 'images/diary.png' %}" alt="Notification" class="img-fluid mb-2"
+                                    style="max-width: 60px;">
+                                <h6 class="fw-semibold mb-0">Notifications</h6>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                </div>
+                <div class="row gx-4 , gy-3, mt-4">
+                <div class="col-6">
+                    <a href="{% url 'dip_yclp' %}" class="text-decoration-none">
+                        <div class="card shadow-sm text-center h-100 p-3 bg-light text-dark rounded-3">
+                            <div class="d-flex flex-column align-items-center justify-content-center h-100">
+                                <img src="{% static 'images/diary.png' %}" alt="Notification" class="img-fluid mb-2"
+                                    style="max-width: 60px;">
+                                <h6 class="fw-semibold mb-0">Transcript</h6>
+                            </div>
+                        </div>
+                    </a>
+                </div>              
+            </div>
+        </div>  
+            
         
 
         

@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+Home
+{% endblock title %}
+
+{% block links %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
+{% endblock links %}
+
+{% block content %}
+
+{% include 'partials/head.html' %}
+<div class="d-flex" style="min-height: calc(100vh - 60px);">
+    <nav class="sidebar">
+    <!-- Top Section -->
+    <div>
+      <!-- Home -->
+      <a href="{% url 'dashboard' %}" 
+         class="nav-link" 
+         data-bs-toggle="tooltip" 
+         data-bs-placement="right" 
+         title="Home">
+         <i class="bi bi-house"></i>
+      </a>
+
+
+      <!-- Bottom Section -->
+
+      <a href="{% url 'account_logout' %}" class="nav-link text-danger" data-bs-toggle="tooltip"
+        data-bs-placement="right" title="Logout">
+        <i class="bi bi-box-arrow-right"></i>
+      </a>
+    </div>
+  </nav>
+<div class="container ">
+    <div class="row p-10 ">
+        <div class="col-lg-8 col-sm-12  ">
+            <div class="row flex-fill section-25 bg-warning rounded mb-3 p-3">
+                <div class="card-custom p-8">
+                    <div class="fw-bold p-10">DIP - YCLP <span class="text-muted fw-normal">| Reflexive Report</span>
+                    </div>
+                    <div class="d-flex mt-3 gap-3">
+                        <a href="{% url 'new_activity' %}" class="btn btn-outline-dark">
+                            <span class="icon">➕</span> New Activity
+                        </a>
+                        <a href="{% url  'my-activities' %}" class="btn btn-outline-dark">                
+                            <span class="icon">📋</span> My Activities
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="row flex-fill section-75 bg-light border rounded p-3">
+  <div class="card-custom">
+    <div class="fw-bold mb-2">My Activities</div>
+    <div class="list-group list-group-flush">
+  {% if recent_activities %}
+    {% for activity in recent_activities %}
+      <div class="list-group-item d-flex justify-content-between align-items-start">
+        <div>
+          <strong>
+            {% if activity.activity == "Others" and activity.other_activity %}
+              {{ activity.other_activity }}
+            {% else %}
+              {{ activity.activity }}
+            {% endif %}
+          </strong>
+          <br>
+          <small class="text-muted">
+            {{ activity.date|date:"M d, Y" }} • {{ activity.duration }} hrs
+          </small>
+        </div>
+      </div>
+    {% endfor %}
+  {% else %}
+    <div class="list-group-item text-muted">No activities yet.</div>
+  {% endif %}
+</div>
+
+  </div>
+</div>
+
+    </div>
+
+    <div class="col p-10">
+        <img src="{% static 'images/highchart.png' %}" class="img-fluid mb-5" style="height: 100%;" alt="high_chart">
+    </div>
+</div>
+</div>
+</div>
+
+{% endblock content %}

@@ -5,7 +5,9 @@ from django.contrib.auth import views as auth_views
 
 
 urlpatterns = [
+    
     path('', views.login_view, name='login'),
+
     path('dashboard/', views.dashboard_view, name='dashboard'),
     path('dip-yclp/', views.dip_yclp_view, name='dip_yclp'),
     path('dip-mentee/', views.dip_mentee_view, name='dip_mentee'),
@@ -36,4 +38,11 @@ urlpatterns = [
     path('get-assigned-mentors/', views.get_assigned_mentors, name='get_assigned_mentors'),
     path('assign-mentors/', views.assign_mentors, name='assign_mentors'),
     path('unassign-mentor/', views.unassign_mentor, name='unassign_mentor'),
+    path('activity-log/', views.activity_log, name='activity_log'),
+    path('mentor/<int:mentor_id>/activity/', views.mentor_activity_list, name='mentor_activity'),
+    path('add-remark/', views.add_remark, name='add_remark'),
+    path('mentor-profile/', views.mentor_profile, name='mentor_profile'),
+    
+
+
 ]

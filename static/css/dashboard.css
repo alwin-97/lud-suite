@@ -86,3 +86,91 @@
   background: none !important;
   color: #fff !important;
 }
+.mentor-list {
+        max-height: 200px;
+        overflow-y: auto;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        padding: 10px;
+        background-color: #fff;
+    }
+
+    .mentor-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 3px 0;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: #333;
+    }
+
+    .form-control, .form-select {
+        border-radius: 8px;
+    }
+
+    button.btn-primary {
+        border-radius: 10px;
+        font-weight: 600;
+        padding: 10px;
+    }
+    .form-section {
+        margin-left: 0.25rem;
+    }
+    .form-label {
+        margin-bottom: 0.4rem;
+        font-weight: 600;
+    }
+    .form-control, .form-select, textarea {
+        width: 100%;
+        padding-left: 0.75rem;
+    }
+    .form-check-group {
+        padding: 1rem;
+        border: 1px solid #dee2e6;
+        border-radius: 0.5rem;
+        background-color: #fff;
+    }
+    .form-check {
+        margin-left: 0.5rem;
+    }
+    .aligned-field {
+        margin-left: 6px; /* small left offset to match checkbox area visually */
+        width: 100%;
+    }
+
+   /* custom spacing for label + input alignment */
+  .form-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+
+  .form-row label {
+    width: 25%;
+    font-weight: 600;
+    margin-bottom: 0;
+  }
+
+  .form-row .input-wrap {
+    width: 75%;
+  }
+
+  /* Make it responsive — stack labels above inputs on small screens */
+  @media (max-width: 768px) {
+    .form-row {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .form-row label {
+      width: 100%;
+      margin-bottom: 0.5rem;
+    }
+
+    .form-row .input-wrap {
+      width: 100%;
+    }
+  } 

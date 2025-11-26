@@ -5,9 +5,9 @@ from .forms import ActivityForm
 from .models import Activity
 from .decorators import role_required
 from django.contrib import messages
-from django.contrib.auth.models import User
+
 from django.contrib.auth import get_user_model
-from django.shortcuts import get_object_or_404
+
 from .models import CustomUser
 from .forms import NotificationForm
 import openpyxl
@@ -21,7 +21,7 @@ from django.utils.safestring import mark_safe
 from django.views.decorators.http import require_POST
 
 
-
+User = get_user_model()
 @role_required(allowed_roles=['admin'])
 def edit_user_view(request, user_id):
     user = get_object_or_404(User, id=user_id)
@@ -131,31 +131,73 @@ def role_redirect_view(request):
 # -------------------- Core Pages (mentee-related) --------------------
 
 @login_required
+@role_required(allowed_roles=['mentor'])
 def dip_yclp_view(request):
+    form = ActivityForm()   # <-- ADD THIS
     recent_activities = Activity.objects.filter(user=request.user).order_by("-date")[:6]
+
     return render(request, "core/dip_yclp.html", {
+        "form": form,
         "recent_activities": recent_activities
     })
 
-
 @login_required
+@csrf_exempt  # only needed if CSRF issues persist, ideally handle via headers in AJAX
 def new_activity(request):
-    if request.method == 'POST':
+    if request.method == "GET":
+        return redirect("dip_yclp") 
+    if request.method == "POST":
         form = ActivityForm(request.POST, request.FILES)
+        
         if form.is_valid():
-            activity = form.save(commit=False)
-            activity.user = request.user
-            activity.save()
-            return redirect('my-activities')
-    else:
-        form = ActivityForm()
-    return render(request, 'core/new_activity.html', {'form': form})
+            exists = Activity.objects.filter(
+                user=request.user,
+                date=form.cleaned_data["date"],
+                activity=form.cleaned_data["activity"],
+                duration=form.cleaned_data["duration"]
+            ).exists()
+
+            if exists:
+                return JsonResponse({
+                    "status": "error",
+                    "message": "Duplicate entry detected. You already submitted this activity."
+                })
+            activity_obj = form.save(commit=False)
+            activity_obj.user = request.user
+            activity_obj.save()
+            
+            return JsonResponse({
+                "status": "success",
+                "message": "Activity submitted successfully!",
+                "new_activity": {
+                    "activity_name": activity_obj.other_activity if activity_obj.activity == "Others" else activity_obj.activity,
+                    "date": activity_obj.date.strftime("%b %d, %Y"),
+                    "duration": str(activity_obj.duration)
+                }
+            })
+        else:
+            # Send form errors back
+            errors = {field: error.get_json_data() for field, error in form.errors.items()}
+            return JsonResponse({
+                "status": "error",
+                "message": "Form validation failed. Please check the inputs.",
+                "errors": errors
+            })
+    return JsonResponse({"status": "error", "message": "Invalid request method"})
+
 
 
 @login_required
+@role_required(allowed_roles=['mentor'])
 def my_activities_view(request):
+    # Fetch all activities of the logged-in mentor
     activities = Activity.objects.filter(user=request.user).order_by('-date')
-    return render(request, 'core/my_activities.html', {'activities': activities})
+
+    return render(request, 'core/my_activities.html', {
+        'activities': activities
+    })
+
+
 
 
 # -------------------- Other Placeholder Pages --------------------
@@ -232,7 +274,7 @@ def add_user_view(request):
         return redirect("manage_user")
 
     return render(request, "core/add_user.html")
-@role_required(allowed_roles=["admin"])
+@login_required
 def manage_user(request):
     role_filter = request.GET.get('role')
     if role_filter:
@@ -319,55 +361,46 @@ def profile_edit(request):
     return render(request, 'core/profile_edit.html', {'user': user})
 
 @login_required
+@role_required(allowed_roles=['aendorser'])
 def endorser_work_schedule(request):
-    if request.method == 'POST':
-        mentor_id = request.POST.get('mentor')
-        role = request.POST.get('role')
-        due_date = request.POST.get('due_date')
-        description = request.POST.get('description')
+    endorser = request.user  # The logged-in endorser
 
-        WorkSchedule.objects.create(
-            mentor_id=mentor_id,
-            role=role,
-            due_date=due_date,
-            description=description
-        )
-        return redirect('endorser_work_schedule')
+    if endorser.role != 'endorser':
+        messages.error(request, "You do not have permission to access this page.")
+        return redirect('endorser_dashboard')
 
-    mentors = Mentor.objects.all()
-    return render(request, 'core/work_schedule.html', {'mentors': mentors})
-def endorser_work_schedule(request):
     if request.method == 'POST':
-        form = WorkScheduleForm(request.POST)
+        form = WorkScheduleForm(request.POST, endorser=endorser)
         if form.is_valid():
-            mentors = form.cleaned_data['mentors']
-            role = form.cleaned_data['role']
-            due_date = form.cleaned_data['due_date']
-            description = form.cleaned_data['description']
+            work_schedule = form.save(commit=False)
+            work_schedule.endorser = endorser
+            work_schedule.save()
+            form.save_m2m()  # Save many-to-many mentors
 
-            # Here you’d create a notification model entry (simplified example)
-            for mentor in mentors:
-                # Save notification to DB (assuming Notification model exists)
-                # Notification.objects.create(
-                #     recipient=mentor,
-                #     title=f"New Work Schedule - {role}",
-                #     message=f"Due: {due_date}\n{description}"
-                # )
-                print(f"Notification to {mentor.username}: {description}")
+            # (Optional) You can loop and create notifications for each mentor here
+            for mentor in form.cleaned_data['mentors']:
+                Notification.objects.create(
+                    message=f"New work schedule: {work_schedule.role} (Due {work_schedule.due_date})",
+                    target_group='mentor',
+                    created_by=endorser
+                 )
 
-            messages.success(request, "Work schedule sent to selected mentors.")
+            messages.success(request, "Work schedule sent successfully.",extra_tags='work_schedule')
             return redirect('endorser_work_schedule')
     else:
-        form = WorkScheduleForm()
+        form = WorkScheduleForm(endorser=request.user)
 
     return render(request, 'core/work_schedule.html', {'form': form})
+
 @login_required
+@role_required(allowed_roles=['endorser'])
 def endorser_profile(request):
     if request.user.role != 'endorser':
         return redirect('role-redirect')
     return render(request, 'core/endorser_profile.html')
 
 @login_required
+@role_required(allowed_roles=['endorser'])
 def endorser_edit_profile(request):
     if request.user.role != 'endorser':
         return redirect('role-redirect')
@@ -492,6 +525,7 @@ def bulk_upload_users_view(request):
             messages.warning(request, mark_safe(f"⚠️ Some rows were skipped:<br>{skipped_msg}"))
 
     return redirect('manage_user')
+@role_required(allowed_roles=['admin'])
 def manage_assignment(request):
     all_endorsers = CustomUser.objects.filter(role='endorser')
     all_mentors = CustomUser.objects.filter(role='mentor')
@@ -596,3 +630,67 @@ def update_assigned_mentors(request):
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)})
     return JsonResponse({'status': 'invalid method'}, status=405)
+@login_required
+def activity_log(request):
+    # Use the M2M relation on CustomUser instead of Assignment model
+    assigned_mentors = request.user.mentors.all()
+
+    context = {
+        'assigned_mentors': assigned_mentors
+    }
+    return render(request, 'core/endorser_activity_log.html', context)
+@login_required
+def mentor_activity_list(request, mentor_id):
+    mentor = get_object_or_404(User, id=mentor_id)
+    activities = Activity.objects.filter(user=mentor).order_by('-date')  # assuming `user` FK in Activity
+
+    context = {
+        'mentor': mentor,
+        'activities': activities,
+    }
+    return render(request, 'core/activity_list.html', context)
+def add_remark(request):
+    if request.method == "POST":
+        activity_id = request.POST.get("activity_id")
+        remark = request.POST.get("remark")
+        activity = Activity.objects.get(id=activity_id)
+        activity.remark = remark
+        activity.save()
+        return JsonResponse({
+            "activity_id": activity_id,
+            "remark": remark,
+            "status": "success"
+        })
+    
+@login_required
+def mentor_profile(request):
+    user = request.user
+
+    # Only allow mentors to access this page
+    if user.role != "mentor":
+        return redirect("role-redirect")
+
+    # The mentor is simply the logged-in user
+    mentor = user
+
+    return render(request, "core/mentor_profile.html", {
+        "mentor": mentor
+    })
+def dip_home(request):
+    user = request.user
+    form = ActivityForm()
+
+    if request.method == "POST":
+        form = ActivityForm(request.POST, request.FILES)
+        if form.is_valid():
+            activity = form.save(commit=False)
+            activity.user = request.user
+            activity.save()
+            return redirect("dashboard")  # or your DIP page URL
+
+    recent_activities = Activity.objects.filter(user=user).order_by("-date")[:5]
+
+    return render(request, "core/dip_yclp.html", {
+        "form": form,
+        "recent_activities": recent_activities,
+    })
