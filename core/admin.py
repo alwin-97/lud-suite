@@ -131,7 +131,7 @@ class YearPlanItemAdmin(admin.ModelAdmin):
     search_fields = ("mentee__full_name", "milestone")
 
 
-# ✅ Register only once
+# Register only once
 admin.site.register(CustomUser, CustomUserAdmin)
 admin.site.register(Activity, ActivityAdmin)
 admin.site.register(School, SchoolAdmin)

@@ -109,7 +109,7 @@ class WorkScheduleForm(forms.ModelForm):
         widgets = {
             'role': forms.TextInput(attrs={'class': 'form-control'}),
             'due_date': forms.DateInput(
-                attrs={'type': 'date', 'class': 'form-control'}  # 👈 calendar picker
+                attrs={'type': 'date', 'class': 'form-control'}  # calendar picker
             ),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
         }
@@ -117,7 +117,7 @@ class WorkScheduleForm(forms.ModelForm):
         endorser = kwargs.pop('endorser', None)
         super().__init__(*args, **kwargs)
         if endorser:
-            # ✅ Show only mentors assigned to this endorser (using your CustomUser.mentors M2M field)
+            # Show only mentors assigned to this endorser (using the CustomUser.mentors M2M field)
             self.fields['mentors'].queryset = endorser.mentors.filter(role='mentor')
         self.fields['mentors'].label_from_instance = lambda obj: obj.email
 

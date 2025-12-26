@@ -80,7 +80,7 @@ class Assignment(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.endorser} → {self.mentor}"
+        return f"{self.endorser} -> {self.mentor}"
 
 
 # -------------------- Notification --------------------
@@ -219,7 +219,7 @@ class MentorMenteeAssignment(models.Model):
         unique_together = [("mentor", "mentee", "start_date")]
 
     def __str__(self):
-        return f"{self.mentor} → {self.mentee}"
+        return f"{self.mentor} -> {self.mentee}"
 
 
 class StatusConfig(models.Model):

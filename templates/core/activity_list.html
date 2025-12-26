@@ -2,14 +2,9 @@
 {% load static %}
 
 {% block title %}{{ mentor.first_name }}'s Activity List{% endblock title %}
-{% extends 'base.html' %}
-{% load static %}
-
-{% block title %}{{ mentor.first_name }}'s Activity List{% endblock title %}
 
 {% block links %}
 <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
-<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
 {% endblock links %}
 
 {% block content %}

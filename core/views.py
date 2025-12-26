@@ -7,7 +7,6 @@ from django.utils import timezone
 from .forms import (
     ActivityForm,
     NotificationForm,
-    ProfileForm,
     WorkScheduleForm,
     ObjectiveItemForm,
     ObjectiveItemMentorForm,
@@ -48,7 +47,7 @@ from .decorators import role_required
 from django.contrib import messages
 import openpyxl
 import csv
-from django.views.decorators.csrf import csrf_exempt
+import traceback
 from django.utils.safestring import mark_safe
 from django.views.decorators.http import require_POST
 
@@ -76,59 +75,63 @@ def _mentor_can_access_mentee(user, mentee):
 
 def _domains_for_year(year):
     return RatingDomain.objects.filter(year=year, is_active=True).order_by("sort_order", "name")
+
 @role_required(allowed_roles=['admin'])
 def edit_user_view(request, user_id):
     user = get_object_or_404(User, id=user_id)
 
-    if request.method == "POST":
-        first_name = request.POST.get("first_name")
-        last_name = request.POST.get("last_name")
-        email = request.POST.get("email")
-        phone = request.POST.get("phone")
-        role = request.POST.get("role")
-        password = request.POST.get("password")
-        current_year = request.POST.get("current_year")
-
-        if not (first_name and last_name and email and phone and role):
-            messages.error(request, "⚠️ All fields are required.")
-            return redirect("edit_user", user_id=user.id)
-
-        # update fields
-        user.first_name = first_name
-        user.last_name = last_name
-        user.email = email
-        user.username = email
-        user.phone = phone
-        user.role = role
-        if password:
-            user.set_password(password)
-        user.save()
-
-        if role == "mentee":
-            mentee, created = Mentee.objects.get_or_create(
-                user=user,
-                defaults={
-                    "full_name": f"{first_name} {last_name}".strip(),
-                    "current_year": int(current_year) if current_year else 1,
-                },
-            )
-            if not created:
-                mentee.full_name = f"{first_name} {last_name}".strip()
-                if current_year:
-                    mentee.current_year = int(current_year)
-                mentee.save()
-
-        messages.success(request, "✅ User updated successfully.")
+    if request.method != "POST":
         return redirect("manage_user")
 
-    return render(request, "core/edit_user.html", {"user": user})
+    first_name = request.POST.get("first_name")
+    last_name = request.POST.get("last_name")
+    email = request.POST.get("email")
+    phone = request.POST.get("phone")
+    role = request.POST.get("role")
+    password = request.POST.get("password")
+    current_year = request.POST.get("current_year")
+
+    if not (first_name and last_name and email and phone and role):
+        messages.error(request, "All fields are required.")
+        return redirect("manage_user")
+
+    if User.objects.filter(email=email).exclude(id=user.id).exists():
+        messages.error(request, "User with this email already exists.")
+        return redirect("manage_user")
+
+    user.first_name = first_name
+    user.last_name = last_name
+    user.email = email
+    user.username = email
+    user.phone = phone
+    user.role = role
+    if password:
+        user.set_password(password)
+    user.save()
+
+    if role == "mentee":
+        mentee, created = Mentee.objects.get_or_create(
+            user=user,
+            defaults={
+                "full_name": f"{first_name} {last_name}".strip(),
+                "current_year": int(current_year) if current_year else 1,
+            },
+        )
+        if not created:
+            mentee.full_name = f"{first_name} {last_name}".strip()
+            if current_year:
+                mentee.current_year = int(current_year)
+            mentee.save()
+
+    messages.success(request, "User updated successfully.")
+    return redirect("manage_user")
 
 
 @role_required(allowed_roles=['admin'])
 def delete_user_view(request, user_id):
     user = get_object_or_404(User, id=user_id)
     user.delete()
-    messages.success(request, "🗑️ User deleted successfully.")
+    messages.success(request, "User deleted successfully.")
     return redirect("manage_user")
 
 
@@ -783,7 +786,7 @@ def dip_yclp_view(request):
     })
 
 @login_required
-@csrf_exempt  # only needed if CSRF issues persist, ideally handle via headers in AJAX
+@role_required(allowed_roles=['mentor'])
 def new_activity(request):
     if request.method == "GET":
         return redirect("dip_yclp") 
@@ -845,20 +848,12 @@ def my_activities_view(request):
 
 def dip_mentee_view(request):
     return HttpResponse("DIP - Mentee Page")
+
+
 @login_required
 def profile_view(request):
     return render(request, "core/profile.html", {"user": request.user})
-@login_required
-def profile_edit(request):
-    user = request.user
-    if request.method == "POST":
-        form = ProfileUpdateForm(request.POST, request.FILES, instance=user)
-        if form.is_valid():
-            form.save()
-            return redirect("profile")
-    else:
-        form = ProfileUpdateForm(instance=user)
-    return render(request, "core/profile_edit.html", {"form": form})
+
 
 def work_diary_view(request):
     return HttpResponse("Work Diary Page")
@@ -885,75 +880,50 @@ def manage_user_view(request):
     users = User.objects.exclude(role='admin').order_by("id")  # fetch all users
     return render(request, "core/manage_user.html", {"users": users})
 
-User = get_user_model()
-User = get_user_model()
-
 @role_required(allowed_roles=["admin"])
 def add_user_view(request):
-    if request.method == "POST":
-        first_name = request.POST.get("first_name")
-        last_name = request.POST.get("last_name")
-        email = request.POST.get("email")
-        phone = request.POST.get("phone")
-        role = request.POST.get("role")
-        current_year = request.POST.get("current_year")
-        password = request.POST.get("password")
-
-        if not all([first_name, last_name, email, phone, role]):
-            messages.error(request, "All fields are required.")
-            return redirect("add_user")
-
-        if User.objects.filter(email=email).exists():
-            messages.error(request, "User with this email already exists.")
-            return redirect("add_user")
-
-        user = CustomUser.objects.create(
-            username=email,
-            email=email,
-            first_name=first_name,
-            last_name=last_name,
-            role=role,
-            phone=phone
-        )
-        if password:
-            user.set_password(password)
-        else:
-            user.set_unusable_password()
-        user.save()
-
-        if role == "mentee":
-            Mentee.objects.create(
-                user=user,
-                full_name=f"{first_name} {last_name}".strip(),
-                current_year=int(current_year) if current_year else 1,
-            )
-
-        messages.success(request, "User added successfully.")
+    if request.method != "POST":
         return redirect("manage_user")
 
-    return render(request, "core/add_user.html")
-@login_required
-def manage_user(request):
-    role_filter = request.GET.get('role')
-    if role_filter:
-        users = User.objects.filter(role__iexact=role_filter)
-    else:
-        users = User.objects.all()
-    return render(request, 'manage-user.html', {'users': users})
-# views.py
-def dashboard(request):
-    total_mentors = Mentor.objects.count()
-    total_endorsers = Endorser.objects.count()
-    unassigned_endorsers = Endorser.objects.filter(assigned_mentor__isnull=True).count()
-    assigned_endorsers = total_endorsers - unassigned_endorsers
+    first_name = request.POST.get("first_name")
+    last_name = request.POST.get("last_name")
+    email = request.POST.get("email")
+    phone = request.POST.get("phone")
+    role = request.POST.get("role")
+    current_year = request.POST.get("current_year")
+    password = request.POST.get("password")
 
-    context = {
-        'total_mentors': total_mentors,
-        'total_endorsers': total_endorsers,
-        'assigned_endorsers': assigned_endorsers,
-        'unassigned_endorsers': unassigned_endorsers,
-    }
-    return render(request, 'dashboard.html', context)
+    if not all([first_name, last_name, email, phone, role]):
+        messages.error(request, "All fields are required.")
+        return redirect("manage_user")
+
+    if User.objects.filter(email=email).exists():
+        messages.error(request, "User with this email already exists.")
+        return redirect("manage_user")
+
+    user = CustomUser.objects.create(
+        username=email,
+        email=email,
+        first_name=first_name,
+        last_name=last_name,
+        role=role,
+        phone=phone
+    )
+    if password:
+        user.set_password(password)
+    else:
+        user.set_unusable_password()
+    user.save()
+
+    if role == "mentee":
+        Mentee.objects.create(
+            user=user,
+            full_name=f"{first_name} {last_name}".strip(),
+            current_year=int(current_year) if current_year else 1,
+        )
+
+    messages.success(request, "User added successfully.")
+    return redirect("manage_user")
 @role_required(allowed_roles=["admin"])
 def view_user(request, user_id):
     viewed_user = get_object_or_404(CustomUser, id=user_id)
@@ -962,6 +932,9 @@ def view_user(request, user_id):
         'viewed_user': viewed_user,
         'activities': activities
     })
+
+
+@role_required(allowed_roles=["admin"])
 def export_user_activities_excel(request, user_id):
     viewed_user = get_object_or_404(CustomUser, id=user_id)
     activities = Activity.objects.filter(user=viewed_user).order_by('-date')
@@ -998,21 +971,16 @@ def profile_edit(request):
     user = request.user
 
     if request.method == 'POST':
-        # Example: saving fields
         user.gender = request.POST.get('gender')
         user.date_of_birth = request.POST.get('date_of_birth') or None
         user.religion = request.POST.get('religion')
-        user.phone_number = request.POST.get('phone_number')
+        user.phone = request.POST.get('phone')
         user.permanent_address = request.POST.get('permanent_address')
         user.institution = request.POST.get('institution')
         user.designation = request.POST.get('designation')
         profile_pic = request.FILES.get('profile_pic')
         if profile_pic:
             user.profile_pic = profile_pic
-        user.save()
-        if request.FILES.get('profile_pic'):
-            user.profile_pic = request.FILES['profile_pic']
-
         user.save()
         return redirect('profile')  # redirect back to profile view
 
@@ -1082,6 +1050,9 @@ def endorser_edit_profile(request):
 
     # Always pass 'user' context
     return render(request, 'core/endorser_edit_profile.html', {'user': user})
+
+
+@role_required(allowed_roles=["admin"])
 def download_user_template(request):
     # Create the HttpResponse object with CSV header
     response = HttpResponse(
@@ -1098,19 +1069,21 @@ def download_user_template(request):
 
 
 REQUIRED_COLUMNS = ["First Name", "Last Name", "Email", "Phone Number", "Role"]
-@login_required
+
+
+@role_required(allowed_roles=["admin"])
 def bulk_upload_users_view(request):
     if request.method == "POST":
         csv_file = request.FILES.get('file')
         
         # Check if file uploaded
         if not csv_file:
-            messages.error(request, "⚠️ No file uploaded.")
+            messages.error(request, "No file uploaded.")
             return redirect('manage_user')
 
         # Check file extension
         if not csv_file.name.endswith('.csv'):
-            messages.error(request, "⚠️ Uploaded file is not a CSV.")
+            messages.error(request, "Uploaded file is not a CSV.")
             return redirect('manage_user')
 
         # Read CSV
@@ -1118,7 +1091,7 @@ def bulk_upload_users_view(request):
             decoded_file = csv_file.read().decode('utf-8').splitlines()
             reader = csv.DictReader(decoded_file)
         except Exception:
-            messages.error(request, "⚠️ Error reading the CSV. Ensure it is properly formatted.")
+            messages.error(request, "Error reading the CSV. Ensure it is properly formatted.")
             return redirect('manage_user')
 
         # Strip whitespace from header keys
@@ -1183,12 +1156,12 @@ def bulk_upload_users_view(request):
 
         # Success message
         if added_count:
-            messages.success(request, f"✅ {added_count} users added successfully.")
+            messages.success(request, f"{added_count} users added successfully.")
 
         # Skipped rows message
         if skipped_rows:
             skipped_msg = "<br>".join(skipped_rows)
-            messages.warning(request, mark_safe(f"⚠️ Some rows were skipped:<br>{skipped_msg}"))
+            messages.warning(request, mark_safe(f"Some rows were skipped:<br>{skipped_msg}"))
 
     return redirect('manage_user')
 @role_required(allowed_roles=['admin'])
@@ -1220,7 +1193,7 @@ def manage_assignment(request):
     return render(request, 'core/manage_assignment.html', context)
 
 
-@csrf_exempt
+@role_required(allowed_roles=["admin"])
 @require_POST
 def assign_mentors(request):
     try:
@@ -1244,27 +1217,26 @@ def assign_mentors(request):
 
 
 
-@csrf_exempt
+@role_required(allowed_roles=["admin"])
+@require_POST
 def unassign_mentor(request):
-    if request.method == 'POST':
-        endorser_id = request.POST.get('endorser_id')
-        mentor_ids = request.POST.getlist('mentor_ids[]')
+    endorser_id = request.POST.get('endorser_id')
+    mentor_ids = request.POST.getlist('mentor_ids[]')
 
-        try:
-            endorser = CustomUser.objects.get(id=endorser_id)
-            mentors = CustomUser.objects.filter(id__in=mentor_ids)
+    try:
+        endorser = CustomUser.objects.get(id=endorser_id)
+        mentors = CustomUser.objects.filter(id__in=mentor_ids)
 
-            # ✅ Remove mentors from this endorser’s ManyToMany field
-            for mentor in mentors:
-                endorser.mentors.remove(mentor)
+        # Remove mentors from this endorser's ManyToMany field
+        for mentor in mentors:
+            endorser.mentors.remove(mentor)
 
-            return JsonResponse({'status': 'success'})
-        except Exception as e:
-            return JsonResponse({'status': 'error', 'message': str(e)})
+        return JsonResponse({'status': 'success'})
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)})
 
-    return JsonResponse({'status': 'invalid method'}, status=405)
 
-@csrf_exempt
+@role_required(allowed_roles=["admin"])
 def get_assigned_mentors(request):
     """Return mentors assigned to a given endorser (via M2M)"""
     if request.method != 'GET':
@@ -1284,19 +1256,21 @@ def get_assigned_mentors(request):
         return JsonResponse({'status': 'error', 'message': f'Endorser with id={endorser_id} not found'}, status=404)
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e), 'trace': traceback.format_exc()}, status=500)
-def update_assigned_mentors(request):
-    if request.method == 'POST':
-        endorser_id = request.POST.get('endorser_id')
-        mentor_ids = request.POST.getlist('mentor_ids[]')
 
-        try:
-            endorser = CustomUser.objects.get(id=endorser_id)
-            endorser.mentors.set(mentor_ids)  # Replace all existing mentors
-            return JsonResponse({'status': 'success'})
-        except Exception as e:
-            return JsonResponse({'status': 'error', 'message': str(e)})
-    return JsonResponse({'status': 'invalid method'}, status=405)
-@login_required
+
+@role_required(allowed_roles=["admin"])
+@require_POST
+def update_assigned_mentors(request):
+    endorser_id = request.POST.get('endorser_id')
+    mentor_ids = request.POST.getlist('mentor_ids[]')
+
+    try:
+        endorser = CustomUser.objects.get(id=endorser_id)
+        endorser.mentors.set(mentor_ids)  # Replace all existing mentors
+        return JsonResponse({'status': 'success'})
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)})
+@role_required(allowed_roles=['endorser'])
 def activity_log(request):
     # Use the M2M relation on CustomUser instead of Assignment model
     assigned_mentors = request.user.mentors.all()
@@ -1305,9 +1279,11 @@ def activity_log(request):
         'assigned_mentors': assigned_mentors
     }
     return render(request, 'core/endorser_activity_log.html', context)
-@login_required
+@role_required(allowed_roles=['endorser'])
 def mentor_activity_list(request, mentor_id):
-    mentor = get_object_or_404(User, id=mentor_id)
+    mentor = get_object_or_404(User, id=mentor_id, role='mentor')
+    if not request.user.mentors.filter(id=mentor.id).exists():
+        return HttpResponse("You are not allowed to access this mentor.", status=403)
     activities = Activity.objects.filter(user=mentor).order_by('-date')  # assuming `user` FK in Activity
 
     context = {
@@ -1315,18 +1291,23 @@ def mentor_activity_list(request, mentor_id):
         'activities': activities,
     }
     return render(request, 'core/activity_list.html', context)
+
+
+@role_required(allowed_roles=['endorser'])
+@require_POST
 def add_remark(request):
-    if request.method == "POST":
-        activity_id = request.POST.get("activity_id")
-        remark = request.POST.get("remark")
-        activity = Activity.objects.get(id=activity_id)
-        activity.remark = remark
-        activity.save()
-        return JsonResponse({
-            "activity_id": activity_id,
-            "remark": remark,
-            "status": "success"
-        })
+    activity_id = request.POST.get("activity_id")
+    remark = request.POST.get("remark", "")
+    activity = get_object_or_404(Activity, id=activity_id)
+    if not request.user.mentors.filter(id=activity.user_id).exists():
+        return JsonResponse({"status": "error", "message": "Not allowed."}, status=403)
+    activity.remark = remark
+    activity.save()
+    return JsonResponse({
+        "activity_id": activity_id,
+        "remark": remark,
+        "status": "success"
+    })
     
 @login_required
 def mentor_profile(request):
