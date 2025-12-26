@@ -3,12 +3,11 @@ from django.contrib.auth import get_user_model
 from allauth.account.adapter import DefaultAccountAdapter
 
 User = get_user_model()
-class MySocialAccountAdapter(DefaultSocialAccountAdapter):
+class SocialAccountAdapter(DefaultSocialAccountAdapter):
     def get_connect_redirect_url(self, request, socialaccount):
         # Always send them to role_redirect_view instead of connections page
         return "/role-redirect/"
 
-class SocialAccountAdapter(DefaultSocialAccountAdapter):
     def pre_social_login(self, request, sociallogin):
         """Link Google account to existing user based on email"""
         if sociallogin.is_existing:

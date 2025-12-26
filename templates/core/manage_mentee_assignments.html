@@ -43,24 +43,24 @@
     </div>
 
     {% if assignments %}
-        <div class="card">
-            <div class="card-header">
-                <span class="fw-semibold">Assignments</span>
-            </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                <table class="table align-middle mb-0">
-                <thead>
-                    <tr>
-                        <th>Mentor</th>
-                        <th>Mentee</th>
-                        <th>Start Date</th>
-                        <th>End Date</th>
-                        <th>Active</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for assignment in assignments %}
+    <div class="card">
+        <div class="card-header">
+            <span class="fw-semibold">Assignments</span>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table align-middle mb-0 datatable">
+                    <thead>
+                        <tr>
+                            <th>Mentor</th>
+                            <th>Mentee</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Active</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for assignment in assignments %}
                         <tr>
                             <td>{{ assignment.mentor }}</td>
                             <td>{{ assignment.mentee }}</td>
@@ -68,14 +68,14 @@
                             <td>{{ assignment.end_date|default:"-" }}</td>
                             <td>{{ assignment.is_active|yesno:"Yes,No" }}</td>
                         </tr>
-                    {% endfor %}
-                </tbody>
+                        {% endfor %}
+                    </tbody>
                 </table>
-                </div>
             </div>
         </div>
+    </div>
     {% else %}
-        <p class="text-muted">No assignments yet.</p>
+    <p class="text-muted">No assignments yet.</p>
     {% endif %}
 </div>
 {% endblock content %}

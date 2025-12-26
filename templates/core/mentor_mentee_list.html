@@ -18,22 +18,22 @@
     </div>
 
     {% if mentees %}
-        <div class="card">
-            <div class="card-header">
-                <span class="fw-semibold">Assigned Mentees</span>
-            </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                <table class="table align-middle mb-0">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Year</th>
-                        <th class="text-end">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for mentee in mentees %}
+    <div class="card">
+        <div class="card-header">
+            <span class="fw-semibold">Assigned Mentees</span>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table align-middle mb-0 datatable">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Year</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for mentee in mentees %}
                         <tr>
                             <td>{{ mentee.full_name }}</td>
                             <td>{{ mentee.get_current_year_display }}</td>
@@ -47,19 +47,20 @@
                                 <a class="btn btn-sm btn-primary" href="{% url 'mentor_assessment_list' mentee.id %}">
                                     <i class="fa-solid fa-clipboard-check me-1"></i>Assessments
                                 </a>
-                                <a class="btn btn-sm btn-outline-secondary" href="{% url 'export_mentee_progress' mentee.id %}">
+                                <a class="btn btn-sm btn-outline-secondary"
+                                    href="{% url 'export_mentee_progress' mentee.id %}">
                                     <i class="fa-solid fa-file-arrow-down me-1"></i>Export
                                 </a>
                             </td>
                         </tr>
-                    {% endfor %}
-                </tbody>
+                        {% endfor %}
+                    </tbody>
                 </table>
-                </div>
             </div>
         </div>
+    </div>
     {% else %}
-        <p class="text-muted">No mentees found.</p>
+    <p class="text-muted">No mentees found.</p>
     {% endif %}
 </div>
 {% endblock content %}

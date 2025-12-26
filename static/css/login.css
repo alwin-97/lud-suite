@@ -1,12 +1,12 @@
-.left{
-    background-color: rgb(5, 5, 75);
+.left {
+    background-color: #2f3b81;
     color: white;
     display: flex;
     justify-content: center;
     align-items: center;
 }
 
-.right{
+.right {
     display: flex;
     flex-direction: column;
     justify-content: center;

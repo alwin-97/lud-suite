@@ -1,83 +1,200 @@
-.material-body {
-    background-color: #f4f6fb;
-    color: #1f2937;
+/* material.css - Custom Material Design Theme Implementation */
+
+:root {
+    /* M3-inspired color tokens based on existing blue theme */
+    --md-sys-color-primary: #2f3b81;
+    --md-sys-color-on-primary: #ffffff;
+    --md-sys-color-primary-container: #e0e6f8;
+    --md-sys-color-on-primary-container: #101b4f;
+
+    --md-sys-color-secondary: #575e71;
+    --md-sys-color-on-secondary: #ffffff;
+
+    --md-sys-color-background: #f4f6fb;
+    --md-sys-color-on-background: #1f2937;
+
+    --md-sys-color-surface: #ffffff;
+    --md-sys-color-on-surface: #1f2937;
+
+    --md-sys-color-outline: #747775;
+    --md-sys-color-surface-variant: #e1e2ec;
+
+    /* Elevations */
+    --md-sys-elevation-0: none;
+    --md-sys-elevation-1: 0px 1px 3px 1px rgba(0, 0, 0, 0.15), 0px 1px 2px 0px rgba(0, 0, 0, 0.3);
+    --md-sys-elevation-2: 0px 2px 6px 2px rgba(0, 0, 0, 0.15), 0px 1px 2px 0px rgba(0, 0, 0, 0.3);
+    --md-sys-elevation-3: 0px 4px 8px 3px rgba(0, 0, 0, 0.15), 0px 1px 3px 0px rgba(0, 0, 0, 0.3);
+
+    /* Shapes */
+    --md-sys-shape-corner-extra-small: 4px;
+    --md-sys-shape-corner-small: 8px;
+    --md-sys-shape-corner-medium: 12px;
+    --md-sys-shape-corner-large: 16px;
+    --md-sys-shape-corner-full: 9999px;
 }
 
+body.material-body {
+    background-color: var(--md-sys-color-background);
+    color: var(--md-sys-color-on-background);
+    font-family: 'Outfit', 'Roboto', sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* App Bar */
 .material-body .material-appbar {
-    background-color: #ffffff;
-    border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+    background-color: var(--md-sys-color-surface);
+    color: var(--md-sys-color-on-surface);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    /* Subtle separator */
+    padding: 0.5rem 1rem;
+    position: sticky;
+    top: 0;
+    z-index: 1020;
 }
 
+/* Cards */
 .material-body .card {
-    border: 0;
-    border-radius: 16px;
-    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+    background-color: var(--md-sys-color-surface);
+    border: none;
+    border-radius: var(--md-sys-shape-corner-large);
+    box-shadow: var(--md-sys-elevation-1);
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+    overflow: hidden;
+    /* Ensure content obeys radius */
+}
+
+.material-body .card:hover {
+    box-shadow: var(--md-sys-elevation-2);
+}
+
+.material-body .card.hover-elevate-up:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--md-sys-elevation-3);
 }
 
 .material-body .card-header {
     background-color: transparent;
-    border-bottom: 1px solid rgba(15, 23, 42, 0.08);
-}
-
-.material-body .btn {
-    border-radius: 999px;
+    border-bottom: 1px solid var(--md-sys-color-surface-variant);
+    padding: 1rem 1.5rem;
     font-weight: 600;
 }
 
+.material-body .card-body {
+    padding: 1.5rem;
+}
+
+/* Buttons */
+.material-body .btn {
+    border-radius: var(--md-sys-shape-corner-full);
+    font-weight: 500;
+    padding: 0.5rem 1.5rem;
+    text-transform: none;
+    /* Material 3 doesn't enforce uppercase */
+    letter-spacing: 0.01em;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.2s ease;
+}
+
 .material-body .btn-primary {
-    background-color: #2f3b81;
-    border-color: #2f3b81;
-    box-shadow: 0 6px 16px rgba(47, 59, 129, 0.25);
+    background-color: var(--md-sys-color-primary);
+    border-color: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+    box-shadow: 0 4px 10px rgba(47, 59, 129, 0.2);
+}
+
+.material-body .btn-primary:active,
+.material-body .btn-primary:focus {
+    background-color: #263375;
+    /* Slightly darker */
+    box-shadow: none;
 }
 
 .material-body .btn-outline-secondary {
-    border-color: rgba(15, 23, 42, 0.2);
+    border-color: var(--md-sys-color-outline);
+    color: var(--md-sys-color-on-surface);
 }
 
-.material-body .table {
-    border-collapse: separate;
-    border-spacing: 0 0.4rem;
+.material-body .btn-outline-secondary:hover {
+    background-color: var(--md-sys-color-surface-variant);
+    color: var(--md-sys-color-on-surface);
+    border-color: var(--md-sys-color-outline);
 }
 
-.material-body .table thead th {
-    border-bottom: 0;
-    color: #6b7280;
-    font-size: 0.75rem;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-}
 
-.material-body .table tbody tr {
-    background-color: #ffffff;
-    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
-}
-
-.material-body .table tbody td {
-    border-top: 0;
-}
-
+/* Form Controls */
 .material-body .form-control,
 .material-body .form-select,
 .material-body textarea {
-    border-radius: 12px;
-    border-color: rgba(15, 23, 42, 0.12);
+    background-color: var(--md-sys-color-surface);
+    border: 1px solid var(--md-sys-color-outline);
+    border-radius: var(--md-sys-shape-corner-small);
+    padding: 0.75rem 1rem;
+    color: var(--md-sys-color-on-surface);
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
 
 .material-body .form-control:focus,
-.material-body .form-select:focus,
-.material-body textarea:focus {
-    border-color: #2f3b81;
-    box-shadow: 0 0 0 0.2rem rgba(47, 59, 129, 0.15);
+.material-body .form-select:focus {
+    border-color: var(--md-sys-color-primary);
+    box-shadow: 0 0 0 2px rgba(47, 59, 129, 0.2);
+    background-color: #fff;
 }
 
+/* Floating Labels Check (if used) */
+.form-floating>.form-control:focus~label,
+.form-floating>.form-control:not(:placeholder-shown)~label {
+    color: var(--md-sys-color-primary);
+}
+
+/* Tables */
+.material-body .table {
+    --bs-table-bg: transparent;
+}
+
+.material-body .table thead th {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    color: var(--md-sys-color-secondary);
+    letter-spacing: 0.05em;
+    border-bottom: 2px solid var(--md-sys-color-surface-variant);
+    padding-bottom: 1rem;
+}
+
+.material-body .table tbody tr {
+    transition: background-color 0.2s;
+}
+
+.material-body .table tbody tr:hover {
+    background-color: rgba(47, 59, 129, 0.04);
+}
+
+/* List Groups */
 .material-body .list-group-item {
-    border: 0;
-    border-radius: 12px;
-    margin-bottom: 0.4rem;
-    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+    border: none;
+    margin-bottom: 0.5rem;
+    border-radius: var(--md-sys-shape-corner-medium);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+    background-color: var(--md-sys-color-surface);
 }
 
+/* Badges */
 .material-body .badge {
-    border-radius: 999px;
+    border-radius: 4px;
+    /* M3 style varies, but pill or slight round */
+    font-weight: 500;
+    padding: 0.4em 0.8em;
+}
+
+/* Icons styling helper */
+.material-icons-outlined {
+    font-size: 1.25rem;
+    line-height: 1;
+}
+
+/* Global Transition for smooth Theme */
+* {
+    transition: background-color 0.2s ease, border-color 0.2s ease;
 }

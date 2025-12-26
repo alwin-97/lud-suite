@@ -134,6 +134,7 @@ def delete_user_view(request, user_id):
 
 
 # -------------------- Dashboards --------------------
+
 def login_view(request):
     if request.method == "POST":
         email = request.POST.get("email")
