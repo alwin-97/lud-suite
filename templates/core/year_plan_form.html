@@ -7,24 +7,81 @@
 <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
 {% endblock links %}
 
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Year Plan{% endblock title %}
+
+{% block links %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+{% endblock links %}
+
 {% block content %}
 {% include 'partials/_header.html' %}
 
-<div class="container py-4">
-    <div class="card mb-4">
-        <div class="card-body">
-            <h3 class="mb-0">{% if mode == "edit" %}Edit Year Plan{% else %}New Year Plan{% endif %}</h3>
-        </div>
-    </div>
-    <form method="post" class="card">
-        {% csrf_token %}
-        <div class="card-body">
-            {{ form.as_p }}
-            <div class="d-flex gap-2">
-                <button type="submit" class="btn btn-success">Save</button>
-                <a class="btn btn-secondary" href="{% url 'year_plan_list' %}">Cancel</a>
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="d-flex justify-content-between align-items-center mb-5">
+                <div>
+                    <h1 class="display-5 fw-bold text-primary">{% if mode == "edit" %}Edit Year Plan{% else %}New Year
+                        Plan{% endif %}</h1>
+                    <p class="text-muted lead mb-0">Outline your yearly milestones and objectives.</p>
+                </div>
+                <div>
+                    <a href="{% url 'year_plan_list' %}" class="btn btn-outline-secondary rounded-pill px-4">
+                        <i class="fa-solid fa-arrow-left me-2"></i>Back
+                    </a>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-5">
+                    <form method="post">
+                        {% csrf_token %}
+                        {% for field in form %}
+                        <div class="mb-4">
+                            <label for="{{ field.id_for_label }}" class="form-label fw-bold text-dark">{{ field.label
+                                }}</label>
+                            {{ field }}
+                            {% if field.help_text %}
+                            <div class="form-text small text-muted mt-1">{{ field.help_text }}</div>
+                            {% endif %}
+                            {% for error in field.errors %}
+                            <div class="text-danger small mt-1">
+                                <i class="fa-solid fa-circle-exclamation me-1"></i>{{ error }}
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endfor %}
+
+                        <div class="d-flex justify-content-end gap-2 mt-5 pt-3 border-top">
+                            <a class="btn btn-light px-4" href="{% url 'year_plan_list' %}">Cancel</a>
+                            <button type="submit" class="btn btn-primary px-4 fw-bold">
+                                <i class="fa-solid fa-check me-2"></i>Save Plan
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
-    </form>
+    </div>
 </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        var formFields = document.querySelectorAll('input:not([type="checkbox"]):not([type="radio"]), textarea, select');
+        formFields.forEach(function (field) {
+            field.classList.add('form-control');
+            field.classList.add('bg-light');
+            field.classList.add('border-0');
+            field.style.padding = "0.75rem 1rem";
+        });
+
+        var checkBoxes = document.querySelectorAll('input[type="checkbox"]');
+        checkBoxes.forEach(function (box) {
+            box.classList.add('form-check-input');
+        });
+    });
+</script>
 {% endblock content %}

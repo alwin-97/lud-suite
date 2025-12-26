@@ -1,168 +1,199 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Home{% endblock title %}
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}DIP YCLP{% endblock title %}
 
 {% block links %}
 <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
 {% endblock links %}
 
 {% block content %}
+{% include 'partials/_header.html' %}
 
-{% include 'partials/head.html' %}
+<div class="container py-5">
 
-<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-5">
+    <div>
+      <h1 class="display-5 fw-bold text-primary">Reflexive Report</h1>
+      <p class="text-muted lead mb-0">Track and manage your DIP - YCLP activities.</p>
+    </div>
+    <div>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0">
+          <li class="breadcrumb-item"><a href="{% url 'dashboard' %}" class="text-decoration-none">Dashboard</a></li>
+          <li class="breadcrumb-item active" aria-current="page">DIP YCLP</li>
+        </ol>
+      </nav>
+    </div>
+  </div>
 
-      <!-- HEADER -->
-      <div class="card mb-3">
-        <div class="card-body">
-          <nav aria-label="breadcrumb">
-            <ol class="breadcrumb mb-0">
-              <li class="breadcrumb-item">
-                <a href="{% url 'dashboard' %}" class="text-decoration-none">Home</a>
-              </li>
-              <li class="breadcrumb-item active" aria-current="page">DIP YCLP</li>
-            </ol>
-          </nav>
+  <div class="row g-4">
+    <!-- LEFT CONTENT -->
+    <div class="col-lg-8">
+      <!-- Action Card -->
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-4 d-flex align-items-center justify-content-between">
+          <div>
+            <h5 class="fw-bold mb-1">Activity Management</h5>
+            <p class="text-muted small mb-0">Log new entries or review past activities.</p>
+          </div>
+          <div class="d-flex gap-2">
+            <button class="btn btn-primary rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#newActivityModal">
+              <i class="fa-solid fa-plus me-2"></i>New Activity
+            </button>
+            <a href="{% url 'my-activities' %}" class="btn btn-outline-secondary rounded-pill px-4">
+              <i class="fa-solid fa-list-check me-2"></i>View All
+            </a>
+          </div>
         </div>
       </div>
 
-      <div class="row g-4 mt-3">
-
-        <!-- LEFT CONTENT -->
-        <div class="col-lg-8 col-md-12">
-
-          <div class="card">
-            <div class="card-body">
-              <h4 class="fw-bold">
-                DIP - YCLP <span class="text-muted fw-normal">| Reflexive Report</span>
-              </h4>
-
-              <div class="d-flex mt-3 gap-3">
-                <button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#newActivityModal">
-                  <i class="fa-solid fa-plus me-2"></i>New Activity
-                </button>
-
-                <a href="{% url 'my-activities' %}" class="btn btn-outline-secondary">
-                  <i class="fa-solid fa-book-open me-2"></i>My Activities
-                </a>
-              </div>
-            </div>
-          </div>
-
-          <!-- ACTIVITY LIST -->
-          <div class="card mt-4">
-            <div class="card-body">
-              <h5 class="fw-bold mb-3">My Activities</h5>
-
-              <div class="list-group list-group-flush" id="activityList">
-                {% if recent_activities %}
-                {% for activity in recent_activities %}
-                <div class="list-group-item py-3">
-                  <strong>
-                    {% if activity.activity == "Others" and activity.other_activity %}
-                    {{ activity.other_activity }}
-                    {% else %}
-                    {{ activity.activity }}
-                    {% endif %}
-                  </strong><br>
-                  <small class="text-muted">
-                    {{ activity.date|date:"M d, Y" }} | {{ activity.duration }} hrs
-                  </small>
-                </div>
-                {% endfor %}
-                {% else %}
-                <div class="list-group-item text-muted">No activities yet.</div>
-                {% endif %}
-              </div>
-            </div>
-          </div>
-
-          <!-- MODAL -->
-          <div class="modal fade" id="newActivityModal" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered modal-lg">
-              <div class="modal-content">
-
-                <div class="modal-header bg-primary text-white">
-                  <h5 class="modal-title">Add New Activity</h5>
-                  <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-
-                <form id="activityForm" method="POST" action="{% url 'new_activity' %}" enctype="multipart/form-data"
-                  onsubmit="submitActivityAJAX(); return false;">
-
-
-                  {% csrf_token %}
-
-                  <div class="modal-body">
-                    <div class="row g-3">
-                      <div class="col-md-6">{{ form.date.label_tag }}{{ form.date }}</div>
-                      <div class="col-md-6">{{ form.duration.label_tag }}{{ form.duration }}</div>
-
-                      <div class="col-md-6">{{ form.activity.label_tag }}{{ form.activity }}</div>
-
-                      <div class="col-md-6" id="other-activity-container" style="display:none;">
-                        {{ form.other_activity.label_tag }}
-                        {{ form.other_activity }}
-                      </div>
-
-                      <div class="col-12">{{ form.learnings.label_tag }}{{ form.learnings }}</div>
-                      <div class="col-12">{{ form.photo.label_tag }}{{ form.photo }}</div>
-                      <div class="col-12">{{ form.feedback.label_tag }}{{ form.feedback }}</div>
-                    </div>
-                  </div>
-
-                  <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary">Save Activity</button>
-                  </div>
-                </form>
-
-              </div>
-            </div>
-          </div>
-
+      <!-- ACTIVITY LIST -->
+      <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white border-bottom-0 pt-4 px-4">
+          <h5 class="fw-bold mb-0">Recent Activities</h5>
         </div>
-        <!-- SUCCESS MODAL -->
-        <div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true">
-          <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-
-              <div class="modal-header bg-success text-white">
-                <h5 class="modal-title">Activity Saved</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        <div class="card-body p-0">
+          <div class="list-group list-group-flush" id="activityList">
+            {% if recent_activities %}
+            {% for activity in recent_activities %}
+            <div class="list-group-item py-3 px-4 border-bottom-0">
+              <div class="d-flex w-100 justify-content-between align-items-center mb-1">
+                <h6 class="mb-0 fw-semibold text-dark">
+                  {% if activity.activity == "Others" and activity.other_activity %}
+                  {{ activity.other_activity }}
+                  {% else %}
+                  {{ activity.activity }}
+                  {% endif %}
+                </h6>
+                <small class="text-muted">{{ activity.date|date:"M d, Y" }}</small>
               </div>
-
-              <div class="modal-body" id="successMessageBody">
-                <!-- Dynamic content injected by JS -->
-              </div>
-
-              <div class="modal-footer">
-                <button type="button" class="btn btn-success" data-bs-dismiss="modal">OK</button>
-              </div>
-
+              <small class="text-muted">
+                <i class="fa-regular fa-clock me-1"></i>{{ activity.duration }} hrs
+              </small>
             </div>
+            {% endfor %}
+            {% else %}
+            <div class="text-center py-5">
+              <div class="mb-3">
+                <i class="fa-solid fa-clipboard-list fa-3x text-muted opacity-50"></i>
+              </div>
+              <p class="text-muted small">No recent activities found.</p>
+            </div>
+            {% endif %}
           </div>
         </div>
-
-        <!-- RIGHT CONTENT (CHART) -->
-        <div class="col-lg-4 col-md-12">
-          <div class="card">
-            <div class="card-body">
-              <h5 class="fw-bold mb-3">Activity Chart</h5>
-              <img src="{% static 'images/highchart.png' %}" class="img-fluid rounded">
-            </div>
-          </div>
-        </div>
-
       </div>
+    </div>
 
-    <!-- TOAST -->
-    <div id="toastContainer" style="position: fixed; top:20px; right:20px; z-index:3000; width:320px;"></div>
+    <!-- RIGHT CONTENT (CHART) -->
+    <div class="col-lg-4">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-header bg-white border-bottom-0 pt-4 px-4">
+          <h5 class="fw-bold mb-0">Analytics</h5>
+        </div>
+        <div class="card-body text-center p-4">
+          <div class="alert alert-info border-0 d-flex align-items-center mb-3">
+            <i class="fa-solid fa-chart-pie me-3 fs-4"></i>
+            <div class="text-start">
+              <strong>Activity Breakdown</strong>
+              <div class="small">Visualize your progress.</div>
+            </div>
+          </div>
+          <!-- Keeping the image as originally requested/present -->
+          <img src="{% static 'images/highchart.png' %}" class="img-fluid rounded shadow-sm border"
+            alt="Activity Chart">
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- MODAL -->
+  <div class="modal fade" id="newActivityModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content border-0 shadow-lg">
+        <div class="modal-header bg-primary text-white border-0">
+          <h5 class="modal-title fw-bold">Add New Activity</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <form id="activityForm" method="POST" action="{% url 'new_activity' %}" enctype="multipart/form-data"
+          onsubmit="submitActivityAJAX(); return false;">
+          {% csrf_token %}
+          <div class="modal-body p-4">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label small text-uppercase fw-bold text-muted">Date</label>
+                {{ form.date }}
+              </div>
+              <div class="col-md-6">
+                <label class="form-label small text-uppercase fw-bold text-muted">Duration (Hrs)</label>
+                {{ form.duration }}
+              </div>
+              <div class="col-md-12">
+                <label class="form-label small text-uppercase fw-bold text-muted">Activity Type</label>
+                {{ form.activity }}
+              </div>
+              <div class="col-md-12" id="other-activity-container" style="display:none;">
+                <label class="form-label small text-uppercase fw-bold text-muted">Specify Activity</label>
+                {{ form.other_activity }}
+              </div>
+              <div class="col-12">
+                <label class="form-label small text-uppercase fw-bold text-muted">Key Learnings</label>
+                {{ form.learnings }}
+              </div>
+              <div class="col-12">
+                <label class="form-label small text-uppercase fw-bold text-muted">Photo Evidence</label>
+                {{ form.photo }}
+              </div>
+              <div class="col-12">
+                <label class="form-label small text-uppercase fw-bold text-muted">Feedback/Notes</label>
+                {{ form.feedback }}
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer border-top-0 px-4 pb-4">
+            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-primary px-4">
+              <i class="fa-solid fa-save me-2"></i>Save Activity
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- SUCCESS MODAL -->
+  <div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow-lg">
+        <div class="modal-header bg-success text-white border-0">
+          <h5 class="modal-title fw-bold">Activity Saved!</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4 text-center">
+          <div class="mb-3">
+            <i class="fa-solid fa-circle-check fa-4x text-success"></i>
+          </div>
+          <div id="successMessageBody" class="text-start bg-light p-3 rounded border">
+            <!-- Dynamic content -->
+          </div>
+        </div>
+        <div class="modal-footer border-top-0 justify-content-center pb-4">
+          <button type="button" class="btn btn-success px-5 rounded-pill" data-bs-dismiss="modal">OK</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div id="toastContainer" style="position: fixed; top:20px; right:20px; z-index:3000; width:320px;"></div>
 
 </div>
 
-<!-- JS -->
 <!-- JS -->
 <script>
   function toggleOtherActivity() {
@@ -177,6 +208,13 @@
       toggleOtherActivity();
       act.addEventListener("change", toggleOtherActivity);
     }
+    // Add styling to Django form fields
+    const inputs = document.querySelectorAll('#activityForm input, #activityForm select, #activityForm textarea');
+    inputs.forEach(input => {
+      input.classList.add('form-control');
+      input.classList.add('bg-light');
+      input.classList.add('border-0');
+    });
   });
 
   function showToast(message, type = "success") {
@@ -199,9 +237,14 @@
 
   function updateActivityList(a) {
     let html = `
-      <div class="list-group-item py-3">
-        <strong>${a.activity_name}</strong><br>
-        <small class="text-muted">${a.date} | ${a.duration} hrs</small>
+      <div class="list-group-item py-3 px-4 border-bottom-0 animation-fade-in">
+         <div class="d-flex w-100 justify-content-between align-items-center mb-1">
+            <h6 class="mb-0 fw-semibold text-dark">${a.activity_name}</h6>
+             <small class="text-muted">${a.date}</small>
+        </div>
+         <small class="text-muted">
+            <i class="fa-regular fa-clock me-1"></i>${a.duration} hrs
+        </small>
       </div>
     `;
     $("#activityList").prepend(html);
@@ -232,9 +275,9 @@
 
           // Build success message for modal
           const msg = `
-              <p><strong>Activity:</strong> ${res.new_activity.activity_name}</p>
-              <p><strong>Date:</strong> ${res.new_activity.date}</p>
-              <p><strong>Duration:</strong> ${res.new_activity.duration} hrs</p>
+              <p class="mb-1"><strong>Activity:</strong> ${res.new_activity.activity_name}</p>
+              <p class="mb-1"><strong>Date:</strong> ${res.new_activity.date}</p>
+              <p class="mb-0"><strong>Duration:</strong> ${res.new_activity.duration} hrs</p>
           `;
 
           // Insert message
@@ -269,4 +312,21 @@
   }
 </script>
 
+<style>
+  .animation-fade-in {
+    animation: fadeIn 0.5s;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+</style>
 {% endblock content %}

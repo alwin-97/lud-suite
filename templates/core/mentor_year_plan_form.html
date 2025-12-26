@@ -7,31 +7,102 @@
 <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
 {% endblock links %}
 
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Review Year Plan{% endblock title %}
+
+{% block links %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+{% endblock links %}
+
 {% block content %}
 {% include 'partials/_header.html' %}
 
-<div class="container py-4">
-    <div class="card mb-4">
-        <div class="card-body">
-            <h3 class="mb-0">Review Year Plan</h3>
-        </div>
-    </div>
-    <div class="card mb-3">
-        <div class="card-body">
-            <p class="mb-1"><strong>Mentee:</strong> {{ year_plan.mentee.full_name }}</p>
-            <p class="mb-1"><strong>Milestone:</strong> {{ year_plan.milestone }}</p>
-            <p class="mb-0"><strong>Year:</strong> {{ year_plan.get_year_display }}</p>
-        </div>
-    </div>
-    <form method="post" class="card">
-        {% csrf_token %}
-        <div class="card-body">
-            {{ form.as_p }}
-            <div class="d-flex gap-2">
-                <button type="submit" class="btn btn-success">Save</button>
-                <a class="btn btn-secondary" href="{% url 'mentor_year_plan_list' year_plan.mentee.id %}">Cancel</a>
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="d-flex justify-content-between align-items-center mb-5">
+                <div>
+                    <h1 class="display-5 fw-bold text-primary">Review Year Plan</h1>
+                    <p class="text-muted lead mb-0">Evaluate milestones and leave comments.</p>
+                </div>
+                <div>
+                    <a href="{% url 'mentor_year_plan_list' year_plan.mentee.id %}"
+                        class="btn btn-outline-secondary rounded-pill px-4">
+                        <i class="fa-solid fa-arrow-left me-2"></i>Back
+                    </a>
+                </div>
+            </div>
+
+            <!-- Context Card -->
+            <div class="card border-0 shadow-sm mb-4 bg-primary text-white">
+                <div class="card-body p-4">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <small class="text-white-50 text-uppercase fw-bold">Mentee</small>
+                            <div class="fs-5 fw-bold">{{ year_plan.mentee.full_name }}</div>
+                        </div>
+                        <div class="col-md-4">
+                            <small class="text-white-50 text-uppercase fw-bold">Academic Year</small>
+                            <div class="fs-5 fw-bold">{{ year_plan.get_year_display }}</div>
+                        </div>
+                        <div class="col-md-12">
+                            <small class="text-white-50 text-uppercase fw-bold">Milestone</small>
+                            <div class="fs-5 fw-bold">{{ year_plan.milestone }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-5">
+                    <form method="post">
+                        {% csrf_token %}
+                        {% for field in form %}
+                        <div class="mb-4">
+                            <label for="{{ field.id_for_label }}" class="form-label fw-bold text-dark">{{ field.label
+                                }}</label>
+                            {{ field }}
+                            {% if field.help_text %}
+                            <div class="form-text small text-muted mt-1">{{ field.help_text }}</div>
+                            {% endif %}
+                            {% for error in field.errors %}
+                            <div class="text-danger small mt-1">
+                                <i class="fa-solid fa-circle-exclamation me-1"></i>{{ error }}
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endfor %}
+
+                        <div class="d-flex justify-content-end gap-2 mt-5 pt-3 border-top">
+                            <a class="btn btn-light px-4"
+                                href="{% url 'mentor_year_plan_list' year_plan.mentee.id %}">Cancel</a>
+                            <button type="submit" class="btn btn-primary px-4 fw-bold">
+                                <i class="fa-solid fa-check me-2"></i>Save Review
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
-    </form>
+    </div>
 </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        var formFields = document.querySelectorAll('input:not([type="checkbox"]):not([type="radio"]), textarea, select');
+        formFields.forEach(function (field) {
+            field.classList.add('form-control');
+            field.classList.add('bg-light');
+            field.classList.add('border-0');
+            field.style.padding = "0.75rem 1rem";
+        });
+
+        var checkBoxes = document.querySelectorAll('input[type="checkbox"]');
+        checkBoxes.forEach(function (box) {
+            box.classList.add('form-check-input');
+        });
+    });
+</script>
 {% endblock content %}

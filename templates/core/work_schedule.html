@@ -1,6 +1,9 @@
 {% extends 'base.html' %}
 {% load static %}
 
+{% extends 'base.html' %}
+{% load static %}
+
 {% block title %}Work Schedule{% endblock %}
 
 {% block links %}
@@ -8,103 +11,113 @@
 {% endblock links %}
 
 {% block content %}
-{% include 'partials/head.html' %}
-<div class="container py-4">
-        <div class="card mb-4">
-            <div class="card-body">
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb mb-0">
-                        <li class="breadcrumb-item">
-                            <a href="{% url 'endorser_dashboard' %}" class="text-decoration-none">Home</a>
-                        </li>
-                        <li class="breadcrumb-item active" aria-current="page">Work Schedule</li>
-                    </ol>
-                </nav>
-            </div>
-        </div>
+{% include 'partials/_header.html' %}
 
-        <!-- Form card -->
-        <div class="row justify-content-center py-5">
-            <div class="col-md-8 col-lg-6">
-                <div class="card">
-                    <div class="card-header text-center">
-                        <span class="fw-semibold">Assign Work Schedule</span>
-                    </div>
-                    <div class="card-body">
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="d-flex justify-content-between align-items-center mb-5">
+                <div>
+                    <h1 class="display-5 fw-bold text-primary">Assign Schedule</h1>
+                    <p class="text-muted lead mb-0">Delegate tasks and set deadlines for mentors.</p>
+                </div>
+                <div>
+                    <a href="{% url 'endorser_dashboard' %}" class="btn btn-outline-secondary rounded-pill px-4">
+                        <i class="fa-solid fa-arrow-left me-2"></i>Dashboard
+                    </a>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-5">
+
                     {% if messages %}
                     {% for message in messages %}
                     {% if 'work_schedule' in message.tags %}
-                    <div class="alert alert-success alert-dismissible fade show" role="alert">
-                        {{ message }}
+                    <div class="alert alert-success alert-dismissible fade show mb-4 border-0 shadow-sm" role="alert">
+                        <i class="fa-solid fa-circle-check me-2"></i>{{ message }}
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
                     {% endif %}
                     {% endfor %}
                     {% endif %}
 
-
-
-
                     <form method="POST" novalidate>
                         {% csrf_token %}
 
                         <!-- Mentors -->
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold">Select Mentors</label>
-                            <div class="form-check-group border rounded-3 p-3">
+                        <div class="mb-4">
+                            <label class="form-label fw-bold small text-uppercase text-muted">Select Mentors</label>
+                            <div class="form-check-group border rounded-3 p-3 bg-light">
                                 {% for checkbox in form.mentors %}
                                 <div class="form-check mb-2">
                                     {{ checkbox.tag }}
-                                    <label class="form-check-label ms-2">{{ checkbox.choice_label }}</label>
+                                    <label class="form-check-label ms-2 fw-semibold" for="{{ checkbox.id_for_label }}">
+                                        {{ checkbox.choice_label }}
+                                    </label>
                                 </div>
                                 {% empty %}
-                                <p class="text-muted small">No mentors assigned to you.</p>
+                                <p class="text-muted small mb-0 text-center"><i
+                                        class="fa-solid fa-user-slash me-2"></i>No mentors assigned to you.</p>
                                 {% endfor %}
                             </div>
                         </div>
 
                         <!-- Role -->
-                        <div class=" form-row mb-3">
-                            <label class="form-label fw-semibold">Role </label>
-                            <div class="form-check ">
-                                {{ form.role }}
-                            </div>
+                        <div class="mb-4">
+                            <label class="form-label fw-bold small text-uppercase text-muted">Role</label>
+                            {{ form.role }}
                         </div>
 
                         <!-- Due Date -->
-                        <div class="form-row mb-3">
-                            <label class="form-label fw-semibold aligned-field">Due Date</label>
-                            <div class="form-check">
-                                {{ form.due_date }}
-                            </div>
+                        <div class="mb-4">
+                            <label class="form-label fw-bold small text-uppercase text-muted">Due Date</label>
+                            {{ form.due_date }}
                         </div>
 
                         <!-- Description -->
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold aligned-field">Description</label>
-                            <div class="form-check">
-                                {{ form.description }}
-                            </div>
+                        <div class="mb-4">
+                            <label class="form-label fw-bold small text-uppercase text-muted">Description</label>
+                            {{ form.description }}
                         </div>
 
                         <!-- Submit -->
-                        <div class="d-grid">
-                            <button type="submit" class="btn btn-primary btn-lg">Send</button>
+                        <div class="d-grid mt-5 pt-3 border-top">
+                            <button type="submit" class="btn btn-primary btn-lg fw-bold">
+                                <i class="fa-regular fa-paper-plane me-2"></i>Send Schedule
+                            </button>
                         </div>
                     </form>
-
-                    </div>
                 </div>
             </div>
         </div>
+    </div>
 </div>
+
 <script>
-    setTimeout(() => {
-        const alert = document.querySelector('.alert');
-        if (alert) {
-            alert.classList.remove('show');
-            alert.classList.add('fade');
-        }
-    }, 3000);
+    document.addEventListener("DOMContentLoaded", function () {
+        // Auto-style form inputs
+        var formFields = document.querySelectorAll('input:not([type="checkbox"]):not([type="radio"]), textarea, select');
+        formFields.forEach(function (field) {
+            field.classList.add('form-control');
+            field.classList.add('bg-light');
+            field.classList.add('border-0');
+            field.style.padding = "0.75rem 1rem";
+        });
+
+        var checkBoxes = document.querySelectorAll('input[type="checkbox"]');
+        checkBoxes.forEach(function (box) {
+            box.classList.add('form-check-input');
+        });
+
+        // Auto-dismiss alerts
+        setTimeout(() => {
+            const alert = document.querySelector('.alert');
+            if (alert) {
+                var bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            }
+        }, 3000);
+    });
 </script>
 {% endblock %}

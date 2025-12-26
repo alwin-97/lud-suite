@@ -2,6 +2,10 @@
 {% load static %}
 
 {% block title %}{{ mentor.first_name }}'s Activity List{% endblock title %}
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ mentor.first_name }}'s Activity List{% endblock title %}
 
 {% block links %}
 <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
@@ -9,124 +13,128 @@
 {% endblock links %}
 
 {% block content %}
-{% include 'partials/head.html' %}
-<div class="container py-4">
-            <div class="card mb-4">
-                <div class="card-body">
-                    <nav aria-label="breadcrumb">
-                        <ol class="breadcrumb mb-0">
-                            <li class="breadcrumb-item">
-                                <a href="{% url 'endorser_dashboard' %}" class="text-decoration-none">Home</a>
-                            </li>
-                            <li class="breadcrumb-item">
-                                <a href="{% url 'activity_log' %}" class="text-decoration-none">Mentors Assigned</a>
-                            </li>
-                            <li class="breadcrumb-item active" aria-current="page">Activity</li>
-                        </ol>
-                    </nav>
-                </div>
-            </div>
+{% include 'partials/_header.html' %}
 
-            <div class="card mb-3">
-                <div class="card-body">
-                    <h6 class="fw-semibold mb-0">Activities by {{ mentor.first_name }} {{ mentor.last_name }}</h6>
-                </div>
-            </div>
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-5">
+        <div>
+            <h1 class="display-5 fw-bold text-primary">Activity Log: {{ mentor.first_name }}</h1>
+            <p class="text-muted lead mb-0">Review activities and provide feedback.</p>
+        </div>
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="{% url 'endorser_dashboard' %}"
+                            class="text-decoration-none">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'activity_log' %}"
+                            class="text-decoration-none">Mentors</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Log</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
 
-            <div class="card">
-                <div class="card-header">
-                    <span class="fw-semibold">Activity Entries</span>
-                </div>
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table id="activityTable" class="table align-middle mb-0">
-                            <thead class="table-light">
-                                <tr class="text-center">
-                                    <th>Date</th>
-                                    <th>Activity</th>
-                                    <th>Duration</th>
-                                    <th>Learnings</th>
-                                    <th>Feedback</th>
-                                    <th>Photo</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% if activities %}
-                                    {% for activity in activities %}
-                                    <tr class="text-center">
-                                        <td>{{ activity.date }}</td>
-                                        <td>{{ activity.activity }}</td>
-                                        <td>{{ activity.duration }}</td>
-                                        <td>{{ activity.learnings }}</td>
-                                        <td>{{ activity.feedback }}</td>
-                                        <td>
-                                            {% if activity.photo %}
-                                            <a href="{{ activity.photo.url }}" target="_blank">
-                                                <img src="{{ activity.photo.url }}" alt="Activity Photo"
-                                                    style="width: 50px; height: 50px; object-fit: cover; border-radius: 6px;">
-                                            </a>
-                                            {% else %}
-                                            <span class="text-muted">No photo</span>
-                                            {% endif %}
-                                        </td>
-                                        <td class="text-center">
-                                            {% if activity.remark %}
-                                            <button class="btn btn-sm btn-success view-remark-btn"
-                                                data-bs-toggle="modal"
-                                                data-bs-target="#viewRemarkModal"
-                                                data-remark="{{ activity.remark|escapejs }}">
-                                                Remarked
-                                            </button>
-                                            {% else %}
-                                            <button class="btn btn-sm btn-outline-primary remark-btn"
-                                                data-bs-toggle="modal"
-                                                data-bs-target="#remarkModal"
-                                                data-activity-id="{{ activity.id }}">
-                                                Unremarked
-                                            </button>
-                                            {% endif %}
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white border-bottom-0 pt-4 px-4 d-flex justify-content-between align-items-center">
+            <h5 class="fw-bold mb-0">Activity Entries</h5>
+            <span class="badge bg-primary-subtle text-primary rounded-pill px-3">{{ activities|length }}
+                Activities</span>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table id="activityTable" class="table align-middle table-hover mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="ps-4 py-3">Date</th>
+                            <th class="py-3">Activity</th>
+                            <th class="py-3">Duration</th>
+                            <th class="py-3">Learnings</th>
+                            <th class="py-3">Feedback</th>
+                            <th class="py-3">Photo</th>
+                            <th class="text-end pe-4 py-3">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if activities %}
+                        {% for activity in activities %}
+                        <tr>
+                            <td class="ps-4 text-nowrap">{{ activity.date|date:"M d, Y" }}</td>
+                            <td class="fw-semibold text-dark">{{ activity.activity }}</td>
+                            <td>{{ activity.duration }} hrs</td>
+                            <td><span class="d-inline-block text-truncate" style="max-width: 150px;"
+                                    data-bs-toggle="tooltip" title="{{ activity.learnings }}">{{ activity.learnings
+                                    }}</span></td>
+                            <td><span class="d-inline-block text-truncate" style="max-width: 150px;"
+                                    data-bs-toggle="tooltip" title="{{ activity.feedback }}">{{ activity.feedback
+                                    }}</span></td>
+                            <td>
+                                {% if activity.photo %}
+                                <a href="{{ activity.photo.url }}" target="_blank"
+                                    class="d-inline-block border rounded overflow-hidden shadow-sm">
+                                    <img src="{{ activity.photo.url }}" alt="Activity Photo"
+                                        style="width: 40px; height: 40px; object-fit: cover;">
+                                </a>
                                 {% else %}
-                                    <tr>
-                                        <td colspan="7" class="text-center py-4">No activities found for this mentor.</td>
-                                    </tr>
+                                <span class="text-muted small fst-italic">None</span>
                                 {% endif %}
-                            </tbody>
-                        </table>
+                            </td>
+                            <td class="text-end pe-4">
+                                {% if activity.remark %}
+                                <button class="btn btn-sm btn-success rounded-pill px-3 view-remark-btn"
+                                    data-bs-toggle="modal" data-bs-target="#viewRemarkModal"
+                                    data-remark="{{ activity.remark|escapejs }}">
+                                    <i class="fa-solid fa-check me-1"></i>Remarked
+                                </button>
+                                {% else %}
+                                <button class="btn btn-sm btn-outline-primary rounded-pill px-3 remark-btn"
+                                    data-bs-toggle="modal" data-bs-target="#remarkModal"
+                                    data-activity-id="{{ activity.id }}">
+                                    <i class="fa-regular fa-comment-dots me-1"></i>Remark
+                                </button>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        {% else %}
+                        <!-- Handled by DataTable empty state usually, but can put fallback here -->
+                        {% endif %}
+                    </tbody>
+                </table>
+                {% if not activities %}
+                <div class="text-center py-5">
+                    <div class="mb-3">
+                        <i class="fa-solid fa-clipboard-list fa-3x text-muted opacity-50"></i>
                     </div>
+                    <p class="text-muted small">No activities recorded for this mentor.</p>
                 </div>
+                {% endif %}
             </div>
-
-            {% if activities %}
-            <div class="mt-3 text-end">
-                <a href="{% url 'activity_log' %}" class="btn btn-outline-secondary">
-                    <i class="fa-solid fa-arrow-left me-1"></i>Back to Mentors
-                </a>
-            </div>
-            {% endif %}
+        </div>
+    </div>
 </div>
 
 <!-- Add Remark Modal -->
 <div class="modal fade" id="remarkModal" tabindex="-1" aria-labelledby="remarkModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
+        <div class="modal-content border-0 shadow-lg">
             <form id="remarkForm" method="POST" action="{% url 'add_remark' %}">
                 {% csrf_token %}
-                <div class="modal-header">
-                    <h5 class="modal-title" id="remarkModalLabel">Add Remark</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <div class="modal-header bg-primary text-white border-bottom-0">
+                    <h5 class="modal-title fw-bold" id="remarkModalLabel">Add Remark</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body">
+                <div class="modal-body p-4">
                     <input type="hidden" name="activity_id" id="activityIdInput">
-                    <textarea class="form-control" name="remark" id="remarkText" rows="4"
-                        placeholder="Enter your remark..." required></textarea>
+                    <div class="mb-3">
+                        <label for="remarkText" class="form-label small text-uppercase fw-bold text-muted">Feedback /
+                            Remark</label>
+                        <textarea class="form-control bg-light border-0" name="remark" id="remarkText" rows="4"
+                            placeholder="Enter your observations..." required></textarea>
+                    </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary">Submit</button>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <div class="modal-footer border-top-0 px-4 pb-4">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary px-4">Submit Remark</button>
                 </div>
             </form>
         </div>
@@ -136,13 +144,18 @@
 <!-- View Remark Modal -->
 <div class="modal fade" id="viewRemarkModal" tabindex="-1" aria-labelledby="viewRemarkModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">View Remark</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-success text-white border-bottom-0">
+                <h5 class="modal-title fw-bold">View Remark</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body">
-                <p id="viewRemarkText" class="mb-0"></p>
+            <div class="modal-body p-4 text-center">
+                <i class="fa-solid fa-quote-left fa-2x text-success opacity-50 mb-3"></i>
+                <p id="viewRemarkText" class="fs-5 mb-0 fst-italic text-dark"></p>
+                <i class="fa-solid fa-quote-right fa-2x text-success opacity-50 mt-3"></i>
+            </div>
+            <div class="modal-footer border-top-0 px-4 pb-4 justify-content-center">
+                <button type="button" class="btn btn-success rounded-pill px-4" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
@@ -155,6 +168,12 @@
 
 <script>
     $(document).ready(function () {
+        // Initialize tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+
         // Only initialize DataTable if activities exist
         {% if activities %}
         $('#activityTable').DataTable({
@@ -162,7 +181,12 @@
             lengthMenu: [5, 10, 25, 50],
             ordering: true,
             searching: true,
-            info: true
+            info: true,
+            language: {
+                search: "_INPUT_",
+                searchPlaceholder: "Search activities..."
+            },
+            dom: '<"d-flex justify-content-between align-items-center mb-3"f>t<"d-flex justify-content-between align-items-center mt-3"ip>',
         });
         {% endif %}
 
@@ -181,14 +205,12 @@
                 data: $(this).serialize(),
                 success: function (response) {
                     $('#remarkModal').modal('hide');
-                    const btn = $(`button[data-activity-id='${response.activity_id}']`);
-                    btn.replaceWith(`
-                        <button class="btn btn-sm btn-success view-remark-btn" 
-                            data-bs-toggle="modal" 
-                            data-bs-target="#viewRemarkModal" 
-                            data-remark="${response.remark}">
-                            Remarked
-                        </button>`);
+                    // Find the button and replace it with "Remarked"
+                    // Note: If using DataTables, this might need a redraw or accessing the API data,
+                    // but direct DOM replacement works for visual update if strictly needed.
+                    // Ideally reload page or update row data.
+                    location.reload();
+
                 },
                 error: function () {
                     alert('Error saving remark.');

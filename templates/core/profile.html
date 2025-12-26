@@ -1,123 +1,107 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}
-Home
-{% endblock title %}
+{% block title %}My Profile{% endblock title %}
 
 {% block links %}
 <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
 {% endblock links %}
 
 {% block content %}
+{% include 'partials/_header.html' %}
 
-{% include 'partials/head.html' %}
-    <div class="container my-4">
-        <div class="card mb-3">
-            <div class="card-body">
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb mb-0">
-                        <li class="breadcrumb-item">
-                            <a href="{% url 'dashboard' %}" class="text-decoration-none">Home</a>
-                        </li>
-                        <li class="breadcrumb-item active" aria-current="page">Profile</li>
-                    </ol>
-                </nav>
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-5">
+        <div>
+            <h1 class="display-5 fw-bold text-primary">My Profile</h1>
+            <p class="text-muted lead mb-0">View your personal information.</p>
+        </div>
+        <div>
+            <a href="{% url 'profile_edit' %}" class="btn btn-primary rounded-pill px-4">
+                <i class="fa-solid fa-pen-to-square me-2"></i>Edit Profile
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Left Sidebar: Profile Photo -->
+        <div class="col-md-4 col-lg-3">
+            <div class="card border-0 shadow-sm text-center p-4 h-100">
+                <div class="card-body">
+                    <div class="position-relative d-inline-block mb-3">
+                        <div class="ratio ratio-1x1 mx-auto" style="width: 150px;">
+                            <img src="{% if user.profile_pic %}{{ user.profile_pic.url }}{% else %}https://cdn-icons-png.flaticon.com/512/3135/3135715.png{% endif %}"
+                                alt="Profile Photo"
+                                class="rounded-circle border border-4 border-light shadow-sm object-fit-cover">
+                        </div>
+                    </div>
+                    <h5 class="fw-bold mb-1">{{ user.get_full_name }}</h5>
+                    <p class="text-muted small mb-2">{{ user.email }}</p>
+                    <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-2">
+                        {{ user.role|title }}
+                    </span>
+                </div>
             </div>
         </div>
 
-        <div class="text-end mb-3">
-            <a href="{% url 'profile_edit' %}" class="btn btn-outline-secondary btn-sm">Edit Profile</a>
-        </div>
-
-        <div class="row mt-3">
-            <!-- Left Sidebar (Profile Photo stays same) -->
-            <div class="col-md-3">
-                <div class="card">
-                    <div class="card-body text-center">
-                        <form method="post" enctype="multipart/form-data" action="{% url 'profile_edit' %}">
-                            {% csrf_token %}
-                            <div class="position-relative d-inline-block">
-                                <label for="id_profile_pic" style="cursor: pointer;">
-                                    <img src="{% if user.profile_pic %}{{ user.profile_pic.url }}{% else %}https://cdn-icons-png.flaticon.com/512/3135/3135715.png{% endif %}"
-                                        alt="Profile Photo" id="profilePreview" class="rounded-circle border border-2"
-                                        style="width:120px; height:120px; object-fit:cover;">
-
-                                </label>
-                                <input type="file" name="profile_pic" id="id_profile_pic" class="d-none" onchange="previewProfilePhoto(event)">
-                            </div>
-
-                            <h5 class="fw-bold">{{ user.get_full_name }}</h5>
-                            <p class="mb-1 text-muted">{{ user.email }}</p>
-                            <p class="mb-0"><span class="badge bg-primary">{{ user.role|title }}</span></p>
-                        </form>
+        <!-- Right Content: Details -->
+        <div class="col-md-8 col-lg-9">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <!-- Personal Details -->
+                    <h5 class="fw-bold text-primary mb-3">Personal Details</h5>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="small text-muted text-uppercase fw-bold d-block">Gender</label>
+                            <span class="fs-5">{{ user.gender|default:"-" }}</span>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="small text-muted text-uppercase fw-bold d-block">Date of Birth</label>
+                            <span class="fs-5">{{ user.date_of_birth|date:"F d, Y"|default:"-" }}</span>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="small text-muted text-uppercase fw-bold d-block">Religion</label>
+                            <span class="fs-5">{{ user.religion|default:"-" }}</span>
+                        </div>
                     </div>
+
+                    <hr class="text-muted opacity-25 my-4">
+
+                    <!-- Contact Details -->
+                    <h5 class="fw-bold text-primary mb-3">Contact Details</h5>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="small text-muted text-uppercase fw-bold d-block">Phone Number</label>
+                            <span class="fs-5">{{ user.phone_number|default:"-" }}</span>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="small text-muted text-uppercase fw-bold d-block">Email</label>
+                            <span class="fs-5">{{ user.email }}</span>
+                        </div>
+                        <div class="col-12">
+                            <label class="small text-muted text-uppercase fw-bold d-block">Permanent Address</label>
+                            <p class="fs-5 mb-0">{{ user.permanent_address|default:"-" }}</p>
+                        </div>
+                    </div>
+
+                    <hr class="text-muted opacity-25 my-4">
+
+                    <!-- Qualification -->
+                    <h5 class="fw-bold text-primary mb-3">Qualification</h5>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="small text-muted text-uppercase fw-bold d-block">Institution</label>
+                            <span class="fs-5">{{ user.institution|default:"-" }}</span>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="small text-muted text-uppercase fw-bold d-block">Designation</label>
+                            <span class="fs-5">{{ user.designation|default:"-" }}</span>
+                        </div>
+                    </div>
+
                 </div>
-            </div>
-
-            <!-- Right Content -->
-            <div class="col-md-9">
-                <!-- Personal Details -->
-                <div class="card mb-3">
-                    <div class="card-header">
-                        <span class="fw-semibold">Personal Details</span>
-                    </div>
-                    <div class="card-body">
-                    <p><strong>Gender:</strong> {{ user.gender }}</p>
-                    <p><strong>Date of Birth:</strong> {{ user.date_of_birth }}</p>
-                    <p><strong>Religion:</strong> {{ user.religion }}</p>
-                    </div>
-                </div>
-
-                <!-- Contact Details -->
-                <div class="card mb-3">
-                    <div class="card-header">
-                        <span class="fw-semibold">Contact Details</span>
-                    </div>
-                    <div class="card-body">
-                    <p><strong>Phone:</strong> {{ user.phone_number }}</p>
-                    <p><strong>Email:</strong> {{ user.email }}</p>
-                    <p><strong>Address:</strong> {{ user.permanent_address }}</p>
-                    </div>
-                </div>
-
-                <!-- Qualification -->
-                <div class="card mb-3">
-                    <div class="card-header">
-                        <span class="fw-semibold">Qualification</span>
-                    </div>
-                    <div class="card-body">
-                    <p><strong>Institution:</strong> {{ user.institution }}</p>
-                    <p><strong>Designation:</strong> {{ user.designation }}</p>
-                    </div>
-                </div>
-
             </div>
         </div>
     </div>
-<script>
-    function previewProfilePhoto(event) {
-        const input = event.target;
-        const preview = document.getElementById('profilePreview');
-
-        if (input.files && input.files[0]) {
-            const reader = new FileReader();
-            reader.onload = function (e) {
-                preview.src = e.target.result;
-            }
-            reader.readAsDataURL(input.files[0]);
-        }
-    }
-
-    // Optional: Toggle Edit Mode
-    document.getElementById('editProfileBtn').addEventListener('click', function () {
-        this.style.display = 'none';
-        document.querySelector('form').style.display = 'block';
-    });
-
-    document.getElementById('cancelEditBtn').addEventListener('click', function () {
-        document.querySelector('form').style.display = 'none';
-        document.getElementById('editProfileBtn').style.display = 'inline-block';
-    });
-</script>
-{% endblock %}
+</div>
+{% endblock content %}

@@ -1,120 +1,147 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}
-Home
-{% endblock title %}
+{% block title %}Edit Profile{% endblock title %}
 
 {% block links %}
 <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
 {% endblock links %}
 
 {% block content %}
+{% include 'partials/_header.html' %}
 
-{% include 'partials/head.html' %}
-    <div class="container my-4">
-        <div class="card mb-3">
-            <div class="card-body">
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb mb-0">
-                        <li class="breadcrumb-item">
-                            <a href="{% url 'dashboard' %}" class="text-decoration-none">Home</a>
-                        </li>
-                        <li class="breadcrumb-item active" aria-current="page">
-                            <a href="{% url 'profile' %}" class="text-decoration-none">Profile</a>
-                        </li>
-                    </ol>
-                </nav>
-            </div>
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-5">
+        <div>
+            <h1 class="display-5 fw-bold text-primary">Edit Profile</h1>
+            <p class="text-muted lead mb-0">Update your personal information and settings.</p>
         </div>
+        <div>
+            <a href="{% url 'profile' %}" class="btn btn-outline-secondary rounded-pill px-4">
+                <i class="fa-solid fa-arrow-left me-2"></i>Back to Profile
+            </a>
+        </div>
+    </div>
 
-        <div class="row mt-3">
-            <!-- Left Sidebar (Profile Photo stays same) -->
-            <div class="col-md-3">
-                <div class="card">
-                    <div class="card-body text-center">
-                        <form method="post" enctype="multipart/form-data" action="{% url 'profile_edit' %}">
-                            {% csrf_token %}
-                            <div class="position-relative d-inline-block">
-                                <label for="id_profile_pic" style="cursor: pointer;">
-                                    <img src="{% if user.profile_pic %}{{ user.profile_pic.url }}{% else %}https://cdn-icons-png.flaticon.com/512/3135/3135715.png{% endif %}"
-                                        alt="Profile Photo" id="profilePreview" class="rounded-circle border border-2"
-                                        style="width:120px; height:120px; object-fit:cover;">
-                                </label>
-                                <input type="file" name="profile_pic" id="id_profile_pic" class="d-none"
-                                    onchange="previewProfilePhoto(event)">
+    <form method="post" enctype="multipart/form-data" action="{% url 'profile_edit' %}">
+        {% csrf_token %}
+        <div class="row g-4">
+            <!-- Left Sidebar: Profile Photo -->
+            <div class="col-md-4 col-lg-3">
+                <div class="card border-0 shadow-sm text-center p-4 h-100">
+                    <div class="card-body">
+                        <div class="position-relative d-inline-block mb-3">
+                            <div class="ratio ratio-1x1 mx-auto" style="width: 150px;">
+                                <img src="{% if user.profile_pic %}{{ user.profile_pic.url }}{% else %}https://cdn-icons-png.flaticon.com/512/3135/3135715.png{% endif %}"
+                                    alt="Profile Photo" id="profilePreview"
+                                    class="rounded-circle border border-4 border-light shadow-sm object-fit-cover">
                             </div>
-
-                            <h5 class="fw-bold">{{ user.get_full_name }}</h5>
-                            <p class="mb-1 text-muted">{{ user.email }}</p>
-                            <p class="mb-0"><span class="badge bg-primary">{{ user.role|title }}</span></p>
-                        </form>
+                            <label for="id_profile_pic"
+                                class="position-absolute bottom-0 end-0 bg-primary text-white p-2 rounded-circle shadow-sm border border-2 border-white"
+                                style="cursor: pointer; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                                <i class="fa-solid fa-camera"></i>
+                            </label>
+                            <input type="file" name="profile_pic" id="id_profile_pic" class="d-none"
+                                onchange="previewProfilePhoto(event)" accept="image/*">
+                        </div>
+                        <h5 class="fw-bold mb-1">{{ user.get_full_name }}</h5>
+                        <p class="text-muted small mb-2">{{ user.email }}</p>
+                        <div class="badge bg-primary-subtle text-primary rounded-pill px-3 py-2">
+                            {{ user.role|title }}
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Right Content -->
-            <div class="col-md-9">
-                <form method="post" action="{% url 'profile_edit' %}">
-                    {% csrf_token %}
-                    <div class="card mb-3">
-                        <div class="card-header">
-                            <span class="fw-semibold">Personal Details</span>
+            <!-- Right Content: Form Fields -->
+            <div class="col-md-8 col-lg-9">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <!-- Personal Details -->
+                        <h5 class="fw-bold text-primary mb-3">Personal Details</h5>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label small text-muted text-uppercase fw-bold">Full Name (Read
+                                    Only)</label>
+                                <input type="text" class="form-control bg-light" value="{{ user.get_full_name }}"
+                                    readonly>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small text-muted text-uppercase fw-bold">Gender</label>
+                                <select name="gender" class="form-select">
+                                    <option value="" {% if not user.gender %}selected{% endif %}>Select Gender</option>
+                                    <option value="Male" {% if user.gender=='Male' %}selected{% endif %}>Male</option>
+                                    <option value="Female" {% if user.gender=='Female' %}selected{% endif %}>Female
+                                    </option>
+                                    <option value="Other" {% if user.gender=='Other' %}selected{% endif %}>Other
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small text-muted text-uppercase fw-bold">Date of Birth</label>
+                                <input type="date" name="date_of_birth" class="form-control"
+                                    value="{{ user.date_of_birth|date:'Y-m-d' }}">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small text-muted text-uppercase fw-bold">Religion</label>
+                                <input type="text" name="religion" class="form-control"
+                                    value="{{ user.religion|default:'' }}" placeholder="Religion">
+                            </div>
                         </div>
-                        <div class="card-body">
-                        <p><strong>Name:</strong> {{ user.get_full_name }}</p>
-                        <p><strong>Gender:</strong>
-                            <input type="text" name="gender" class="form-control" value="{{ user.gender }}">
-                        </p>
-                        <p><strong>Date of Birth:</strong>
-                            <input type="date" name="date_of_birth" class="form-control"
-                                value="{{ user.date_of_birth }}">
-                        </p>
-                        <p><strong>Religion:</strong>
-                            <input type="text" name="religion" class="form-control" value="{{ user.religion }}">
-                        </p>
+
+                        <hr class="text-muted opacity-25 my-4">
+
+                        <!-- Contact Details -->
+                        <h5 class="fw-bold text-primary mb-3">Contact Details</h5>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label small text-muted text-uppercase fw-bold">Phone Number</label>
+                                <input type="text" name="phone" class="form-control" value="{{ user.phone|default:'' }}"
+                                    placeholder="+1 234 567 8900">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small text-muted text-uppercase fw-bold">Email (Read
+                                    Only)</label>
+                                <input type="text" class="form-control bg-light" value="{{ user.email }}" readonly>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label small text-muted text-uppercase fw-bold">Permanent
+                                    Address</label>
+                                <textarea name="permanent_address" class="form-control" rows="2"
+                                    placeholder="Your address here...">{{ user.permanent_address|default:'' }}</textarea>
+                            </div>
+                        </div>
+
+                        <hr class="text-muted opacity-25 my-4">
+
+                        <!-- Qualification -->
+                        <h5 class="fw-bold text-primary mb-3">Qualification</h5>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label small text-muted text-uppercase fw-bold">Institution</label>
+                                <input type="text" name="institution" class="form-control"
+                                    value="{{ user.institution|default:'' }}" placeholder="University/School">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small text-muted text-uppercase fw-bold">Designation</label>
+                                <input type="text" name="designation" class="form-control"
+                                    value="{{ user.designation|default:'' }}" placeholder="Student/Professor">
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end mt-5 pt-3 border-top">
+                            <a href="{% url 'profile' %}" class="btn btn-light me-2">Cancel</a>
+                            <button type="submit" class="btn btn-primary px-4 fw-bold">
+                                <i class="fa-solid fa-floppy-disk me-2"></i>Save Changes
+                            </button>
                         </div>
                     </div>
-
-                    <div class="card mb-3">
-                        <div class="card-header">
-                            <span class="fw-semibold">Contact Details</span>
-                        </div>
-                        <div class="card-body">
-                        <p><strong>Phone Number:</strong> {{ user.phone_number }}</p>
-                        <p><strong>Email:</strong> {{ user.email }}</p>
-                        <p><strong>Address:</strong>
-                            <textarea name="permanent_address"
-                                class="form-control">{{ user.permanent_address }}</textarea>
-                        </p>
-                        </div>
-                    </div>
-
-                    <div class="card mb-3">
-                        <div class="card-header">
-                            <span class="fw-semibold">Qualification</span>
-                        </div>
-                        <div class="card-body">
-                        <p><strong>Institution:</strong>
-                            <input type="text" name="institution" class="form-control" value="{{ user.institution }}">
-                        </p>
-                        <p><strong>Designation:</strong>
-                            <input type="text" name="designation" class="form-control" value="{{ user.designation }}">
-                        </p>
-                        </div>
-                    </div>
-
-                    <div class="text-end">
-                        <button type="submit" class="btn btn-primary">Save Changes</button>
-                         <a href="{% url 'profile' %}" class="btn btn-secondary">Cancel</a>
-
-                    </div>
-                </form>
+                </div>
             </div>
         </div>
+    </form>
+</div>
 
-
-    </div>
 <script>
     function previewProfilePhoto(event) {
         const input = event.target;
@@ -128,19 +155,5 @@ Home
             reader.readAsDataURL(input.files[0]);
         }
     }
-
-    // Optional: Toggle Edit Mode
-    document.getElementById('editProfileBtn').addEventListener('click', function () {
-        this.style.display = 'none';
-        document.querySelector('form').style.display = 'block';
-    });
-
-    document.getElementById('cancelEditBtn').addEventListener('click', function () {
-        document.querySelector('form').style.display = 'none';
-        document.getElementById('editProfileBtn').style.display = 'inline-block';
-    });
-    document.getElementById('cancelEditBtn').addEventListener('click', function () {
-        window.location.href = "{% url 'profile' %}";
-    });
 </script>
-{% endblock %}
+{% endblock content %}

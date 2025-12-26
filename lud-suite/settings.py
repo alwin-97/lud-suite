@@ -98,9 +98,10 @@ AUTHENTICATION_BACKENDS = [
 SITE_ID = 1
 
 # Login / Logout
-LOGIN_URL = ''
+# Login / Logout
+LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = "role-redirect"
-LOGOUT_REDIRECT_URL = ''
+LOGOUT_REDIRECT_URL = '/login/'
 # Skip the "Account Connections" page and auto-login
 SOCIALACCOUNT_LOGIN_ON_GET = True
 ACCOUNT_LOGOUT_ON_GET = True
@@ -119,5 +120,5 @@ SOCIALACCOUNT_ADAPTER = "core.adapters.SocialAccountAdapter"
 SOCIALACCOUNT_AUTO_SIGNUP = True
 
 # Redirect if someone tries to access signup page
-ACCOUNT_SIGNUP_REDIRECT_URL = ''
+ACCOUNT_SIGNUP_REDIRECT_URL = '/login/'
 MESSAGE_STORAGE = 'django.contrib.messages.storage.session.SessionStorage'

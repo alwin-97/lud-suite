@@ -3,6 +3,11 @@
 
 {% block title %}
 My Activities
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+My Activities
 {% endblock title %}
 
 {% block links %}
@@ -10,77 +15,87 @@ My Activities
 {% endblock links %}
 
 {% block content %}
-{% include 'partials/head.html' %}
-<div class="container py-4">
-    <div class="card mb-4">
-        <div class="card-body">
-            <nav aria-label="breadcrumb">
-              <ol class="breadcrumb mb-0">
-                <li class="breadcrumb-item">
-                  <a href="{% url 'dashboard' %}" class="text-decoration-none">Home</a>
-                </li>
-                <li class="breadcrumb-item">
-                  <a href="{% url 'dip_yclp' %}" class="text-decoration-none">DIP YCLP</a>
-                </li>
-                <li class="breadcrumb-item active" aria-current="page">My Activity</li>
-              </ol>
-            </nav>
-        </div>
-      </div>
-    <div class="card mb-3">
-        <div class="card-body">
-            <h2 class="fw-bold mb-0">My Activities</h2>
-        </div>
+{% include 'partials/_header.html' %}
+
+<div class="container py-5">
+  <div class="d-flex justify-content-between align-items-center mb-5">
+    <div>
+      <h1 class="display-5 fw-bold text-primary">My Activities</h1>
+      <p class="text-muted lead mb-0">Track and manage your reflexive report entries.</p>
     </div>
-    <div class="card">
-      <div class="card-header">
-        <span class="fw-semibold">Activity Log</span>
-      </div>
-      <div class="card-body p-0">
-        <div class="table-responsive">
-        <table class="table align-middle mb-0">
-        <thead>
+    <div>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0">
+          <li class="breadcrumb-item"><a href="{% url 'dashboard' %}" class="text-decoration-none">Dashboard</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'dip_yclp' %}" class="text-decoration-none">DIP YCLP</a></li>
+          <li class="breadcrumb-item active" aria-current="page">My Activities</li>
+        </ol>
+      </nav>
+    </div>
+  </div>
+
+  <div class="card border-0 shadow-sm">
+    <div class="card-header bg-white border-bottom-0 pt-4 px-4 d-flex justify-content-between align-items-center">
+      <h5 class="fw-bold mb-0">Activity Log</h5>
+      <a href="{% url 'dip_yclp' %}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+        <i class="fa-solid fa-plus me-1"></i>New Activity
+      </a>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table align-middle table-hover mb-0">
+          <thead class="bg-light">
             <tr>
-                <th>Date</th>
-                <th>Activity</th>
-                <th>Duration</th>
-                <th>Learnings</th>
-                <th>Feedback</th>
-                <th>Photo</th>
+              <th class="ps-4 py-3">Date</th>
+              <th class="py-3">Activity</th>
+              <th class="py-3">Duration</th>
+              <th class="py-3">Learnings</th>
+              <th class="py-3">Feedback</th>
+              <th class="py-3 text-end pe-4">Evidence</th>
             </tr>
-        </thead>
-        <tbody>
+          </thead>
+          <tbody>
             {% for activity in activities %}
             <tr>
-                <td>{{ activity.date }}</td>
-                <td>
-                    {% if activity.activity == 'Others' %}
-                        {{ activity.other_activity }}
-                    {% else %}
-                        {{ activity.activity }}
-                    {% endif %}
-                </td>
-                <td>{{ activity.duration }}</td>
-                <td>{{ activity.learnings }}</td>
-                <td>{{ activity.feedback }}</td>
-                <td>
-                    {% if activity.photo %}
-                        <img src="{{ activity.photo.url }}" alt="Activity Photo" style="max-width: 100px; height: auto;">
-                    {% else %}
-                        No photo
-                    {% endif %}
-                </td>
+              <td class="ps-4 text-nowrap">{{ activity.date|date:"M d, Y" }}</td>
+              <td class="fw-semibold text-dark">
+                {% if activity.activity == 'Others' %}
+                {{ activity.other_activity }}
+                {% else %}
+                {{ activity.activity }}
+                {% endif %}
+              </td>
+              <td>{{ activity.duration }} hrs</td>
+              <td><span class="d-inline-block text-truncate" style="max-width: 200px;"
+                  title="{{ activity.learnings }}">{{ activity.learnings }}</span></td>
+              <td><span class="d-inline-block text-truncate" style="max-width: 200px;"
+                  title="{{ activity.feedback }}">{{ activity.feedback }}</span></td>
+              <td class="text-end pe-4">
+                {% if activity.photo %}
+                <a href="{{ activity.photo.url }}" target="_blank"
+                  class="d-inline-block border rounded overflow-hidden shadow-sm">
+                  <img src="{{ activity.photo.url }}" alt="Activity Photo"
+                    style="width: 40px; height: 40px; object-fit: cover;">
+                </a>
+                {% else %}
+                <span class="text-muted small fst-italic">No photo</span>
+                {% endif %}
+              </td>
             </tr>
             {% empty %}
             <tr>
-                <td colspan="6" class="text-center">No activities found.</td>
+              <td colspan="6" class="text-center py-5">
+                <div class="mb-3">
+                  <i class="fa-solid fa-clipboard-list fa-3x text-muted opacity-50"></i>
+                </div>
+                <p class="text-muted small">No activities found.</p>
+              </td>
             </tr>
             {% endfor %}
-        </tbody>
+          </tbody>
         </table>
-        </div>
       </div>
     </div>
+  </div>
 </div>
-
 {% endblock content %}
