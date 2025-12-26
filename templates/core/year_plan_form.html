@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Year Plan{% endblock title %}
+
+{% block links %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+{% endblock links %}
+
+{% block content %}
+{% include 'partials/_header.html' %}
+
+<div class="container py-4">
+    <div class="card mb-4">
+        <div class="card-body">
+            <h3 class="mb-0">{% if mode == "edit" %}Edit Year Plan{% else %}New Year Plan{% endif %}</h3>
+        </div>
+    </div>
+    <form method="post" class="card">
+        {% csrf_token %}
+        <div class="card-body">
+            {{ form.as_p }}
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-success">Save</button>
+                <a class="btn btn-secondary" href="{% url 'year_plan_list' %}">Cancel</a>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock content %}

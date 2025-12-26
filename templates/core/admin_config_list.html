@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock title %}
+
+{% block links %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+{% endblock links %}
+
+{% block content %}
+{% include 'partials/_header.html' %}
+
+<div class="container py-4">
+    <div class="card mb-4">
+        <div class="card-body">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'admin_dashboard' %}" class="text-decoration-none">Admin Dashboard</a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'admin_config_home' %}" class="text-decoration-none">Admin Config</a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ title }}</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    <div class="card mb-4">
+        <div class="card-body d-flex justify-content-between align-items-center">
+            <h3 class="mb-0">{{ title }}</h3>
+            <a class="btn btn-outline-secondary" href="{% url 'admin_config_home' %}">Back to Config</a>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <span class="fw-semibold"><i class="fa-solid fa-plus me-2"></i>Add New</span>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit" class="btn btn-success">Save</button>
+            </form>
+            <div class="mt-3 small text-muted">
+                <div class="fw-semibold mb-1">Example values</div>
+                {% if config_key == "statuses" %}
+                    Not Started, In Progress, Completed, On Hold, Delayed
+                {% elif config_key == "session-types" %}
+                    Summer Camp, Follow Up, Review
+                {% elif config_key == "rating-domains" %}
+                    Leadership, Communication, Technical Skills
+                {% elif config_key == "domain-indicators" %}
+                    Attendance, Participation, Submission Quality
+                {% elif config_key == "mood-categories" %}
+                    Motivated, Neutral, Stressed
+                {% elif config_key == "reference-content" %}
+                    Handbook PDF, Evaluation Rubric, Policy Sheet
+                {% elif config_key == "template-configs" %}
+                    Year 1, Year 2, Year 3, Year 4
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    {% if items %}
+        <div class="card">
+            <div class="card-header">
+                <span class="fw-semibold"><i class="fa-solid fa-list me-2"></i>Entries</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                <table class="table align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in items %}
+                        <tr>
+                            <td>{{ item }}</td>
+                            <td class="text-end">
+                                <a class="btn btn-sm btn-outline-primary" href="{% url 'admin_config_edit' config_key item.id %}">
+                                    <i class="fa-solid fa-pen me-1"></i>Edit
+                                </a>
+                                <a class="btn btn-sm btn-outline-danger" href="{% url 'admin_config_delete' config_key item.id %}">
+                                    <i class="fa-solid fa-trash me-1"></i>Delete
+                                </a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+                </table>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <p class="text-muted">No records yet.</p>
+    {% endif %}
+</div>
+{% endblock content %}

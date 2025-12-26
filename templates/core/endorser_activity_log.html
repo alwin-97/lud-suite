@@ -5,154 +5,138 @@
 
 {% block links %}
 <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
-<link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
 {% endblock links %}
 
 {% block content %}
-<div class="page-wrapper">
-    {% include 'partials/head.html' %}
+{% include 'partials/head.html' %}
 
-    <div class="d-flex" style="min-height: calc(100vh - 60px);">
-        <nav class="sidebar">
-            <div>
-                <br>
-                <a href="{% url 'endorser_dashboard' %}" class="nav-link" data-bs-toggle="tooltip"
-                    data-bs-placement="right" title="Home">
-                    <i class="bi bi-house"></i>
-                </a>
-                <a href="{% url 'account_logout' %}" class="nav-link text-danger" data-bs-toggle="tooltip"
-                    data-bs-placement="right" title="Logout" onclick="confirmLogout(event)">
-                    <i class="bi bi-box-arrow-right"></i>
-                </a>
+<div class="container py-4">
+        <div class="card mb-4">
+            <div class="card-body">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item">
+                            <a href="{% url 'endorser_dashboard' %}" class="text-decoration-none">Home</a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">Mentors Assigned</li>
+                    </ol>
+                </nav>
             </div>
-        </nav>
-
-        <div class="main-content flex-grow-1 " style="margin-top: 60px;">
-            <div class="d-flex justify-content-between mb-4 align-items-center p-3 bg-primary text-white rounded">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb mb-0">
-                    <li class="breadcrumb-item">
-                        <a href="{% url 'endorser_dashboard' %}" class="text-white text-decoration-none">Home</a>
-                    </li>
-                    <li class="breadcrumb-item active text-white" aria-current="page">Mentors Assigned</li>
-                </ol>
-            </nav>
         </div>
 
-            <h7 class="fw-semibold  pt-5">👥 Mentors Assigned to You</h7>
+        <div class="card">
+            <div class="card-header">
+                <span class="fw-semibold">Mentors Assigned to You</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table id="mentorsTable"
+                        class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="text-center">ID</th>
+                                <th class="text-center">Name</th>
+                                <th class="text-center">Email</th>
+                                <th class="text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for mentor in assigned_mentors %}
+                            <tr>
+                                <td class="text-center">{{ mentor.id }}</td>
+                                <td class="text-center">{{ mentor.first_name }} {{ mentor.last_name }}</td>
+                                <td class="text-center">{{ mentor.email }}</td>
+                                <td class="text-center">
+                                    <div class="d-flex justify-content-center gap-2">
+                                        <a href="#" class="btn btn-info btn-sm" data-bs-toggle="modal"
+                                            data-bs-target="#viewProfileModal{{ mentor.id }}">
+                                            <i class="fa-solid fa-eye me-1"></i>View
+                                        </a>
 
-            <div class="card shadow-sm rounded-3 mt-3">
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table id="mentorsTable"
-                            class="table table-striped table-bordered table-hover align-middle mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th class="text-center">ID</th>
-                                    <th class="text-center">Name</th>
-                                    <th class="text-center">Email</th>
-                                    <th class="text-center">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for mentor in assigned_mentors %}
-                                <tr>
-                                    <td class="text-center">{{ mentor.id }}</td>
-                                    <td class="text-center">{{ mentor.first_name }} {{ mentor.last_name }}</td>
-                                    <td class="text-center">{{ mentor.email }}</td>
-                                    <td class="text-center">
-                                        <div class="d-flex justify-content-center gap-2">
-                                            <a href="#" class="btn btn-info btn-sm" data-bs-toggle="modal"
-                                                data-bs-target="#viewProfileModal{{ mentor.id }}">
-                                                <i class="bi bi-person-lines-fill"></i> View
-                                            </a>
+                                        <a href="{% url 'mentor_activity' mentor.id %}"
+                                            class="btn btn-warning btn-sm">
+                                            <i class="fa-solid fa-clipboard-list me-1"></i>Activity
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center py-4">No mentors assigned to you yet.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
 
-                                            <a href="{% url 'mentor_activity' mentor.id %}"
-                                                class="btn btn-warning btn-sm">
-                                                <i class="bi bi-clipboard-data"></i> Activity
-                                            </a>
-                                        </div>
-                                    </td>
-                                </tr>
-                                {% empty %}
-                                <tr>
-                                    <td colspan="4" class="text-center py-4">No mentors assigned to you yet.</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-
-                        </table>
-                    </div>
+                    </table>
                 </div>
             </div>
-            <!-- View Profile Modals -->
-            {% for mentor in assigned_mentors %}
-            <div class="modal fade" id="viewProfileModal{{ mentor.id }}" tabindex="-1"
-                aria-labelledby="viewProfileModalLabel{{ mentor.id }}" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="viewProfileModalLabel{{ mentor.id }}">
-                                Profile: {{ mentor.first_name }} {{ mentor.last_name }}
-                            </h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <div class="row">
-                                <!-- Left: Profile Picture -->
-                                <div class="col-md-4 text-center">
-                                    <img src="{% if mentor.profile_pic %}{{ mentor.profile_pic.url }}{% else %}https://cdn-icons-png.flaticon.com/512/3135/3135715.png{% endif %}"
-                                        class="rounded-circle border border-2 mb-3"
-                                        style="width:150px; height:150px; object-fit:cover;">
-                                    <p class="fw-bold">{{ mentor.first_name }} {{ mentor.last_name }}</p>
-                                    <p class="text-muted">{{ mentor.email }}</p>
-                                    <p><span class="badge bg-primary">{{ mentor.role|title }}</span></p>
-                                </div>
+        </div>
+        <!-- View Profile Modals -->
+        {% for mentor in assigned_mentors %}
+        <div class="modal fade" id="viewProfileModal{{ mentor.id }}" tabindex="-1"
+            aria-labelledby="viewProfileModalLabel{{ mentor.id }}" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="viewProfileModalLabel{{ mentor.id }}">
+                            Profile: {{ mentor.first_name }} {{ mentor.last_name }}
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <!-- Left: Profile Picture -->
+                            <div class="col-md-4 text-center">
+                                <img src="{% if mentor.profile_pic %}{{ mentor.profile_pic.url }}{% else %}https://cdn-icons-png.flaticon.com/512/3135/3135715.png{% endif %}"
+                                    class="rounded-circle border border-2 mb-3"
+                                    style="width:150px; height:150px; object-fit:cover;">
+                                <p class="fw-bold">{{ mentor.first_name }} {{ mentor.last_name }}</p>
+                                <p class="text-muted">{{ mentor.email }}</p>
+                                <p><span class="badge bg-primary">{{ mentor.role|title }}</span></p>
+                            </div>
 
-                                <!-- Right: User Details -->
-                                <div class="col-md-8">
-                                    <h6 class="fw-bold text-primary">Personal Details</h6>
-                                    <hr>
-                                    {% if user.gender %}
-                                    <p><strong>Gender:</strong> {{ mentor.gender }}</p>
-                                    {% endif %}
-                                    {% if user.date_of_birth %}
-                                    <p><strong>Date of Birth:</strong> {{ mentor.date_of_birth }}</p>
-                                    {% endif %}
-                                    {% if user.religion %}
-                                    <p><strong>Religion:</strong> {{ mentor.religion }}</p>
-                                    {% endif %}
+                            <!-- Right: User Details -->
+                            <div class="col-md-8">
+                                <h6 class="fw-bold text-primary">Personal Details</h6>
+                                <hr>
+                                {% if user.gender %}
+                                <p><strong>Gender:</strong> {{ mentor.gender }}</p>
+                                {% endif %}
+                                {% if user.date_of_birth %}
+                                <p><strong>Date of Birth:</strong> {{ mentor.date_of_birth }}</p>
+                                {% endif %}
+                                {% if user.religion %}
+                                <p><strong>Religion:</strong> {{ mentor.religion }}</p>
+                                {% endif %}
 
-                                    <h6 class="fw-bold text-primary mt-3">Contact Details</h6>
-                                    <hr>
-                                    <p><strong>Phone:</strong> {{ mentor.phone }}</p>
-                                    <p><strong>Email:</strong> {{ mentor.email }}</p>
-                                    {% if user.permanent_address %}
-                                    <p><strong>Address:</strong> {{ mentor.permanent_address }}</p>
-                                    {% endif %}
+                                <h6 class="fw-bold text-primary mt-3">Contact Details</h6>
+                                <hr>
+                                <p><strong>Phone:</strong> {{ mentor.phone }}</p>
+                                <p><strong>Email:</strong> {{ mentor.email }}</p>
+                                {% if user.permanent_address %}
+                                <p><strong>Address:</strong> {{ mentor.permanent_address }}</p>
+                                {% endif %}
 
-                                    <h6 class="fw-bold text-primary mt-3">Qualification</h6>
-                                    <hr>
-                                    {% if user.institution %}
-                                    <p><strong>Institution:</strong> {{ mentor.institution }}</p>
-                                    {% endif %}
-                                    {% if user.designation %}
-                                    <p><strong>Designation:</strong> {{ mentor.designation }}</p>
-                                    {% endif %}
-                                </div>
+                                <h6 class="fw-bold text-primary mt-3">Qualification</h6>
+                                <hr>
+                                {% if user.institution %}
+                                <p><strong>Institution:</strong> {{ mentor.institution }}</p>
+                                {% endif %}
+                                {% if user.designation %}
+                                <p><strong>Designation:</strong> {{ mentor.designation }}</p>
+                                {% endif %}
                             </div>
                         </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
-                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
                     </div>
                 </div>
             </div>
-            {% endfor %}
-
         </div>
-    </div>
+        {% endfor %}
+
 </div>
 
 <!-- Scripts -->

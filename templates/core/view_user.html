@@ -5,82 +5,62 @@
 
 {% block links %}
 <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
-<link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
 {% endblock links %}
 
 
 {% block content %}
-<div class="page-wrapper">
 {% include 'partials/head.html' %}
 
-<!-- 🔹 Layout: sidebar + main content -->
-<div class="d-flex" style="min-height: calc(100vh - 60px);"> <!-- Adjust 60px to your header height -->
-
-  <!-- Sidebar -->
-  <nav class="sidebar">
-    <!-- Top Section -->
-    <div>
-      <!-- Home -->
-      <a href="{% url 'admin_dashboard' %}" 
-         class="nav-link" 
-         data-bs-toggle="tooltip" 
-         data-bs-placement="right" 
-         title="Home">
-         <i class="bi bi-house"></i>
-      </a>
-   
-
-  <a href="#" 
-     class="nav-link" 
-     id="sortToggle"
-     data-bs-toggle="tooltip" 
-     data-bs-placement="right" 
-     title="Sort">
-     <i class="bi bi-funnel"></i>
-  </a>
-
-</div>
-  
-
-
-    <!-- Bottom Section -->
-    <div>
-     <a href="{% url 'account_logout' %}" 
-   class="nav-link text-danger" 
-   data-bs-toggle="tooltip" 
-   data-bs-placement="right" 
-   title="Logout"
-   onclick="confirmLogout(event)">
-   <i class="bi bi-box-arrow-right"></i>
-</a>
-
+<div class="container py-4">
+    <div class="card mb-4">
+        <div class="card-body">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'admin_dashboard' %}" class="text-decoration-none">Admin Dashboard</a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'manage_user' %}" class="text-decoration-none">Manage Users</a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">User Detail</li>
+                </ol>
+            </nav>
+        </div>
     </div>
-  </nav>
-<div class="container mt-4">
-    <h4>User: {{ viewed_user.first_name }} {{ viewed_user.last_name }}</h4>
-    <p>Email: {{ viewed_user.email }}</p>
-    <div class="d-flex justify-content-end mb-3">    
-        <a href="{% url 'export_user_activities' viewed_user.id %}" class="btn btn-success">
-            Export to Excel
-        </a>
-    </div>    
-    <h4>Activities</h4>
-    {% if activities %}
-        <ul class="list-group">
-            {% for activity in activities %}
-                <li class="list-group-item">
-                    <strong>{{ activity.activity }}</strong> <br>
-                    Duration: {{ activity.duration }} <br>
-                    Date: {{ activity.date }} <br>
-                    {% if activity.feedback %}
-                        Feedback: {{ activity.feedback }}
-                    {% endif %}
-                </li>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <p>No activities found for this user.</p>
-    {% endif %}
-</div>
+    <div class="card mb-4">
+        <div class="card-body d-flex flex-wrap justify-content-between align-items-center gap-3">
+            <div>
+                <h4 class="mb-1">User: {{ viewed_user.first_name }} {{ viewed_user.last_name }}</h4>
+                <p class="text-muted mb-0">Email: {{ viewed_user.email }}</p>
+            </div>
+            <a href="{% url 'export_user_activities' viewed_user.id %}" class="btn btn-primary">
+                Export to Excel
+            </a>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <span class="fw-semibold">Activities</span>
+        </div>
+        <div class="card-body">
+            {% if activities %}
+                <ul class="list-group">
+                    {% for activity in activities %}
+                        <li class="list-group-item">
+                            <strong>{{ activity.activity }}</strong><br>
+                            Duration: {{ activity.duration }}<br>
+                            Date: {{ activity.date }}<br>
+                            {% if activity.feedback %}
+                                Feedback: {{ activity.feedback }}
+                            {% endif %}
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="text-muted mb-0">No activities found for this user.</p>
+            {% endif %}
+        </div>
+    </div>
 </div>
 {% endblock %}

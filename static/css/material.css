@@ -1,0 +1,83 @@
+.material-body {
+    background-color: #f4f6fb;
+    color: #1f2937;
+}
+
+.material-body .material-appbar {
+    background-color: #ffffff;
+    border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.material-body .card {
+    border: 0;
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+}
+
+.material-body .card-header {
+    background-color: transparent;
+    border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.material-body .btn {
+    border-radius: 999px;
+    font-weight: 600;
+}
+
+.material-body .btn-primary {
+    background-color: #2f3b81;
+    border-color: #2f3b81;
+    box-shadow: 0 6px 16px rgba(47, 59, 129, 0.25);
+}
+
+.material-body .btn-outline-secondary {
+    border-color: rgba(15, 23, 42, 0.2);
+}
+
+.material-body .table {
+    border-collapse: separate;
+    border-spacing: 0 0.4rem;
+}
+
+.material-body .table thead th {
+    border-bottom: 0;
+    color: #6b7280;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.material-body .table tbody tr {
+    background-color: #ffffff;
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+}
+
+.material-body .table tbody td {
+    border-top: 0;
+}
+
+.material-body .form-control,
+.material-body .form-select,
+.material-body textarea {
+    border-radius: 12px;
+    border-color: rgba(15, 23, 42, 0.12);
+}
+
+.material-body .form-control:focus,
+.material-body .form-select:focus,
+.material-body textarea:focus {
+    border-color: #2f3b81;
+    box-shadow: 0 0 0 0.2rem rgba(47, 59, 129, 0.15);
+}
+
+.material-body .list-group-item {
+    border: 0;
+    border-radius: 12px;
+    margin-bottom: 0.4rem;
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+}
+
+.material-body .badge {
+    border-radius: 999px;
+}

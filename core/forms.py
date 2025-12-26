@@ -2,7 +2,21 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import get_user_model
 from .models import (
-    CustomUser, Activity, Notification, WorkSchedule
+    CustomUser,
+    Activity,
+    Notification,
+    WorkSchedule,
+    ObjectiveItem,
+    YearPlanItem,
+    StatusConfig,
+    MenteeAssessment,
+    MentorMenteeAssignment,
+    SessionType,
+    RatingDomain,
+    DomainIndicator,
+    MoodCategory,
+    ReferenceContent,
+    TemplateConfig,
 )
 from decimal import Decimal
 User = get_user_model()
@@ -106,3 +120,214 @@ class WorkScheduleForm(forms.ModelForm):
             # ✅ Show only mentors assigned to this endorser (using your CustomUser.mentors M2M field)
             self.fields['mentors'].queryset = endorser.mentors.filter(role='mentor')
         self.fields['mentors'].label_from_instance = lambda obj: obj.email
+
+
+# -------------------- DIP Objective / Year Plan Forms --------------------
+class ObjectiveItemForm(forms.ModelForm):
+    class Meta:
+        model = ObjectiveItem
+        fields = [
+            "objective_title",
+            "objective_text",
+            "action_items",
+            "start_date",
+            "end_date",
+            "expected_outcome",
+            "status",
+            "progress_percent",
+            "evidence",
+            "mentee_remarks",
+        ]
+        widgets = {
+            "start_date": forms.DateInput(attrs={"type": "date", "class": "form-control"}),
+            "end_date": forms.DateInput(attrs={"type": "date", "class": "form-control"}),
+            "status": forms.Select(attrs={"class": "form-select"}),
+            "progress_percent": forms.NumberInput(attrs={"class": "form-control", "min": 0, "max": 100}),
+            "objective_title": forms.TextInput(attrs={"class": "form-control"}),
+            "objective_text": forms.Textarea(attrs={"class": "form-control", "rows": 3}),
+            "action_items": forms.Textarea(attrs={"class": "form-control", "rows": 3}),
+            "expected_outcome": forms.Textarea(attrs={"class": "form-control", "rows": 3}),
+            "mentee_remarks": forms.Textarea(attrs={"class": "form-control", "rows": 3}),
+            "evidence": forms.ClearableFileInput(attrs={"class": "form-control"}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if "status" in self.fields:
+            self.fields["status"].queryset = StatusConfig.objects.filter(is_active=True)
+
+
+class ObjectiveItemMentorForm(forms.ModelForm):
+    class Meta:
+        model = ObjectiveItem
+        fields = ["status", "mentor_comments", "mentor_approved"]
+        widgets = {
+            "status": forms.Select(attrs={"class": "form-select"}),
+            "mentor_comments": forms.Textarea(attrs={"class": "form-control", "rows": 3}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if "status" in self.fields:
+            self.fields["status"].queryset = StatusConfig.objects.filter(is_active=True)
+
+
+class YearPlanItemForm(forms.ModelForm):
+    class Meta:
+        model = YearPlanItem
+        fields = [
+            "year",
+            "milestone",
+            "deliverable",
+            "target_date",
+            "target_period",
+            "status",
+            "remarks",
+        ]
+        widgets = {
+            "year": forms.Select(attrs={"class": "form-select"}),
+            "milestone": forms.TextInput(attrs={"class": "form-control"}),
+            "deliverable": forms.Textarea(attrs={"class": "form-control", "rows": 3}),
+            "target_date": forms.DateInput(attrs={"type": "date", "class": "form-control"}),
+            "target_period": forms.TextInput(attrs={"class": "form-control"}),
+            "status": forms.Select(attrs={"class": "form-select"}),
+            "remarks": forms.Textarea(attrs={"class": "form-control", "rows": 3}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if "status" in self.fields:
+            self.fields["status"].queryset = StatusConfig.objects.filter(is_active=True)
+
+
+class YearPlanItemMentorForm(forms.ModelForm):
+    class Meta:
+        model = YearPlanItem
+        fields = ["status", "mentor_comments", "review_date"]
+        widgets = {
+            "status": forms.Select(attrs={"class": "form-select"}),
+            "mentor_comments": forms.Textarea(attrs={"class": "form-control", "rows": 3}),
+            "review_date": forms.DateInput(attrs={"type": "date", "class": "form-control"}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if "status" in self.fields:
+            self.fields["status"].queryset = StatusConfig.objects.filter(is_active=True)
+
+
+class MenteeAssessmentForm(forms.ModelForm):
+    class Meta:
+        model = MenteeAssessment
+        fields = [
+            "year",
+            "session_type",
+            "date",
+            "theme_topic",
+            "beginning_mood",
+            "end_mood",
+            "mentor_remarks",
+            "action_plan",
+        ]
+        widgets = {
+            "year": forms.Select(attrs={"class": "form-select"}),
+            "session_type": forms.Select(attrs={"class": "form-select"}),
+            "date": forms.DateInput(attrs={"type": "date", "class": "form-control"}),
+            "theme_topic": forms.TextInput(attrs={"class": "form-control"}),
+            "beginning_mood": forms.TextInput(attrs={"class": "form-control"}),
+            "end_mood": forms.TextInput(attrs={"class": "form-control"}),
+            "mentor_remarks": forms.Textarea(attrs={"class": "form-control", "rows": 3}),
+            "action_plan": forms.Textarea(attrs={"class": "form-control", "rows": 3}),
+        }
+
+
+# -------------------- Admin Config Forms --------------------
+class MentorMenteeAssignmentForm(forms.ModelForm):
+    class Meta:
+        model = MentorMenteeAssignment
+        fields = ["mentor", "mentee", "start_date", "end_date", "is_active"]
+        widgets = {
+            "mentor": forms.Select(attrs={"class": "form-select"}),
+            "mentee": forms.Select(attrs={"class": "form-select"}),
+            "start_date": forms.DateInput(attrs={"type": "date", "class": "form-control"}),
+            "end_date": forms.DateInput(attrs={"type": "date", "class": "form-control"}),
+        }
+
+
+class StatusConfigForm(forms.ModelForm):
+    class Meta:
+        model = StatusConfig
+        fields = ["name", "color", "ordering", "is_active"]
+        widgets = {
+            "name": forms.TextInput(attrs={"class": "form-control"}),
+            "color": forms.TextInput(attrs={"class": "form-control"}),
+            "ordering": forms.NumberInput(attrs={"class": "form-control"}),
+        }
+
+
+class SessionTypeForm(forms.ModelForm):
+    class Meta:
+        model = SessionType
+        fields = ["name", "is_active"]
+        widgets = {
+            "name": forms.TextInput(attrs={"class": "form-control"}),
+        }
+
+
+class RatingDomainForm(forms.ModelForm):
+    class Meta:
+        model = RatingDomain
+        fields = ["year", "name", "source", "sort_order", "is_active"]
+        widgets = {
+            "year": forms.Select(attrs={"class": "form-select"}),
+            "name": forms.TextInput(attrs={"class": "form-control"}),
+            "source": forms.Select(attrs={"class": "form-select"}),
+            "sort_order": forms.NumberInput(attrs={"class": "form-control"}),
+        }
+
+
+class DomainIndicatorForm(forms.ModelForm):
+    class Meta:
+        model = DomainIndicator
+        fields = ["domain", "description", "sort_order"]
+        widgets = {
+            "domain": forms.Select(attrs={"class": "form-select"}),
+            "description": forms.Textarea(attrs={"class": "form-control", "rows": 3}),
+            "sort_order": forms.NumberInput(attrs={"class": "form-control"}),
+        }
+
+
+class MoodCategoryForm(forms.ModelForm):
+    class Meta:
+        model = MoodCategory
+        fields = ["name", "description", "mood_types", "sort_order"]
+        widgets = {
+            "name": forms.TextInput(attrs={"class": "form-control"}),
+            "description": forms.Textarea(attrs={"class": "form-control", "rows": 3}),
+            "mood_types": forms.TextInput(attrs={"class": "form-control"}),
+            "sort_order": forms.NumberInput(attrs={"class": "form-control"}),
+        }
+
+
+class ReferenceContentForm(forms.ModelForm):
+    class Meta:
+        model = ReferenceContent
+        fields = ["section", "title", "content", "sort_order"]
+        widgets = {
+            "section": forms.TextInput(attrs={"class": "form-control"}),
+            "title": forms.TextInput(attrs={"class": "form-control"}),
+            "content": forms.Textarea(attrs={"class": "form-control", "rows": 4}),
+            "sort_order": forms.NumberInput(attrs={"class": "form-control"}),
+        }
+
+
+class TemplateConfigForm(forms.ModelForm):
+    class Meta:
+        model = TemplateConfig
+        fields = ["name", "scope", "year", "fields_config", "is_active"]
+        widgets = {
+            "name": forms.TextInput(attrs={"class": "form-control"}),
+            "scope": forms.Select(attrs={"class": "form-select"}),
+            "year": forms.Select(attrs={"class": "form-select"}),
+            "fields_config": forms.Textarea(attrs={"class": "form-control", "rows": 4}),
+        }

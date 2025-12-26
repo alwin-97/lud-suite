@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Mentee Assignments{% endblock title %}
+
+{% block links %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+{% endblock links %}
+
+{% block content %}
+{% include 'partials/_header.html' %}
+
+<div class="container py-4">
+    <div class="card mb-4">
+        <div class="card-body">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'admin_dashboard' %}" class="text-decoration-none">Admin Dashboard</a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">Mentee Assignments</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    <div class="card mb-4">
+        <div class="card-body">
+            <h3 class="mb-0">Mentor-Mentee Assignments</h3>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <span class="fw-semibold">Add Assignment</span>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit" class="btn btn-success">Save</button>
+            </form>
+        </div>
+    </div>
+
+    {% if assignments %}
+        <div class="card">
+            <div class="card-header">
+                <span class="fw-semibold">Assignments</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                <table class="table align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Mentor</th>
+                        <th>Mentee</th>
+                        <th>Start Date</th>
+                        <th>End Date</th>
+                        <th>Active</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for assignment in assignments %}
+                        <tr>
+                            <td>{{ assignment.mentor }}</td>
+                            <td>{{ assignment.mentee }}</td>
+                            <td>{{ assignment.start_date }}</td>
+                            <td>{{ assignment.end_date|default:"-" }}</td>
+                            <td>{{ assignment.is_active|yesno:"Yes,No" }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+                </table>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <p class="text-muted">No assignments yet.</p>
+    {% endif %}
+</div>
+{% endblock content %}

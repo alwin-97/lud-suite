@@ -12,32 +12,69 @@ Home
 {% block content %}
 {% include 'partials/_header.html' %}
 
-<div class="container-fluid py-10">
-    <div class="row ">
+<div class="container py-4">
+    <div class="card mb-4">
+        <div class="card-body">
+            <h3 class="mb-0">Admin Dashboard</h3>
+        </div>
+    </div>
+    <div class="row g-3">
         <div class="col-lg-6 col-sm-12">
-            <div class="row gx-4 , gy-3, mt-4">
+            <div class="row g-3">
                 <div class="col-6">
                     <a href="{% url 'manage_user' %}" class="text-decoration-none">
-                        <div class="card shadow-sm text-center h-100 p-3 bg-light text-dark rounded-3">
-                            <div class="d-flex flex-column align-items-center justify-content-center h-100">
-                                <img src="{% static 'images/profile.png' %}" alt="Notification" class="img-fluid mb-2"
-                                    style="max-width: 90px;">
+                        <div class="card text-center h-100">
+                            <div class="card-body d-flex flex-column align-items-center justify-content-center h-100">
+                                <i class="fa-solid fa-users fa-2xl text-primary mb-2"></i>
                                 <h6 class="fw-semibold mb-0">Manage User</h6>
                             </div>
                         </div>
                     </a>
                 </div>
+                <div class="col-6">
+                    <a href="{% url 'manage_mentee_assignments' %}" class="text-decoration-none">
+                        <div class="card text-center h-100">
+                            <div class="card-body d-flex flex-column align-items-center justify-content-center h-100">
+                                <i class="fa-solid fa-user-group fa-2xl text-primary mb-2"></i>
+                                <h6 class="fw-semibold mb-0">Mentee Assignments</h6>
+                            </div>
+                        </div>
+                    </a>
+                </div>
             </div>
-            <div class="row g-3 mt-2">
+            <div class="row g-3 mt-1">
 
-                <div class="col-6 ">
+                <div class="col-6">
                     <a href="{% url 'manage_assignment' %}" class="text-decoration-none">
                         <div class="dashboard-card card-blue">
-                            <div class="card shadow-sm text-center h-100 p-3 bg-light text-dark rounded-3 ">
-                                <div class="d-flex flex-column align-items-center justify-content-center h-100">
-                                    <img src="{% static 'images/profile.png' %}" alt="Notification"
-                                        class="img-fluid mb-2" style="max-width: 90px;">
+                            <div class="card text-center h-100">
+                                <div class="card-body d-flex flex-column align-items-center justify-content-center h-100">
+                                    <i class="fa-solid fa-link fa-2xl text-primary mb-2"></i>
                                     <h6 class="fw-semibold mb-0">Manage Assignment</h6>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-6">
+                    <a href="{% url 'admin_config_home' %}" class="text-decoration-none">
+                        <div class="dashboard-card card-blue">
+                            <div class="card text-center h-100">
+                                <div class="card-body d-flex flex-column align-items-center justify-content-center h-100">
+                                    <i class="fa-solid fa-sliders fa-2xl text-primary mb-2"></i>
+                                    <h6 class="fw-semibold mb-0">Admin Config</h6>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-6">
+                    <a href="{% url 'mentor_mentee_list' %}" class="text-decoration-none">
+                        <div class="dashboard-card card-blue">
+                            <div class="card text-center h-100">
+                                <div class="card-body d-flex flex-column align-items-center justify-content-center h-100">
+                                    <i class="fa-solid fa-users-line fa-2xl text-primary mb-2"></i>
+                                    <h6 class="fw-semibold mb-0">View Mentees</h6>
                                 </div>
                             </div>
                         </div>
@@ -47,29 +84,41 @@ Home
 
         </div>
         <div class="col-lg-6 col-sm-12">
-            <div class="row mt-2 g-4">
+            <div class="row g-3">
 
                 <div class="col-lg-6 col-md-12">
-                    <div class="card p-3 shadow-sm">
-                        <h5 class="card-title text-dark">Overview</h5>
-                        <canvas id="overviewChart" style="height:150px;"></canvas>
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="fw-semibold">Overview</span>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="overviewChart" style="height:150px;"></canvas>
+                        </div>
                     </div>
                 </div>
            
             
                 <!-- Assigned vs Unassigned Endorsers -->
                 <div class="col-lg-6 col-md-6">
-                    <div class="card p-3 shadow-sm">
-                        <h5 class="card-title text-center">Endorsers Assignment</h5>
-                        <canvas id="endorserChart" style="height:150px;"></canvas>
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="fw-semibold">Endorsers Assignment</span>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="endorserChart" style="height:150px;"></canvas>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Mentors vs Endorsers -->
                 <div class="col-lg-4 col-md-6">
-                    <div class="card p-3 shadow-sm">
-                        <h5 class="card-title text-center">Mentors vs Endorsers</h5>
-                        <canvas id="mentorEndorserChart" style="height:150px;"></canvas>
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="fw-semibold">Mentors vs Endorsers</span>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="mentorEndorserChart" style="height:150px;"></canvas>
+                        </div>
                     </div>
                 </div>
                  </div>

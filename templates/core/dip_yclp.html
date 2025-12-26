@@ -5,55 +5,26 @@
 
 {% block links %}
 <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
-<link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
-<style>
-  .main-content-wrapper {
-    margin-left: 80px;
-    padding: 20px;
-    width: calc(100% - 80px);
-  }
-
-  @media (max-width: 768px) {
-    .main-content-wrapper {
-      margin-left: 0;
-      width: 100%;
-    }
-  }
-</style>
 {% endblock links %}
 
 {% block content %}
 
 {% include 'partials/head.html' %}
 
-<div class="d-flex" style="min-height: calc(100vh - 60px);">
-
-  <!-- SIDEBAR -->
-  <nav class="sidebar">
-    <div>
-      <a href="{% url 'dashboard' %}" class="nav-link" data-bs-toggle="tooltip" title="Home">
-        <i class="bi bi-house"></i>
-      </a>
-      <a href="{% url 'account_logout' %}" class="nav-link text-danger" data-bs-toggle="tooltip" title="Logout">
-        <i class="bi bi-box-arrow-right"></i>
-      </a>
-    </div>
-  </nav>
-
-  <!-- MAIN CONTENT -->
-  <div class="main-content-wrapper">
-    <div class="container-fluid">
+<div class="container py-4">
 
       <!-- HEADER -->
-      <div class="d-flex justify-content-between align-items-center p-3 bg-primary text-white rounded">
-        <nav aria-label="breadcrumb">
-          <ol class="breadcrumb mb-0">
-            <li class="breadcrumb-item">
-              <a href="{% url 'dashboard' %}" class="text-white text-decoration-none">Home</a>
-            </li>
-            <li class="breadcrumb-item active text-white" aria-current="page">DIP YCLP</li>
-          </ol>
-        </nav>
+      <div class="card mb-3">
+        <div class="card-body">
+          <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+              <li class="breadcrumb-item">
+                <a href="{% url 'dashboard' %}" class="text-decoration-none">Home</a>
+              </li>
+              <li class="breadcrumb-item active" aria-current="page">DIP YCLP</li>
+            </ol>
+          </nav>
+        </div>
       </div>
 
       <div class="row g-4 mt-3">
@@ -61,24 +32,26 @@
         <!-- LEFT CONTENT -->
         <div class="col-lg-8 col-md-12">
 
-          <div class="card shadow-sm border-0 p-4 bg-warning rounded">
-            <h4 class="fw-bold">
-              DIP - YCLP <span class="text-muted fw-normal">| Reflexive Report</span>
-            </h4>
+          <div class="card">
+            <div class="card-body">
+              <h4 class="fw-bold">
+                DIP - YCLP <span class="text-muted fw-normal">| Reflexive Report</span>
+              </h4>
 
-            <div class="d-flex mt-3 gap-3">
-              <button class="btn btn-outline-dark" data-bs-toggle="modal" data-bs-target="#newActivityModal">
-                <i class="bi bi-plus-circle"></i> New Activity
-              </button>
+              <div class="d-flex mt-3 gap-3">
+                <button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#newActivityModal">
+                  <i class="fa-solid fa-plus me-2"></i>New Activity
+                </button>
 
-              <a href="{% url 'my-activities' %}" class="btn btn-outline-dark">
-                <i class="bi bi-journal-text"></i> My Activities
-              </a>
+                <a href="{% url 'my-activities' %}" class="btn btn-outline-secondary">
+                  <i class="fa-solid fa-book-open me-2"></i>My Activities
+                </a>
+              </div>
             </div>
           </div>
 
           <!-- ACTIVITY LIST -->
-          <div class="card shadow-sm border-0 mt-4">
+          <div class="card mt-4">
             <div class="card-body">
               <h5 class="fw-bold mb-3">My Activities</h5>
 
@@ -94,7 +67,7 @@
                     {% endif %}
                   </strong><br>
                   <small class="text-muted">
-                    {{ activity.date|date:"M d, Y" }} • {{ activity.duration }} hrs
+                    {{ activity.date|date:"M d, Y" }} | {{ activity.duration }} hrs
                   </small>
                 </div>
                 {% endfor %}
@@ -174,20 +147,19 @@
 
         <!-- RIGHT CONTENT (CHART) -->
         <div class="col-lg-4 col-md-12">
-          <div class="card shadow-sm border-0 p-3">
-            <h5 class="fw-bold mb-3">Activity Chart</h5>
-            <img src="{% static 'images/highchart.png' %}" class="img-fluid rounded">
+          <div class="card">
+            <div class="card-body">
+              <h5 class="fw-bold mb-3">Activity Chart</h5>
+              <img src="{% static 'images/highchart.png' %}" class="img-fluid rounded">
+            </div>
           </div>
         </div>
 
       </div>
 
-    </div>
-
     <!-- TOAST -->
     <div id="toastContainer" style="position: fixed; top:20px; right:20px; z-index:3000; width:320px;"></div>
 
-  </div>
 </div>
 
 <!-- JS -->
@@ -229,16 +201,16 @@
     let html = `
       <div class="list-group-item py-3">
         <strong>${a.activity_name}</strong><br>
-        <small class="text-muted">${a.date} • ${a.duration} hrs</small>
+        <small class="text-muted">${a.date} | ${a.duration} hrs</small>
       </div>
     `;
     $("#activityList").prepend(html);
   }
 
-  // 🚀 Ensure AJAX ALWAYS handles submission
+  // Ensure AJAX ALWAYS handles submission
   $("#activityForm").attr("onsubmit", "submitActivityAJAX(); return false;");
 
-  // 🚀 AJAX FUNCTION
+  // AJAX FUNCTION
   function submitActivityAJAX() {
     let formData = new FormData($("#activityForm")[0]);
 

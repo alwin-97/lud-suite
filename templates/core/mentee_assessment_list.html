@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Assessments{% endblock title %}
+
+{% block links %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+{% endblock links %}
+
+{% block content %}
+{% include 'partials/_header.html' %}
+
+<div class="container py-4">
+    <div class="card mb-4">
+        <div class="card-body">
+            <h3 class="mb-0">My Assessments</h3>
+        </div>
+    </div>
+
+    {% if not mentee %}
+        <div class="alert alert-warning">Your mentee profile is not set up yet.</div>
+    {% else %}
+        {% if assessments %}
+            <div class="card">
+                <div class="card-header">
+                    <span class="fw-semibold">Assessment History</span>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                    <table class="table align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Year</th>
+                            <th>Session Type</th>
+                            <th>Average</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for assessment in assessments %}
+                            <tr>
+                                <td>{{ assessment.date }}</td>
+                                <td>{{ assessment.get_year_display }}</td>
+                                <td>{{ assessment.session_type }}</td>
+                                <td>{{ assessment.average_score|default:"-" }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                    </table>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <p class="text-muted">No assessments yet.</p>
+        {% endif %}
+    {% endif %}
+</div>
+{% endblock content %}

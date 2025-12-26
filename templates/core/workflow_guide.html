@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Workflow Guide{% endblock title %}
+
+{% block links %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+{% endblock links %}
+
+{% block content %}
+{% include 'partials/_header.html' %}
+
+<div class="container py-4">
+    <div class="card mb-4">
+        <div class="card-body">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'role-redirect' %}" class="text-decoration-none">Home</a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">Workflow Guide</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <h3 class="mb-2">Workflow Guide</h3>
+            <p class="text-muted mb-0">
+                This guide walks through the recommended setup and day-to-day flow for admins, mentors, and mentees.
+            </p>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <span class="fw-semibold"><i class="fa-solid fa-gears me-2"></i>Admin Setup</span>
+                </div>
+                <div class="card-body">
+                    <ol class="mb-0">
+                        <li>Create mentor, mentee, endorser, and reviewer users.</li>
+                        <li>Assign mentors to mentees and endorsers to mentors.</li>
+                        <li>Configure statuses, session types, and rating domains.</li>
+                        <li>Review the dashboard to confirm assignments and counts.</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <span class="fw-semibold"><i class="fa-solid fa-sliders me-2"></i>Admin Config Tips</span>
+                </div>
+                <div class="card-body">
+                    <ul class="mb-0">
+                        <li>Statuses: Not Started, In Progress, Completed, On Hold.</li>
+                        <li>Session Types: Summer Camp, Follow Up, Review.</li>
+                        <li>Rating Domains: Leadership, Communication, Technical Skills.</li>
+                        <li>Template Configs: Year 1, Year 2, Year 3, Year 4.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <span class="fw-semibold"><i class="fa-solid fa-user-tie me-2"></i>Mentor Flow</span>
+                </div>
+                <div class="card-body">
+                    <ol class="mb-0">
+                        <li>Open assigned mentees from the Mentor Dashboard.</li>
+                        <li>Review objectives, year plans, and assessments.</li>
+                        <li>Leave comments and update review status when needed.</li>
+                        <li>Export progress reports for review meetings.</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <span class="fw-semibold"><i class="fa-solid fa-user-graduate me-2"></i>Mentee Flow</span>
+                </div>
+                <div class="card-body">
+                    <ol class="mb-0">
+                        <li>Update objectives with progress and evidence notes.</li>
+                        <li>Update year plan milestones and remarks.</li>
+                        <li>Check mentor comments and status updates.</li>
+                        <li>Export progress for personal records.</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <span class="fw-semibold"><i class="fa-solid fa-clipboard-check me-2"></i>Assessment Flow</span>
+                </div>
+                <div class="card-body">
+                    <ol class="mb-0">
+                        <li>Mentors create assessments for each session type.</li>
+                        <li>Select ratings for each configured domain.</li>
+                        <li>Review averages and adjust comments if needed.</li>
+                        <li>Mentees can view assessment history anytime.</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <span class="fw-semibold"><i class="fa-solid fa-list-check me-2"></i>Activity Log Flow</span>
+                </div>
+                <div class="card-body">
+                    <ol class="mb-0">
+                        <li>Mentors add activities in the YCLP area.</li>
+                        <li>Endorsers review mentor activities and add remarks.</li>
+                        <li>Use exports to capture activity summaries.</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

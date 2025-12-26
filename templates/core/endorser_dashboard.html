@@ -12,18 +12,17 @@ Dashboard
 {% block content %}
 {% include 'partials/_header.html' %}
 
-<div class="container-fluid py-4">
-    <div class="row">
+<div class="container py-4">
+    <div class="row g-3">
         <!-- Left Section -->
         <div class="col-lg-6 col-md-12">
             <div class="row g-3">
                 <!-- Work Schedule -->
                 <div class="col-6">
                     <a href="{% url 'endorser_work_schedule' %}" class="text-decoration-none">
-                        <div class="card shadow-sm text-center h-100 p-3 bg-light text-dark rounded-3">
-                            <div class="d-flex flex-column align-items-center justify-content-center h-100">
-                                <img src="{% static 'images/profile.png' %}" alt="Notification" class="img-fluid mb-2"
-                                    style="max-width: 60px;">
+                        <div class="card text-center h-100">
+                            <div class="card-body d-flex flex-column align-items-center justify-content-center h-100">
+                                <i class="fa-solid fa-calendar-days fa-2xl text-primary mb-2"></i>
                                 <h6 class="fw-semibold mb-0">Work Schedule</h6>
                             </div>
                         </div>
@@ -33,10 +32,9 @@ Dashboard
                 <!-- Activity Log -->
                 <div class="col-6">
                     <a href="{% url 'activity_log' %}" class="text-decoration-none">
-                        <div class="card shadow-sm text-center h-100 p-3 bg-light text-dark rounded-3">
-                            <div class="d-flex flex-column align-items-center justify-content-center h-100">
-                                <img src="{% static 'images/profile.png' %}" alt="Notification" class="img-fluid mb-2"
-                                    style="max-width: 60px;">
+                        <div class="card text-center h-100">
+                            <div class="card-body d-flex flex-column align-items-center justify-content-center h-100">
+                                <i class="fa-solid fa-clipboard-list fa-2xl text-primary mb-2"></i>
                                 <h6 class="fw-semibold mb-0">Activity Log</h6>
                             </div>
                         </div>
@@ -44,10 +42,9 @@ Dashboard
                 </div>
                 <div class="col-6">
                     <a href="{% url 'endorser_profile' %}" class="text-decoration-none">
-                        <div class="card shadow-sm text-center h-100 p-3 bg-light text-dark rounded-3">
-                            <div class="d-flex flex-column align-items-center justify-content-center h-100">
-                                <img src="{% static 'images/profile.png' %}" alt="Notification" class="img-fluid mb-2"
-                                    style="max-width: 60px;">
+                        <div class="card text-center h-100">
+                            <div class="card-body d-flex flex-column align-items-center justify-content-center h-100">
+                                <i class="fa-solid fa-user fa-2xl text-primary mb-2"></i>
                                 <h6 class="fw-semibold mb-0">Public Profile</h6>
                             </div>
                         </div>
@@ -56,10 +53,9 @@ Dashboard
                 <!-- Notification -->
                 <div class="col-6">
                     <a href="{% url 'manage_assignment' %}" class="text-decoration-none">
-                        <div class="card shadow-sm text-center h-100 p-3 bg-light text-dark rounded-3">
-                            <div class="d-flex flex-column align-items-center justify-content-center h-100">
-                                <img src="{% static 'images/profile.png' %}" alt="Notification" class="img-fluid mb-2"
-                                    style="max-width: 60px;">
+                        <div class="card text-center h-100">
+                            <div class="card-body d-flex flex-column align-items-center justify-content-center h-100">
+                                <i class="fa-solid fa-bell fa-2xl text-primary mb-2"></i>
                                 <h6 class="fw-semibold mb-0">Notification</h6>
                             </div>
                         </div>
@@ -70,9 +66,13 @@ Dashboard
 
         <!-- Right Section -->
         <div class="col-lg-6 col-md-12">
-            <div class="card shadow-sm p-3 h-100 rounded-3">
-                <h6 class="fw-semibold mb-3">📊 Mentee Statistics</h6>
-                <canvas id="menteeChart" class="dashboard-chart"></canvas>
+            <div class="card h-100">
+                <div class="card-header">
+                    <span class="fw-semibold">Mentee Statistics</span>
+                </div>
+                <div class="card-body">
+                    <canvas id="menteeChart" class="dashboard-chart"></canvas>
+                </div>
             </div>
         </div>
     </div>

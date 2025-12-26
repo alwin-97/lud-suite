@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Review Objective{% endblock title %}
+
+{% block links %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+{% endblock links %}
+
+{% block content %}
+{% include 'partials/_header.html' %}
+
+<div class="container py-4">
+    <div class="card mb-4">
+        <div class="card-body">
+            <h3 class="mb-0">Review Objective</h3>
+        </div>
+    </div>
+    <div class="card mb-3">
+        <div class="card-body">
+            <p class="mb-1"><strong>Mentee:</strong> {{ objective.mentee.full_name }}</p>
+            <p class="mb-1"><strong>Title:</strong> {{ objective.objective_title|default:"Objective" }}</p>
+            <p class="mb-0"><strong>Current Status:</strong> {{ objective.status|default:"Unassigned" }}</p>
+        </div>
+    </div>
+    <form method="post" class="card">
+        {% csrf_token %}
+        <div class="card-body">
+            {{ form.as_p }}
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-success">Save</button>
+                <a class="btn btn-secondary" href="{% url 'mentor_objective_list' objective.mentee.id %}">Cancel</a>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock content %}

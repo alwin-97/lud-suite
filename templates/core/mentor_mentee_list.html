@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Assigned Mentees{% endblock title %}
+
+{% block links %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+{% endblock links %}
+
+{% block content %}
+{% include 'partials/_header.html' %}
+
+<div class="container py-4">
+    <div class="card mb-4">
+        <div class="card-body">
+            <h3 class="mb-0">Mentees</h3>
+        </div>
+    </div>
+
+    {% if mentees %}
+        <div class="card">
+            <div class="card-header">
+                <span class="fw-semibold">Assigned Mentees</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                <table class="table align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Year</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for mentee in mentees %}
+                        <tr>
+                            <td>{{ mentee.full_name }}</td>
+                            <td>{{ mentee.get_current_year_display }}</td>
+                            <td class="text-end">
+                                <a class="btn btn-sm btn-primary" href="{% url 'mentor_objective_list' mentee.id %}">Objectives</a>
+                                <a class="btn btn-sm btn-primary" href="{% url 'mentor_year_plan_list' mentee.id %}">Year Plans</a>
+                                <a class="btn btn-sm btn-primary" href="{% url 'mentor_assessment_list' mentee.id %}">Assessments</a>
+                                <a class="btn btn-sm btn-outline-secondary" href="{% url 'export_mentee_progress' mentee.id %}">Export</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+                </table>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <p class="text-muted">No mentees found.</p>
+    {% endif %}
+</div>
+{% endblock content %}

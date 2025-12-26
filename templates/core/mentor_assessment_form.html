@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}New Assessment{% endblock title %}
+
+{% block links %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+{% endblock links %}
+
+{% block content %}
+{% include 'partials/_header.html' %}
+
+<div class="container py-4">
+    <div class="card mb-4">
+        <div class="card-body">
+            <h3 class="mb-0">New Assessment: {{ mentee.full_name }}</h3>
+        </div>
+    </div>
+    <form method="post" class="card">
+        {% csrf_token %}
+        <div class="card-body">
+            {{ form.as_p }}
+
+            <div class="card mt-3">
+                <div class="card-header">
+                    <span class="fw-semibold">Ratings</span>
+                </div>
+                <div class="card-body">
+                    {% if rating_errors %}
+                        <div class="alert alert-warning">Missing ratings for: {{ rating_errors|join:", " }}</div>
+                    {% endif %}
+                    {% if domains %}
+                        <div class="table-responsive">
+                            <table class="table align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Domain</th>
+                                        <th>Rating (1-5)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for domain in domains %}
+                                        <tr>
+                                            <td>{{ domain.name }}</td>
+                                            <td>
+                                                <select name="rating_{{ domain.id }}" class="form-select">
+                                                    <option value="">Select</option>
+                                                    <option value="1">1</option>
+                                                    <option value="2">2</option>
+                                                    <option value="3">3</option>
+                                                    <option value="4">4</option>
+                                                    <option value="5">5</option>
+                                                </select>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted mb-0">No active domains configured for this year.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="d-flex gap-2 mt-3">
+                <button type="submit" class="btn btn-success">Save</button>
+                <a class="btn btn-secondary" href="{% url 'mentor_assessment_list' mentee.id %}">Cancel</a>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock content %}

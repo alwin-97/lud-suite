@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Mentee Dashboard{% endblock title %}
+
+{% block links %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+{% endblock links %}
+
+{% block content %}
+{% include 'partials/_header.html' %}
+
+<div class="container py-4">
+    <div class="card mb-4">
+        <div class="card-body">
+            <h3 class="mb-0">Mentee Dashboard</h3>
+        </div>
+    </div>
+
+    {% if not mentee %}
+        <div class="alert alert-warning">Your mentee profile is not set up yet.</div>
+    {% else %}
+        <div class="row g-3 mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="fw-semibold">Objective Status</span>
+                    </div>
+                    <div class="card-body">
+                    {% if objective_status_counts %}
+                        <ul class="mb-0">
+                            {% for row in objective_status_counts %}
+                                <li>{{ row.status__name|default:"Unassigned" }}: {{ row.count }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="text-muted mb-0">No objectives yet.</p>
+                    {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="fw-semibold">Year Plans</span>
+                    </div>
+                    <div class="card-body">
+                    {% if year_plan_counts %}
+                        <ul class="mb-0">
+                            {% for row in year_plan_counts %}
+                                <li>Year {{ row.year }}: {{ row.count }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="text-muted mb-0">No year plans yet.</p>
+                    {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex flex-wrap gap-2 mb-4">
+            <a class="btn btn-primary" href="{% url 'objective_list' %}">Manage Objectives</a>
+            <a class="btn btn-primary" href="{% url 'year_plan_list' %}">Manage Year Plans</a>
+            <a class="btn btn-primary" href="{% url 'mentee_assessment_list' %}">View Assessments</a>
+            <a class="btn btn-outline-secondary" href="{% url 'export_mentee_progress' mentee.id %}">Export Progress</a>
+        </div>
+
+        <div class="row g-3">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="fw-semibold">Recent Objectives</span>
+                    </div>
+                    <div class="card-body">
+                    {% if objectives %}
+                        <ul class="mb-0">
+                            {% for obj in objectives %}
+                                <li>{{ obj.objective_title|default:"Objective" }} ({{ obj.status|default:"No status" }})</li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="text-muted mb-0">No objectives yet.</p>
+                    {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="fw-semibold">Recent Year Plans</span>
+                    </div>
+                    <div class="card-body">
+                    {% if year_plans %}
+                        <ul class="mb-0">
+                            {% for plan in year_plans %}
+                                <li>{{ plan.get_year_display }} - {{ plan.milestone }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="text-muted mb-0">No year plans yet.</p>
+                    {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock content %}

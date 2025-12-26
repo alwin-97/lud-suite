@@ -1,13 +1,34 @@
 {% load static %}
+{% url 'profile' as profile_url %}
+{% if user.is_authenticated and user.role == "endorser" %}
+    {% url 'endorser_profile' as profile_url %}
+{% elif user.is_authenticated and user.role == "mentor" %}
+    {% url 'mentor_profile' as profile_url %}
+{% endif %}
 
-<div class="heading">
-    <div class="welcome-text">
-        <h2>Welcome back,</h2>
-        <p>Always stay updated in your YCLP portal</p>
-    </div>
-    <div class="user-info">
-        <div class="user-name">{{ user.get_full_name }}</div>
-        <div class="user-email">{{ user.email }}</div>
-        <img src="{% static 'images/profile_icon.png' %}" alt="User Avatar" class="profile-img">
+<div class="material-appbar shadow-sm">
+    <div class="container py-3 d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3">
+        <div>
+            <h2 class="h4 mb-1">Welcome back</h2>
+            <p class="text-muted mb-0">Always stay updated in your YCLP portal</p>
+        </div>
+        <div class="d-flex flex-wrap align-items-center justify-content-lg-end gap-3">
+            <div class="text-end">
+                <div class="fw-semibold">{{ user.get_full_name }}</div>
+                <div class="text-muted small">{{ user.email }}</div>
+            </div>
+            <img src="{% static 'images/profile_icon.png' %}" alt="User Avatar" class="rounded-circle" style="width: 44px; height: 44px;">
+            <div class="d-flex flex-wrap gap-2">
+                <a class="btn btn-outline-secondary btn-sm" href="{% url 'workflow_guide' %}">
+                    <i class="fa-solid fa-route me-2"></i>Workflow
+                </a>
+                <a class="btn btn-outline-secondary btn-sm" href="{{ profile_url }}">
+                    <i class="fa-solid fa-user me-2"></i>Profile
+                </a>
+                <a class="btn btn-danger btn-sm" href="{% url 'account_logout' %}">
+                    <i class="fa-solid fa-right-from-bracket me-2"></i>Logout
+                </a>
+            </div>
+        </div>
     </div>
 </div>

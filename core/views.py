@@ -1,27 +1,81 @@
-from django.shortcuts import render, redirect ,  get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse
-from .forms import ActivityForm
-from .models import Activity
+from django.contrib.auth import get_user_model, login, authenticate
+from django.db.models import Count, Q
+from django.http import HttpResponse, JsonResponse
+from django.utils import timezone
+from .forms import (
+    ActivityForm,
+    NotificationForm,
+    ProfileForm,
+    WorkScheduleForm,
+    ObjectiveItemForm,
+    ObjectiveItemMentorForm,
+    YearPlanItemForm,
+    YearPlanItemMentorForm,
+    MenteeAssessmentForm,
+    MentorMenteeAssignmentForm,
+    StatusConfigForm,
+    SessionTypeForm,
+    RatingDomainForm,
+    DomainIndicatorForm,
+    MoodCategoryForm,
+    ReferenceContentForm,
+    TemplateConfigForm,
+)
+from .models import (
+    CustomUser,
+    Assignment,
+    MentorProfile,
+    WorkSchedule,
+    Activity,
+    Notification,
+    Mentee,
+    MentorMenteeAssignment,
+    ObjectiveItem,
+    YearPlanItem,
+    StatusConfig,
+    MenteeAssessment,
+    AssessmentRating,
+    RatingDomain,
+    SessionType,
+    DomainIndicator,
+    MoodCategory,
+    ReferenceContent,
+    TemplateConfig,
+)
 from .decorators import role_required
 from django.contrib import messages
-
-from django.contrib.auth import get_user_model
-
-from .models import CustomUser
-from .forms import NotificationForm
 import openpyxl
 import csv
-from .forms import ProfileForm
-from .forms import WorkScheduleForm
-from .models import CustomUser, Assignment, MentorProfile, WorkSchedule, Activity, Notification
-from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.safestring import mark_safe
 from django.views.decorators.http import require_POST
 
 
 User = get_user_model()
+
+
+def _active_assignments_qs(mentor):
+    today = timezone.now().date()
+    return MentorMenteeAssignment.objects.filter(
+        mentor=mentor,
+        is_active=True,
+    ).filter(Q(end_date__isnull=True) | Q(end_date__gte=today))
+
+
+def _get_mentee_for_user(user):
+    return Mentee.objects.filter(user=user).first()
+
+
+def _mentor_can_access_mentee(user, mentee):
+    if user.is_superuser or getattr(user, "role", None) == "admin":
+        return True
+    return _active_assignments_qs(user).filter(mentee=mentee).exists()
+
+
+def _domains_for_year(year):
+    return RatingDomain.objects.filter(year=year, is_active=True).order_by("sort_order", "name")
 @role_required(allowed_roles=['admin'])
 def edit_user_view(request, user_id):
     user = get_object_or_404(User, id=user_id)
@@ -32,6 +86,8 @@ def edit_user_view(request, user_id):
         email = request.POST.get("email")
         phone = request.POST.get("phone")
         role = request.POST.get("role")
+        password = request.POST.get("password")
+        current_year = request.POST.get("current_year")
 
         if not (first_name and last_name and email and phone and role):
             messages.error(request, "⚠️ All fields are required.")
@@ -44,7 +100,23 @@ def edit_user_view(request, user_id):
         user.username = email
         user.phone = phone
         user.role = role
+        if password:
+            user.set_password(password)
         user.save()
+
+        if role == "mentee":
+            mentee, created = Mentee.objects.get_or_create(
+                user=user,
+                defaults={
+                    "full_name": f"{first_name} {last_name}".strip(),
+                    "current_year": int(current_year) if current_year else 1,
+                },
+            )
+            if not created:
+                mentee.full_name = f"{first_name} {last_name}".strip()
+                if current_year:
+                    mentee.current_year = int(current_year)
+                mentee.save()
 
         messages.success(request, "✅ User updated successfully.")
         return redirect("manage_user")
@@ -65,14 +137,25 @@ def delete_user_view(request, user_id):
 def login_view(request):
     if request.method == "POST":
         email = request.POST.get("email")
+        password = request.POST.get("password")
 
-        try:
-            user = CustomUser.objects.get(email=email)
-            login(request, user)  # <-- THIS sets request.user
-            return redirect("role-redirect")
-        except CustomUser.DoesNotExist:
-            messages.error(request, "User with this email does not exist.")
+        if not password:
+            messages.error(request, "Password is required.")
             return redirect("login")
+
+        user = authenticate(request, username=email, password=password)
+        if not user:
+            try:
+                user_obj = CustomUser.objects.get(email=email)
+                user = authenticate(request, username=user_obj.username, password=password)
+            except CustomUser.DoesNotExist:
+                user = None
+        if not user:
+            messages.error(request, "Invalid email or password.")
+            return redirect("login")
+
+        login(request, user)
+        return redirect("role-redirect")
     return render(request, "core/login.html")
 
 
@@ -100,14 +183,199 @@ def admin_dashboard_view(request):
     return render(request, "core/admin_dashboard.html", context)
 
 
+@role_required(allowed_roles=['admin'])
+def admin_config_home_view(request):
+    config_items = [
+        {"key": "statuses", "label": "Statuses"},
+        {"key": "session-types", "label": "Session Types"},
+        {"key": "rating-domains", "label": "Rating Domains"},
+        {"key": "domain-indicators", "label": "Domain Indicators"},
+        {"key": "mood-categories", "label": "Mood Categories"},
+        {"key": "reference-content", "label": "Reference Content"},
+        {"key": "template-configs", "label": "Template Configs"},
+    ]
+    return render(request, "core/admin_config_home.html", {"config_items": config_items})
+
+
+CONFIG_REGISTRY = {
+    "statuses": {
+        "model": StatusConfig,
+        "form": StatusConfigForm,
+        "title": "Statuses",
+    },
+    "session-types": {
+        "model": SessionType,
+        "form": SessionTypeForm,
+        "title": "Session Types",
+    },
+    "rating-domains": {
+        "model": RatingDomain,
+        "form": RatingDomainForm,
+        "title": "Rating Domains",
+    },
+    "domain-indicators": {
+        "model": DomainIndicator,
+        "form": DomainIndicatorForm,
+        "title": "Domain Indicators",
+    },
+    "mood-categories": {
+        "model": MoodCategory,
+        "form": MoodCategoryForm,
+        "title": "Mood Categories",
+    },
+    "reference-content": {
+        "model": ReferenceContent,
+        "form": ReferenceContentForm,
+        "title": "Reference Content",
+    },
+    "template-configs": {
+        "model": TemplateConfig,
+        "form": TemplateConfigForm,
+        "title": "Template Configs",
+    },
+}
+
+
+@role_required(allowed_roles=['admin'])
+def admin_config_list_view(request, config_key):
+    config = CONFIG_REGISTRY.get(config_key)
+    if not config:
+        return HttpResponse("Config not found.", status=404)
+
+    Model = config["model"]
+    Form = config["form"]
+    title = config["title"]
+    items = Model.objects.all()
+
+    if request.method == "POST":
+        form = Form(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f"{title} saved.")
+            return redirect("admin_config_list", config_key=config_key)
+    else:
+        form = Form()
+
+    return render(
+        request,
+        "core/admin_config_list.html",
+        {"items": items, "form": form, "title": title, "config_key": config_key},
+    )
+
+
+@role_required(allowed_roles=['admin'])
+def admin_config_edit_view(request, config_key, item_id):
+    config = CONFIG_REGISTRY.get(config_key)
+    if not config:
+        return HttpResponse("Config not found.", status=404)
+
+    Model = config["model"]
+    Form = config["form"]
+    title = config["title"]
+    item = get_object_or_404(Model, id=item_id)
+
+    if request.method == "POST":
+        form = Form(request.POST, instance=item)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f"{title} updated.")
+            return redirect("admin_config_list", config_key=config_key)
+    else:
+        form = Form(instance=item)
+
+    return render(
+        request,
+        "core/admin_config_form.html",
+        {"form": form, "title": title, "config_key": config_key, "item": item},
+    )
+
+
+@role_required(allowed_roles=['admin'])
+def admin_config_delete_view(request, config_key, item_id):
+    config = CONFIG_REGISTRY.get(config_key)
+    if not config:
+        return HttpResponse("Config not found.", status=404)
+
+    Model = config["model"]
+    title = config["title"]
+    item = get_object_or_404(Model, id=item_id)
+
+    if request.method == "POST":
+        item.delete()
+        messages.success(request, f"{title} deleted.")
+        return redirect("admin_config_list", config_key=config_key)
+
+    return render(
+        request,
+        "core/admin_config_delete.html",
+        {"title": title, "config_key": config_key, "item": item},
+    )
+
+
+@role_required(allowed_roles=['admin'])
+def manage_mentee_assignments_view(request):
+    assignments = MentorMenteeAssignment.objects.select_related("mentor", "mentee").order_by("-start_date")
+    if request.method == "POST":
+        form = MentorMenteeAssignmentForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Assignment saved.")
+            return redirect("manage_mentee_assignments")
+    else:
+        form = MentorMenteeAssignmentForm(initial={"start_date": timezone.now().date()})
+
+    return render(
+        request,
+        "core/manage_mentee_assignments.html",
+        {"assignments": assignments, "form": form},
+    )
+
+
 
 @role_required(allowed_roles=['endorser'])
 def endorser_dashboard(request):
     return render(request, 'core/endorser_dashboard.html')
 
 @role_required(allowed_roles=['mentor'])
-def dashboard_view(request):  # mentee dashboard
-    return render(request, "core/dashboard.html")
+def dashboard_view(request):
+    assignments = _active_assignments_qs(request.user).select_related("mentee")
+    mentees = [assignment.mentee for assignment in assignments]
+    context = {
+        "assignments": assignments,
+        "mentees": mentees,
+    }
+    return render(request, "core/mentor_dashboard.html", context)
+
+
+@role_required(allowed_roles=['mentee'])
+def mentee_dashboard_view(request):
+    mentee = _get_mentee_for_user(request.user)
+    if not mentee:
+        messages.warning(request, "Your mentee profile is not set up yet.")
+        return render(request, "core/mentee_dashboard.html", {"mentee": None})
+
+    objectives = ObjectiveItem.objects.filter(mentee=mentee)
+    year_plans = YearPlanItem.objects.filter(mentee=mentee)
+
+    objective_status_counts = (
+        objectives.values("status__name")
+        .annotate(count=Count("id"))
+        .order_by("status__name")
+    )
+    year_plan_counts = (
+        year_plans.values("year")
+        .annotate(count=Count("id"))
+        .order_by("year")
+    )
+
+    context = {
+        "mentee": mentee,
+        "objectives": objectives[:5],
+        "year_plans": year_plans[:5],
+        "objective_status_counts": objective_status_counts,
+        "year_plan_counts": year_plan_counts,
+    }
+    return render(request, "core/mentee_dashboard.html", context)
 
 
 # -------------------- Authentication Redirect --------------------
@@ -119,12 +387,384 @@ def role_redirect_view(request):
     if user.is_superuser or user.role == "admin":
         return redirect("admin_dashboard")
     elif user.role == "mentor":
-        return redirect("dashboard")  # mentee dashboard
+        return redirect("dashboard")
+    elif user.role == "mentee":
+        return redirect("mentee_dashboard")
     elif user.role == "endorser":
         return redirect("endorser_dashboard")
+    elif user.role == "reviewer":
+        return redirect("mentor_mentee_list")
     else:
         # Fallback if role not set
         return redirect("profile")
+
+
+# -------------------- DIP Objective / Year Plan Tracking --------------------
+@login_required
+@role_required(allowed_roles=['mentee'])
+def objective_list_view(request):
+    mentee = _get_mentee_for_user(request.user)
+    if not mentee:
+        messages.warning(request, "Your mentee profile is not set up yet.")
+        return render(request, "core/objective_list.html", {"mentee": None})
+    objectives = ObjectiveItem.objects.filter(mentee=mentee).select_related("status")
+    return render(request, "core/objective_list.html", {"mentee": mentee, "objectives": objectives})
+
+
+@login_required
+@role_required(allowed_roles=['mentee'])
+def objective_create_view(request):
+    mentee = _get_mentee_for_user(request.user)
+    if not mentee:
+        messages.warning(request, "Your mentee profile is not set up yet.")
+        return redirect("mentee_dashboard")
+    if request.method == "POST":
+        form = ObjectiveItemForm(request.POST, request.FILES)
+        if form.is_valid():
+            objective = form.save(commit=False)
+            objective.mentee = mentee
+            objective.created_by = request.user
+            objective.updated_by = request.user
+            objective.save()
+            messages.success(request, "Objective saved.")
+            return redirect("objective_list")
+    else:
+        form = ObjectiveItemForm()
+    return render(request, "core/objective_form.html", {"form": form, "mode": "create"})
+
+
+@login_required
+@role_required(allowed_roles=['mentee'])
+def objective_edit_view(request, objective_id):
+    mentee = _get_mentee_for_user(request.user)
+    if not mentee:
+        messages.warning(request, "Your mentee profile is not set up yet.")
+        return redirect("mentee_dashboard")
+    objective = get_object_or_404(ObjectiveItem, id=objective_id, mentee=mentee)
+    if request.method == "POST":
+        form = ObjectiveItemForm(request.POST, request.FILES, instance=objective)
+        if form.is_valid():
+            objective = form.save(commit=False)
+            objective.updated_by = request.user
+            objective.save()
+            messages.success(request, "Objective updated.")
+            return redirect("objective_list")
+    else:
+        form = ObjectiveItemForm(instance=objective)
+    return render(request, "core/objective_form.html", {"form": form, "mode": "edit", "objective": objective})
+
+
+@login_required
+@role_required(allowed_roles=['mentor', 'reviewer', 'admin'])
+def mentor_mentee_list_view(request):
+    if request.user.role == "mentor":
+        mentees = Mentee.objects.filter(
+            mentor_assignments__in=_active_assignments_qs(request.user)
+        ).distinct()
+    else:
+        mentees = Mentee.objects.all()
+    return render(request, "core/mentor_mentee_list.html", {"mentees": mentees})
+
+
+@login_required
+@role_required(allowed_roles=['mentor', 'reviewer', 'admin'])
+def mentor_objective_list_view(request, mentee_id):
+    mentee = get_object_or_404(Mentee, id=mentee_id)
+    if request.user.role in ["mentor"] and not _mentor_can_access_mentee(request.user, mentee):
+        return HttpResponse("You are not allowed to access this mentee.", status=403)
+    objectives = ObjectiveItem.objects.filter(mentee=mentee).select_related("status")
+    return render(request, "core/mentor_objective_list.html", {"mentee": mentee, "objectives": objectives})
+
+
+@login_required
+@role_required(allowed_roles=['mentor', 'admin'])
+def mentor_objective_update_view(request, objective_id):
+    objective = get_object_or_404(ObjectiveItem, id=objective_id)
+    if request.user.role == "mentor" and not _mentor_can_access_mentee(request.user, objective.mentee):
+        return HttpResponse("You are not allowed to access this mentee.", status=403)
+    if request.method == "POST":
+        form = ObjectiveItemMentorForm(request.POST, instance=objective)
+        if form.is_valid():
+            objective = form.save(commit=False)
+            objective.updated_by = request.user
+            if objective.mentor_approved and objective.approved_at is None:
+                objective.approved_at = timezone.now()
+            objective.save()
+            messages.success(request, "Mentor feedback saved.")
+            return redirect("mentor_objective_list", mentee_id=objective.mentee_id)
+    else:
+        form = ObjectiveItemMentorForm(instance=objective)
+    return render(
+        request,
+        "core/mentor_objective_form.html",
+        {"form": form, "objective": objective},
+    )
+
+
+@login_required
+@role_required(allowed_roles=['mentee'])
+def year_plan_list_view(request):
+    mentee = _get_mentee_for_user(request.user)
+    if not mentee:
+        messages.warning(request, "Your mentee profile is not set up yet.")
+        return render(request, "core/year_plan_list.html", {"mentee": None})
+    year_plans = YearPlanItem.objects.filter(mentee=mentee).select_related("status")
+    return render(request, "core/year_plan_list.html", {"mentee": mentee, "year_plans": year_plans})
+
+
+@login_required
+@role_required(allowed_roles=['mentee'])
+def year_plan_create_view(request):
+    mentee = _get_mentee_for_user(request.user)
+    if not mentee:
+        messages.warning(request, "Your mentee profile is not set up yet.")
+        return redirect("mentee_dashboard")
+    if request.method == "POST":
+        form = YearPlanItemForm(request.POST)
+        if form.is_valid():
+            year_plan = form.save(commit=False)
+            year_plan.mentee = mentee
+            year_plan.created_by = request.user
+            year_plan.updated_by = request.user
+            year_plan.save()
+            messages.success(request, "Year plan saved.")
+            return redirect("year_plan_list")
+    else:
+        form = YearPlanItemForm()
+    return render(request, "core/year_plan_form.html", {"form": form, "mode": "create"})
+
+
+@login_required
+@role_required(allowed_roles=['mentee'])
+def year_plan_edit_view(request, year_plan_id):
+    mentee = _get_mentee_for_user(request.user)
+    if not mentee:
+        messages.warning(request, "Your mentee profile is not set up yet.")
+        return redirect("mentee_dashboard")
+    year_plan = get_object_or_404(YearPlanItem, id=year_plan_id, mentee=mentee)
+    if request.method == "POST":
+        form = YearPlanItemForm(request.POST, instance=year_plan)
+        if form.is_valid():
+            year_plan = form.save(commit=False)
+            year_plan.updated_by = request.user
+            year_plan.save()
+            messages.success(request, "Year plan updated.")
+            return redirect("year_plan_list")
+    else:
+        form = YearPlanItemForm(instance=year_plan)
+    return render(request, "core/year_plan_form.html", {"form": form, "mode": "edit", "year_plan": year_plan})
+
+
+@login_required
+@role_required(allowed_roles=['mentor', 'reviewer', 'admin'])
+def mentor_year_plan_list_view(request, mentee_id):
+    mentee = get_object_or_404(Mentee, id=mentee_id)
+    if request.user.role == "mentor" and not _mentor_can_access_mentee(request.user, mentee):
+        return HttpResponse("You are not allowed to access this mentee.", status=403)
+    year_plans = YearPlanItem.objects.filter(mentee=mentee).select_related("status")
+    return render(request, "core/mentor_year_plan_list.html", {"mentee": mentee, "year_plans": year_plans})
+
+
+@login_required
+@role_required(allowed_roles=['mentor', 'admin'])
+def mentor_year_plan_update_view(request, year_plan_id):
+    year_plan = get_object_or_404(YearPlanItem, id=year_plan_id)
+    if request.user.role == "mentor" and not _mentor_can_access_mentee(request.user, year_plan.mentee):
+        return HttpResponse("You are not allowed to access this mentee.", status=403)
+    if request.method == "POST":
+        form = YearPlanItemMentorForm(request.POST, instance=year_plan)
+        if form.is_valid():
+            year_plan = form.save(commit=False)
+            year_plan.updated_by = request.user
+            year_plan.save()
+            messages.success(request, "Mentor feedback saved.")
+            return redirect("mentor_year_plan_list", mentee_id=year_plan.mentee_id)
+    else:
+        form = YearPlanItemMentorForm(instance=year_plan)
+    return render(
+        request,
+        "core/mentor_year_plan_form.html",
+        {"form": form, "year_plan": year_plan},
+    )
+
+
+@login_required
+@role_required(allowed_roles=['mentee'])
+def mentee_assessment_list_view(request):
+    mentee = _get_mentee_for_user(request.user)
+    if not mentee:
+        messages.warning(request, "Your mentee profile is not set up yet.")
+        return render(request, "core/mentee_assessment_list.html", {"mentee": None})
+    assessments = MenteeAssessment.objects.filter(mentee=mentee).select_related("session_type")
+    return render(
+        request,
+        "core/mentee_assessment_list.html",
+        {"mentee": mentee, "assessments": assessments},
+    )
+
+
+@login_required
+@role_required(allowed_roles=['mentor', 'reviewer', 'admin'])
+def mentor_assessment_list_view(request, mentee_id):
+    mentee = get_object_or_404(Mentee, id=mentee_id)
+    if request.user.role == "mentor" and not _mentor_can_access_mentee(request.user, mentee):
+        return HttpResponse("You are not allowed to access this mentee.", status=403)
+    assessments = MenteeAssessment.objects.filter(mentee=mentee).select_related("session_type")
+    return render(
+        request,
+        "core/mentor_assessment_list.html",
+        {"mentee": mentee, "assessments": assessments},
+    )
+
+
+@login_required
+@role_required(allowed_roles=['mentor', 'admin'])
+def mentor_assessment_create_view(request, mentee_id):
+    mentee = get_object_or_404(Mentee, id=mentee_id)
+    if request.user.role == "mentor" and not _mentor_can_access_mentee(request.user, mentee):
+        return HttpResponse("You are not allowed to access this mentee.", status=403)
+
+    rating_errors = []
+    if request.method == "POST":
+        form = MenteeAssessmentForm(request.POST)
+        if form.is_valid():
+            assessment = form.save(commit=False)
+            assessment.mentee = mentee
+            assessment.mentor = request.user
+            assessment.save()
+
+            domains = _domains_for_year(assessment.year)
+            for domain in domains:
+                value = request.POST.get(f"rating_{domain.id}")
+                if value:
+                    AssessmentRating.objects.update_or_create(
+                        assessment=assessment,
+                        domain=domain,
+                        defaults={"value": int(value)},
+                    )
+                else:
+                    rating_errors.append(domain.name)
+
+            if rating_errors:
+                assessment.delete()
+                messages.error(request, "Please provide ratings for all domains.")
+            else:
+                messages.success(request, "Assessment saved.")
+                return redirect("mentor_assessment_list", mentee_id=mentee.id)
+    else:
+        form = MenteeAssessmentForm(initial={"year": mentee.current_year})
+
+    year_value = form.data.get("year") or form.initial.get("year") or mentee.current_year
+    domains = _domains_for_year(year_value)
+
+    return render(
+        request,
+        "core/mentor_assessment_form.html",
+        {
+            "mentee": mentee,
+            "form": form,
+            "domains": domains,
+            "rating_errors": rating_errors,
+        },
+    )
+
+
+@login_required
+def export_mentee_progress_csv(request, mentee_id):
+    mentee = get_object_or_404(Mentee, id=mentee_id)
+    if request.user.role == "mentee" and mentee.user_id != request.user.id:
+        return HttpResponse("You are not allowed to export this mentee.", status=403)
+    if request.user.role == "mentor" and not _mentor_can_access_mentee(request.user, mentee):
+        return HttpResponse("You are not allowed to export this mentee.", status=403)
+
+    objectives = ObjectiveItem.objects.filter(mentee=mentee).select_related("status")
+    year_plans = YearPlanItem.objects.filter(mentee=mentee).select_related("status")
+    assessments = MenteeAssessment.objects.filter(mentee=mentee).select_related("session_type")
+
+    response = HttpResponse(content_type="text/csv")
+    response["Content-Disposition"] = f'attachment; filename="{mentee.id}_progress.csv"'
+    writer = csv.writer(response)
+
+    writer.writerow(["Objectives"])
+    writer.writerow([
+        "Title",
+        "Objective Text",
+        "Action Items",
+        "Start Date",
+        "End Date",
+        "Expected Outcome",
+        "Status",
+        "Progress %",
+        "Mentee Remarks",
+        "Mentor Comments",
+    ])
+    for obj in objectives:
+        writer.writerow([
+            obj.objective_title,
+            obj.objective_text,
+            obj.action_items,
+            obj.start_date,
+            obj.end_date,
+            obj.expected_outcome,
+            obj.status.name if obj.status else "",
+            obj.progress_percent,
+            obj.mentee_remarks,
+            obj.mentor_comments,
+        ])
+
+    writer.writerow([])
+    writer.writerow(["Year Plans"])
+    writer.writerow([
+        "Year",
+        "Milestone",
+        "Deliverable",
+        "Target Date",
+        "Target Period",
+        "Status",
+        "Remarks",
+        "Mentor Comments",
+        "Review Date",
+    ])
+    for plan in year_plans:
+        writer.writerow([
+            plan.get_year_display(),
+            plan.milestone,
+            plan.deliverable,
+            plan.target_date,
+            plan.target_period,
+            plan.status.name if plan.status else "",
+            plan.remarks,
+            plan.mentor_comments,
+            plan.review_date,
+        ])
+
+    writer.writerow([])
+    writer.writerow(["Assessments"])
+    writer.writerow([
+        "Date",
+        "Year",
+        "Session Type",
+        "Theme/Topic",
+        "Beginning Mood",
+        "End Mood",
+        "Average",
+        "Mentor Remarks",
+        "Action Plan",
+    ])
+    for assessment in assessments:
+        writer.writerow([
+            assessment.date,
+            assessment.get_year_display(),
+            assessment.session_type,
+            assessment.theme_topic,
+            assessment.beginning_mood,
+            assessment.end_mood,
+            assessment.average_score(),
+            assessment.mentor_remarks,
+            assessment.action_plan,
+        ])
+
+    return response
 
 
 
@@ -234,6 +874,11 @@ def transcript_view(request):
 def settings_view(request):
     return HttpResponse("Settings Page")
 
+
+@login_required
+def workflow_guide_view(request):
+    return render(request, "core/workflow_guide.html")
+
 @role_required(allowed_roles=["admin"])
 def manage_user_view(request):
     users = User.objects.exclude(role='admin').order_by("id")  # fetch all users
@@ -250,27 +895,39 @@ def add_user_view(request):
         email = request.POST.get("email")
         phone = request.POST.get("phone")
         role = request.POST.get("role")
+        current_year = request.POST.get("current_year")
+        password = request.POST.get("password")
 
         if not all([first_name, last_name, email, phone, role]):
-            messages.error(request, "⚠️ All fields are required.")
+            messages.error(request, "All fields are required.")
             return redirect("add_user")
 
         if User.objects.filter(email=email).exists():
-            messages.error(request, "⚠️ User with this email already exists.")
+            messages.error(request, "User with this email already exists.")
             return redirect("add_user")
-        role = request.POST.get("role")
+
         user = CustomUser.objects.create(
             username=email,
             email=email,
             first_name=first_name,
             last_name=last_name,
-            role=role,    # Must be 'mentee', 'endorser', or 'admin'
+            role=role,
             phone=phone
         )
-        user.set_unusable_password()
+        if password:
+            user.set_password(password)
+        else:
+            user.set_unusable_password()
         user.save()
 
-        messages.success(request, "✅ User added successfully.")
+        if role == "mentee":
+            Mentee.objects.create(
+                user=user,
+                full_name=f"{first_name} {last_name}".strip(),
+                current_year=int(current_year) if current_year else 1,
+            )
+
+        messages.success(request, "User added successfully.")
         return redirect("manage_user")
 
     return render(request, "core/add_user.html")
@@ -361,7 +1018,7 @@ def profile_edit(request):
     return render(request, 'core/profile_edit.html', {'user': user})
 
 @login_required
-@role_required(allowed_roles=['aendorser'])
+@role_required(allowed_roles=['endorser'])
 def endorser_work_schedule(request):
     endorser = request.user  # The logged-in endorser
 
@@ -486,8 +1143,10 @@ def bulk_upload_users_view(request):
             role = row['ROLE'].lower()
 
             # Validate role
-            if role not in ['endorser', 'mentor']:
-                skipped_rows.append(f"Row {i}: Invalid role '{row['ROLE']}'. Must be 'endorser' or 'mentor'.")
+            if role not in ['endorser', 'mentor', 'mentee', 'reviewer']:
+                skipped_rows.append(
+                    f"Row {i}: Invalid role '{row['ROLE']}'. Must be 'endorser', 'mentor', 'mentee', or 'reviewer'."
+                )
                 continue
 
             # Check for duplicate email
@@ -504,7 +1163,7 @@ def bulk_upload_users_view(request):
                 counter += 1
 
             # Create user
-            CustomUser.objects.create_user(
+            user = CustomUser.objects.create_user(
                 username=username,
                 email=email,
                 first_name=first_name,
@@ -513,6 +1172,12 @@ def bulk_upload_users_view(request):
                 role=role,
                 password='DefaultPass123'  # Or generate a random password
             )
+            if role == "mentee":
+                Mentee.objects.create(
+                    user=user,
+                    full_name=f"{first_name} {last_name}".strip(),
+                    current_year=1,
+                )
             added_count += 1
 
         # Success message

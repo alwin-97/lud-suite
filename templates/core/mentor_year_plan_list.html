@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Mentee Year Plans{% endblock title %}
+
+{% block links %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+{% endblock links %}
+
+{% block content %}
+{% include 'partials/_header.html' %}
+
+<div class="container py-4">
+    <div class="card mb-4">
+        <div class="card-body d-flex justify-content-between align-items-center">
+            <h3 class="mb-0">Year Plans: {{ mentee.full_name }}</h3>
+            <a class="btn btn-outline-secondary" href="{% url 'mentor_mentee_list' %}">Back to Mentees</a>
+        </div>
+    </div>
+
+    {% if year_plans %}
+        <div class="card">
+            <div class="card-header">
+                <span class="fw-semibold">Year Plan Items</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                <table class="table align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Year</th>
+                        <th>Milestone</th>
+                        <th>Status</th>
+                        <th>Mentor Comments</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for plan in year_plans %}
+                        <tr>
+                            <td>{{ plan.get_year_display }}</td>
+                            <td>{{ plan.milestone }}</td>
+                            <td>{{ plan.status|default:"Unassigned" }}</td>
+                            <td>{{ plan.mentor_comments|default:"-" }}</td>
+                            <td class="text-end">
+                                <a class="btn btn-sm btn-outline-primary" href="{% url 'mentor_year_plan_update' plan.id %}">Review</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+                </table>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <p class="text-muted">No year plans yet.</p>
+    {% endif %}
+</div>
+{% endblock content %}
