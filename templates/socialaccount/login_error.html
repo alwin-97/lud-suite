@@ -1,9 +1,9 @@
 {% extends 'base.html' %}
 {% load static %}
-{% load socialaccount %} {# load allauth's tag library #}
+{% load socialaccount %}
 
 {% block title %}
-Login
+Login Error
 {% endblock title %}
 
 {% block links %}
@@ -11,7 +11,6 @@ Login
 {% endblock links %}
 
 {% block content %}
-
 <div class="row m-0 vh-100">
     <div class="col-sm-12 col-lg-6 left">
         <div class="ps-5 pe-5">
@@ -21,18 +20,25 @@ Login
                 Let Us Dream Application Suite is a unified digital platform designed to streamline and manage
                 initiatives, events, collaborations, and impact stories of the Let Us Dream.
                 It empowers coordinators, volunteers, and stakeholders with easy access to planning tools,
-                communication channels, reports, and resources—ensuring transparency, efficiency,
+                communication channels, reports, and resources, ensuring transparency, efficiency,
                 and meaningful engagement across all programs.
             </p>
         </div>
     </div>
-    <div class="col-sm-12 col-lg-6 right">
-        <img src="{% static 'images/lud.png' %}" class="mb-5 mt-5" alt="Let Us Dream Logo">
-        <a href="{% provider_login_url 'google' %}" class="google-btn mb-5">
+    <div class="col-sm-12 col-lg-6 right text-center">
+        <img src="{% static 'images/lud.png' %}" class="mb-4 mt-5" alt="Let Us Dream Logo">
+        <div class="fw-bolder fs-2">Third-Party Login Failure</div>
+        <p class="mt-3">
+            An error occurred while attempting to log in via your third-party account.
+        </p>
+        {% if error %}
+        <p class="text-muted small">{{ error }}</p>
+        {% endif %}
+        <a href="{% provider_login_url 'google' %}" class="google-btn mt-3">
             <img src="{% static 'images/icons/g-logo.png' %}" alt="Google Logo" class="google-logo">
-           <div> Continue with Google</div>
+            <div>Try Google again</div>
         </a>
+        <a href="{% url 'account_login' %}" class="google-btn mt-3">Back to Sign In</a>
     </div>
 </div>
-
 {% endblock content %}
