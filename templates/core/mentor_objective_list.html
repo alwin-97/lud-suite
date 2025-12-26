@@ -43,7 +43,9 @@
                             <td>{{ obj.progress_percent|default:"-" }}{% if obj.progress_percent %}%{% endif %}</td>
                             <td>{{ obj.mentor_comments|default:"-" }}</td>
                             <td class="text-end">
-                                <a class="btn btn-sm btn-outline-primary" href="{% url 'mentor_objective_update' obj.id %}">Review</a>
+                                <a class="btn btn-sm btn-outline-primary" href="{% url 'mentor_objective_update' obj.id %}">
+                                    <i class="fa-solid fa-pen me-1"></i>Review
+                                </a>
                             </td>
                         </tr>
                     {% endfor %}

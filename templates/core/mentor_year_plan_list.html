@@ -43,7 +43,9 @@
                             <td>{{ plan.status|default:"Unassigned" }}</td>
                             <td>{{ plan.mentor_comments|default:"-" }}</td>
                             <td class="text-end">
-                                <a class="btn btn-sm btn-outline-primary" href="{% url 'mentor_year_plan_update' plan.id %}">Review</a>
+                                <a class="btn btn-sm btn-outline-primary" href="{% url 'mentor_year_plan_update' plan.id %}">
+                                    <i class="fa-solid fa-pen me-1"></i>Review
+                                </a>
                             </td>
                         </tr>
                     {% endfor %}

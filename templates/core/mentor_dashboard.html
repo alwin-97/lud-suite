@@ -39,10 +39,18 @@
                                     <td>{{ mentee.full_name }}</td>
                                     <td>{{ mentee.get_current_year_display }}</td>
                                     <td class="text-end">
-                                        <a class="btn btn-sm btn-primary" href="{% url 'mentor_objective_list' mentee.id %}">Objectives</a>
-                                        <a class="btn btn-sm btn-primary" href="{% url 'mentor_year_plan_list' mentee.id %}">Year Plans</a>
-                                        <a class="btn btn-sm btn-primary" href="{% url 'mentor_assessment_list' mentee.id %}">Assessments</a>
-                                        <a class="btn btn-sm btn-outline-secondary" href="{% url 'export_mentee_progress' mentee.id %}">Export</a>
+                                        <a class="btn btn-sm btn-primary" href="{% url 'mentor_objective_list' mentee.id %}">
+                                            <i class="fa-solid fa-bullseye me-1"></i>Objectives
+                                        </a>
+                                        <a class="btn btn-sm btn-primary" href="{% url 'mentor_year_plan_list' mentee.id %}">
+                                            <i class="fa-solid fa-calendar-check me-1"></i>Year Plans
+                                        </a>
+                                        <a class="btn btn-sm btn-primary" href="{% url 'mentor_assessment_list' mentee.id %}">
+                                            <i class="fa-solid fa-clipboard-check me-1"></i>Assessments
+                                        </a>
+                                        <a class="btn btn-sm btn-outline-secondary" href="{% url 'export_mentee_progress' mentee.id %}">
+                                            <i class="fa-solid fa-file-arrow-down me-1"></i>Export
+                                        </a>
                                     </td>
                                 </tr>
                             {% endfor %}
