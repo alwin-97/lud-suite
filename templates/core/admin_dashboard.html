@@ -1,9 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}
-Home
-{% endblock title %}
+{% block title %}Admin Dashboard{% endblock title %}
 
 {% block links %}
 <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
@@ -12,180 +10,190 @@ Home
 {% block content %}
 {% include 'partials/_header.html' %}
 
-<div class="container py-4">
-    <div class="card mb-4">
-        <div class="card-body">
-            <h3 class="mb-0">Admin Dashboard</h3>
+<div class="container py-5">
+    <!-- Welcome Section -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <h1 class="display-5 fw-bold text-primary">Admin Dashboard</h1>
+            <p class="text-muted lead">Overview of system status and quick management actions.</p>
         </div>
     </div>
-    <div class="row g-3">
-        <div class="col-lg-6 col-sm-12">
-            <div class="row g-3">
-                <div class="col-6">
-                    <a href="{% url 'manage_user' %}" class="text-decoration-none">
-                        <div class="card text-center h-100">
-                            <div class="card-body d-flex flex-column align-items-center justify-content-center h-100">
-                                <i class="fa-solid fa-users fa-2xl text-primary mb-2"></i>
-                                <h6 class="fw-semibold mb-0">Manage User</h6>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-                <div class="col-6">
-                    <a href="{% url 'manage_mentee_assignments' %}" class="text-decoration-none">
-                        <div class="card text-center h-100">
-                            <div class="card-body d-flex flex-column align-items-center justify-content-center h-100">
-                                <i class="fa-solid fa-user-group fa-2xl text-primary mb-2"></i>
-                                <h6 class="fw-semibold mb-0">Mentee Assignments</h6>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-            </div>
-            <div class="row g-3 mt-1">
 
-                <div class="col-6">
-                    <a href="{% url 'manage_assignment' %}" class="text-decoration-none">
-                        <div class="dashboard-card card-blue">
-                            <div class="card text-center h-100">
-                                <div class="card-body d-flex flex-column align-items-center justify-content-center h-100">
-                                    <i class="fa-solid fa-link fa-2xl text-primary mb-2"></i>
-                                    <h6 class="fw-semibold mb-0">Manage Assignment</h6>
-                                </div>
-                            </div>
-                        </div>
-                    </a>
+    <!-- Quick Actions Grid -->
+    <div class="row g-4 mb-5">
+        <div class="col-6 col-md-3">
+            <a href="{% url 'manage_user' %}" class="text-decoration-none">
+                <div class="card custom-card h-100">
+                    <div class="card-body d-flex flex-column align-items-center justify-content-center">
+                        <i class="fa-solid fa-users card-icon display-4 mb-3"></i>
+                        <h5 class="card-title">Manage Users</h5>
+                        <p class="small opacity-75 mb-0">Add, edit, or remove users</p>
+                    </div>
                 </div>
-                <div class="col-6">
-                    <a href="{% url 'admin_config_home' %}" class="text-decoration-none">
-                        <div class="dashboard-card card-blue">
-                            <div class="card text-center h-100">
-                                <div class="card-body d-flex flex-column align-items-center justify-content-center h-100">
-                                    <i class="fa-solid fa-sliders fa-2xl text-primary mb-2"></i>
-                                    <h6 class="fw-semibold mb-0">Admin Config</h6>
-                                </div>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-                <div class="col-6">
-                    <a href="{% url 'mentor_mentee_list' %}" class="text-decoration-none">
-                        <div class="dashboard-card card-blue">
-                            <div class="card text-center h-100">
-                                <div class="card-body d-flex flex-column align-items-center justify-content-center h-100">
-                                    <i class="fa-solid fa-users-line fa-2xl text-primary mb-2"></i>
-                                    <h6 class="fw-semibold mb-0">View Mentees</h6>
-                                </div>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-            </div>
-
+            </a>
         </div>
-        <div class="col-lg-6 col-sm-12">
-            <div class="row g-3">
-
-                <div class="col-lg-6 col-md-12">
-                    <div class="card">
-                        <div class="card-header">
-                            <span class="fw-semibold">Overview</span>
-                        </div>
-                        <div class="card-body">
-                            <canvas id="overviewChart" style="height:150px;"></canvas>
-                        </div>
+        <div class="col-6 col-md-3">
+            <a href="{% url 'manage_mentee_assignments' %}" class="text-decoration-none">
+                <div class="card custom-card h-100">
+                    <div class="card-body d-flex flex-column align-items-center justify-content-center">
+                        <i class="fa-solid fa-user-group card-icon display-4 mb-3"></i>
+                        <h5 class="card-title">Mentee Assignments</h5>
+                        <p class="small opacity-75 mb-0">Assign mentees to mentors</p>
                     </div>
                 </div>
-           
-            
-                <!-- Assigned vs Unassigned Endorsers -->
-                <div class="col-lg-6 col-md-6">
-                    <div class="card">
-                        <div class="card-header">
-                            <span class="fw-semibold">Endorsers Assignment</span>
-                        </div>
-                        <div class="card-body">
-                            <canvas id="endorserChart" style="height:150px;"></canvas>
-                        </div>
+            </a>
+        </div>
+        <div class="col-6 col-md-3">
+            <a href="{% url 'manage_assignment' %}" class="text-decoration-none">
+                <div class="card custom-card h-100">
+                    <div class="card-body d-flex flex-column align-items-center justify-content-center">
+                        <i class="fa-solid fa-link card-icon display-4 mb-3"></i>
+                        <h5 class="card-title">General Assignments</h5>
+                        <p class="small opacity-75 mb-0">Manage other assignments</p>
                     </div>
                 </div>
-
-                <!-- Mentors vs Endorsers -->
-                <div class="col-lg-4 col-md-6">
-                    <div class="card">
-                        <div class="card-header">
-                            <span class="fw-semibold">Mentors vs Endorsers</span>
-                        </div>
-                        <div class="card-body">
-                            <canvas id="mentorEndorserChart" style="height:150px;"></canvas>
-                        </div>
+            </a>
+        </div>
+        <div class="col-6 col-md-3">
+            <a href="{% url 'admin_config_home' %}" class="text-decoration-none">
+                <div class="card custom-card h-100">
+                    <div class="card-body d-flex flex-column align-items-center justify-content-center">
+                        <i class="fa-solid fa-sliders card-icon display-4 mb-3"></i>
+                        <h5 class="card-title">Configuration</h5>
+                        <p class="small opacity-75 mb-0">System dropdowns & settings</p>
                     </div>
                 </div>
-                 </div>
-                 
+            </a>
+        </div>
+        <div class="col-6 col-md-3">
+            <a href="{% url 'mentor_mentee_list' %}" class="text-decoration-none">
+                <div class="card custom-card h-100">
+                    <div class="card-body d-flex flex-column align-items-center justify-content-center">
+                        <i class="fa-solid fa-users-line card-icon display-4 mb-3"></i>
+                        <h5 class="card-title">View Mentees</h5>
+                        <p class="small opacity-75 mb-0">Access mentee profiles</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
 
-                
-
-                <!-- Optional: Total Counts Overview -->
-
-
+    <!-- Analytics Section -->
+    <div class="row g-4">
+        <div class="col-lg-4 col-md-6">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom-0 pt-4 px-4">
+                    <h5 class="fw-bold mb-0">User Distribution</h5>
+                </div>
+                <div class="card-body d-flex align-items-center justify-content-center p-4">
+                    <canvas id="overviewChart" style="max-height: 250px;"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 col-md-6">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom-0 pt-4 px-4">
+                    <h5 class="fw-bold mb-0">Endorser Status</h5>
+                </div>
+                <div class="card-body d-flex align-items-center justify-content-center p-4">
+                    <canvas id="endorserChart" style="max-height: 250px;"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 col-md-12">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom-0 pt-4 px-4">
+                    <h5 class="fw-bold mb-0">Mentors vs Endorsers</h5>
+                </div>
+                <div class="card-body d-flex align-items-center justify-content-center p-4">
+                    <canvas id="mentorEndorserChart" style="max-height: 250px;"></canvas>
+                </div>
             </div>
         </div>
     </div>
+</div>
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        // Endorsers Assignment
-        const endorserCtx = document.getElementById('endorserChart').getContext('2d');
-        new Chart(endorserCtx, {
+        // Chart Defaults
+        Chart.defaults.font.family = "'Outfit', sans-serif";
+        Chart.defaults.color = '#64748b';
+
+        // Colors
+        const colors = {
+            primary: '#2f3b81',  // Your brand blue
+            secondary: '#575e71',
+            success: '#10b981',
+            warning: '#f59e0b',
+            info: '#3b82f6',
+            danger: '#ef4444',
+            light: '#e2e8f0'
+        };
+
+        // 1. Endorsers Assignment (Doughnut)
+        new Chart(document.getElementById('endorserChart').getContext('2d'), {
             type: 'doughnut',
             data: {
                 labels: ['Assigned', 'Unassigned'],
                 datasets: [{
                     data: [{{ assigned_endorsers }}, {{ unassigned_endorsers }}],
-            backgroundColor: ['#4CAF50', '#F44336']
+            backgroundColor: [colors.success, colors.light],
+            borderWidth: 0,
+            hoverOffset: 4
         }]
-        },
+            },
         options: {
         responsive: true,
-        plugins: { legend: { position: 'bottom' } }
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20 } }
+        },
+        cutout: '70%'
     }
-    });
+        });
 
-    // Mentors vs Endorsers
-    const mentorEndorserCtx = document.getElementById('mentorEndorserChart').getContext('2d');
-    new Chart(mentorEndorserCtx, {
+    // 2. Mentors vs Endorsers (Pie)
+    new Chart(document.getElementById('mentorEndorserChart').getContext('2d'), {
+        type: 'pie',
+        data: {
+            labels: ['Mentors', 'Endorsers'],
+            datasets: [{
+                data: [{{ total_mentors }}, {{ total_endorsers }}],
+        backgroundColor: [colors.primary, colors.warning],
+        borderWidth: 0
+    }]
+            },
+        options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20 } }
+        }
+    }
+        });
+
+    // 3. User Overview (Bar - repurposed from Doughnut for variety, or keep Doughnut)
+    // Let's keep Doughnut for consistency but stylized
+    new Chart(document.getElementById('overviewChart').getContext('2d'), {
         type: 'doughnut',
         data: {
             labels: ['Mentors', 'Endorsers'],
             datasets: [{
                 data: [{{ total_mentors }}, {{ total_endorsers }}],
-        backgroundColor: ['#2196F3', '#FFC107']
+        backgroundColor: [colors.info, colors.secondary],
+        borderWidth: 0,
+        hoverOffset: 4
     }]
-        },
+            },
         options: {
         responsive: true,
-        plugins: { legend: { position: 'bottom' } }
+        maintainAspectRatio: false,
+        cutout: '60%',
+        plugins: {
+            legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20 } }
+        }
     }
+        });
     });
-
-    // Overview Chart (Mentors vs Endorsers)
-    const overviewCtx = document.getElementById('overviewChart').getContext('2d');
-    new Chart(overviewCtx, {
-        type: 'doughnut',
-        data: {
-            labels: ['Mentors', 'Endorsers'],
-            datasets: [{
-                data: [{{ total_mentors }}, {{ total_endorsers }}],
-        backgroundColor: ['#9C27B0', '#03A9F4']
-    }]
-        },
-        options: {
-        responsive: true,
-        plugins: { legend: { position: 'bottom' } }
-    }
-    });
-});
 </script>
-
 {% endblock %}

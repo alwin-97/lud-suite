@@ -7,58 +7,121 @@
 <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
 {% endblock links %}
 
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Mentor Dashboard{% endblock title %}
+
+{% block links %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+{% endblock links %}
+
 {% block content %}
 {% include 'partials/_header.html' %}
 
-<div class="container py-4">
-    <div class="card mb-4">
-        <div class="card-body d-flex justify-content-between align-items-center">
-            <h3 class="mb-0">Mentor Dashboard</h3>
-            <a class="btn btn-outline-secondary" href="{% url 'mentor_mentee_list' %}">View All Mentees</a>
+<div class="container py-5">
+    <!-- Welcome Section -->
+    <div class="row mb-5 align-items-end">
+        <div class="col-md-8">
+            <h1 class="display-5 fw-bold text-primary">Mentor Dashboard</h1>
+            <p class="text-muted lead mb-0">Manage your mentees and track their progress.</p>
+        </div>
+        <div class="col-md-4 text-md-end mt-3 mt-md-0">
+            <a class="btn btn-outline-primary rounded-pill px-4" href="{% url 'mentor_mentee_list' %}">
+                <i class="fa-solid fa-users me-2"></i>View All Mentees
+            </a>
         </div>
     </div>
 
-    <div class="card">
-        <div class="card-header">
-            <span class="fw-semibold">Assigned Mentees</span>
+    <!-- Stats Overview (Optional / Placeholder for future) -->
+    <!-- You could calculate these in the view, for now we just show the main content -->
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white border-bottom-0 pt-4 px-4 d-flex justify-content-between align-items-center">
+            <h5 class="fw-bold mb-0">Assigned Mentees</h5>
+            <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-2">
+                {{ mentees|length }} Active
+            </span>
         </div>
-        <div class="card-body">
+        <div class="card-body p-0">
             {% if mentees %}
-                <div class="table-responsive">
-                    <table class="table align-middle mb-0">
-                        <thead>
-                            <tr>
-                                <th>Mentee</th>
-                                <th>Current Year</th>
-                                <th class="text-end">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for mentee in mentees %}
-                                <tr>
-                                    <td>{{ mentee.full_name }}</td>
-                                    <td>{{ mentee.get_current_year_display }}</td>
-                                    <td class="text-end">
-                                        <a class="btn btn-sm btn-primary" href="{% url 'mentor_objective_list' mentee.id %}">
-                                            <i class="fa-solid fa-bullseye me-1"></i>Objectives
-                                        </a>
-                                        <a class="btn btn-sm btn-primary" href="{% url 'mentor_year_plan_list' mentee.id %}">
-                                            <i class="fa-solid fa-calendar-check me-1"></i>Year Plans
-                                        </a>
-                                        <a class="btn btn-sm btn-primary" href="{% url 'mentor_assessment_list' mentee.id %}">
-                                            <i class="fa-solid fa-clipboard-check me-1"></i>Assessments
-                                        </a>
-                                        <a class="btn btn-sm btn-outline-secondary" href="{% url 'export_mentee_progress' mentee.id %}">
-                                            <i class="fa-solid fa-file-arrow-down me-1"></i>Export
-                                        </a>
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
+            <div class="table-responsive">
+                <table class="table align-middle table-hover mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="ps-4 py-3">Mentee Name</th>
+                            <th class="py-3">Current Year</th>
+                            <th class="text-end pe-4 py-3">Quick Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for mentee in mentees %}
+                        <tr>
+                            <td class="ps-4">
+                                <div class="d-flex align-items-center">
+                                    <div class="bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center me-3"
+                                        style="width: 40px; height: 40px;">
+                                        <i class="fa-regular fa-user"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-semibold text-dark">{{ mentee.full_name }}</div>
+                                        <div class="small text-muted">{{ mentee.user.email }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge border border-secondary text-secondary rounded-pill fw-normal">
+                                    {{ mentee.get_current_year_display }}
+                                </span>
+                            </td>
+                            <td class="text-end pe-4">
+                                <div class="btn-group">
+                                    <a class="btn btn-sm btn-light text-primary"
+                                        href="{% url 'mentor_objective_list' mentee.id %}" title="Objectives">
+                                        <i class="fa-solid fa-bullseye"></i>
+                                    </a>
+                                    <a class="btn btn-sm btn-light text-primary"
+                                        href="{% url 'mentor_year_plan_list' mentee.id %}" title="Year Plans">
+                                        <i class="fa-solid fa-calendar-check"></i>
+                                    </a>
+                                    <a class="btn btn-sm btn-light text-primary"
+                                        href="{% url 'mentor_assessment_list' mentee.id %}" title="Assessments">
+                                        <i class="fa-solid fa-clipboard-check"></i>
+                                    </a>
+                                    <div class="btn-group">
+                                        <button type="button"
+                                            class="btn btn-sm btn-light text-secondary dropdown-toggle dropdown-toggle-split"
+                                            data-bs-toggle="dropdown" aria-expanded="false">
+                                            <span class="visually-hidden">Toggle Dropdown</span>
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+                                            <li><a class="dropdown-item"
+                                                    href="{% url 'export_mentee_progress' mentee.id %}"><i
+                                                        class="fa-solid fa-file-export me-2 text-muted"></i>Export
+                                                    Data</a></li>
+                                            <li>
+                                                <hr class="dropdown-divider">
+                                            </li>
+                                            <li><a class="dropdown-item"
+                                                    href="{% url 'mentor_objective_list' mentee.id %}">View Full
+                                                    Profile</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
             {% else %}
-                <p class="text-muted mb-0">No assigned mentees.</p>
+            <div class="text-center py-5">
+                <div class="mb-3">
+                    <i class="fa-solid fa-user-slash fa-3x text-muted opacity-50"></i>
+                </div>
+                <h5 class="text-muted">No mentees assigned yet.</h5>
+                <p class="text-muted small">Once you are assigned a mentee, they will appear here.</p>
+            </div>
             {% endif %}
         </div>
     </div>
