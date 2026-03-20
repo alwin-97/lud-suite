@@ -51,11 +51,12 @@
             <div class="panel-body flush">
                 {% if assignments %}
                 <div class="table-responsive">
-                    <table class="table admin-datatable mb-0">
-                        <thead><tr><th>Mentor</th><th>Mentee</th><th>Duration</th><th class="text-end">Status</th></tr></thead>
+                    <table class="table admin-datatable align-middle table-hover mb-0">
+                        <thead><tr><th style="width:50px">#</th><th>Mentor</th><th>Mentee</th><th>Duration</th><th class="text-end">Status</th></tr></thead>
                         <tbody>
                             {% for assignment in assignments %}
                             <tr>
+                                <td>{{ forloop.counter }}</td>
                                 <td class="fw-semibold text-primary">{{ assignment.mentor }}</td>
                                 <td class="fw-semibold">{{ assignment.mentee }}</td>
                                 <td class="small text-muted">{{ assignment.start_date|date:"M d, Y" }} &mdash; {% if assignment.end_date %}{{ assignment.end_date|date:"M d, Y" }}{% else %}Present{% endif %}</td>

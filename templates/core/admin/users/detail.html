@@ -39,11 +39,12 @@
     <div class="panel-body flush">
         {% if activities %}
         <div class="table-responsive">
-            <table class="table admin-datatable mb-0">
-                <thead><tr><th>Activity</th><th>Duration</th><th>Date</th><th>Feedback</th></tr></thead>
+            <table class="table admin-datatable align-middle table-hover mb-0">
+                <thead><tr><th style="width:50px">#</th><th>Activity</th><th>Duration</th><th>Date</th><th>Feedback</th></tr></thead>
                 <tbody>
                     {% for activity in activities %}
                     <tr>
+                        <td>{{ forloop.counter }}</td>
                         <td class="fw-semibold">{{ activity.activity }}</td>
                         <td>{{ activity.duration }}</td>
                         <td class="text-muted">{{ activity.date }}</td>

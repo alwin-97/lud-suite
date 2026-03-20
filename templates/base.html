@@ -60,12 +60,16 @@
     <script>
         $(document).ready(function () {
             // Auto-initialize DataTables
-            $('.datatable').DataTable({
-                responsive: true,
-                language: {
-                    searchPlaceholder: "Search records...",
-                    search: "",
-                }
+            $('.datatable').each(function () {
+                var $t = $(this);
+                if ($.fn.DataTable.isDataTable($t) || $t.find('tbody td[colspan]').length > 0 || $t.find('tbody tr').length === 0) return;
+                $t.DataTable({
+                    responsive: true,
+                    pageLength: 15,
+                    lengthMenu: [10, 15, 25, 50],
+                    dom: '<"row align-items-center mb-3"<"col-sm-6"l><"col-sm-6"f>>rt<"row align-items-center mt-3"<"col-sm-6"i><"col-sm-6"p>>',
+                    language: { search: "", searchPlaceholder: "Search..." }
+                });
             });
             $('.dataTables_filter input').addClass('form-control form-control-sm');
             $('.dataTables_length select').addClass('form-select form-select-sm');

@@ -11,14 +11,25 @@
         </div>
     </div>
 
-    <div class="card mb-4 border-0 shadow-sm">
-        <div class="card-body p-4">
-            <h5 class="card-title fw-bold text-primary mb-3">Submit New Report</h5>
+    <div class="panel mb-4">
+        <div class="panel-header"><h2><i class="fa-solid fa-paper-plane me-2 opacity-50"></i>Submit New Report</h2></div>
+        <div class="panel-body admin-form">
             <form method="post" enctype="multipart/form-data">
                 {% csrf_token %}
-                {{ form.as_p }}
-                <button type="submit" class="btn btn-primary mt-3 px-4 rounded-pill">
-                    <i class="fa-solid fa-paper-plane me-2"></i>Submit Report
+                <div class="row g-3">
+                    <div class="col-md-3"><label class="form-label">Programme</label>{{ form.programme }}</div>
+                    <div class="col-md-3"><label class="form-label">Location</label>{{ form.location }}</div>
+                    <div class="col-md-3"><label class="form-label">Activity Name</label>{{ form.activity_name }}</div>
+                    <div class="col-md-3"><label class="form-label">Duration (Hrs)</label>{{ form.duration }}</div>
+                    <div class="col-md-4"><label class="form-label">Endorser</label>{{ form.endorser }}</div>
+                    <div class="col-md-4"><label class="form-label">Date</label>{{ form.date }}</div>
+                    <div class="col-md-4"><label class="form-label">Status</label>{{ form.status }}</div>
+                    <div class="col-md-6"><label class="form-label">Key Learnings</label>{{ form.learnings }}</div>
+                    <div class="col-md-6"><label class="form-label">Feedback</label>{{ form.feedback }}</div>
+                    <div class="col-md-6"><label class="form-label">Photo Evidence</label>{{ form.photo }}</div>
+                </div>
+                <button type="submit" class="btn btn-sm btn-primary mt-3">
+                    <i class="fa-solid fa-paper-plane me-1"></i>Submit Report
                 </button>
             </form>
         </div>

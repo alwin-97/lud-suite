@@ -18,8 +18,9 @@
     <div class="panel-header"><h2><i class="fa-solid fa-user-shield me-2 opacity-50"></i>Manage User Roles</h2></div>
     <div class="panel-body flush">
         <div class="table-responsive">
-            <table id="roleTable" class="table admin-datatable mb-0">
+            <table id="roleTable" class="table admin-datatable align-middle table-hover mb-0">
                 <thead><tr>
+                    <th style="width:50px">#</th>
                     <th>User</th>
                     <th>Active Role</th>
                     <th>All Roles</th>
@@ -28,6 +29,7 @@
                 <tbody>
                     {% for u in users %}
                     <tr>
+                        <td>{{ forloop.counter }}</td>
                         <td>
                             <div class="d-flex align-items-center">
                                 <div class="bg-light text-secondary rounded-circle d-flex align-items-center justify-content-center me-2" style="width:34px;height:34px;font-size:.85rem">

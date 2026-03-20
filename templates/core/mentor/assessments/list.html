@@ -4,9 +4,9 @@
 
 {% block breadcrumb %}
 <a href="{% url 'dashboard' %}" class="text-muted"><i class="fa-solid fa-house fa-sm me-1"></i>Dashboard</a>
-<i class="fa-solid fa-chevron-right fa-2xs mx-2 text-muted"></i>
+<span class="mx-2 text-muted">/</span>
 <a href="{% url 'mentor_mentee_list' %}" class="text-muted">Mentees</a>
-<i class="fa-solid fa-chevron-right fa-2xs mx-2 text-muted"></i>
+<span class="mx-2 text-muted">/</span>
 <span>Assessments</span>
 {% endblock %}
 
@@ -24,15 +24,14 @@
 </div>
 
     {% if assessments %}
-        <div class="card">
-            <div class="card-header">
-                <span class="fw-semibold">Assessment History</span>
-            </div>
-            <div class="card-body p-0">
+        <div class="panel">
+            <div class="panel-header"><h2><i class="fa-solid fa-clipboard-check me-2 opacity-50"></i>Assessment History</h2></div>
+            <div class="panel-body flush">
                 <div class="table-responsive">
-                <table class="table align-middle mb-0">
+                <table class="table admin-datatable align-middle table-hover mb-0">
                 <thead>
                     <tr>
+                        <th style="width:50px">#</th>
                         <th>Date</th>
                         <th>Year</th>
                         <th>Session Type</th>
@@ -42,6 +41,7 @@
                 <tbody>
                     {% for assessment in assessments %}
                         <tr>
+                            <td>{{ forloop.counter }}</td>
                             <td>{{ assessment.date }}</td>
                             <td>{{ assessment.get_year_display }}</td>
                             <td>{{ assessment.session_type }}</td>

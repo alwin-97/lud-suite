@@ -37,11 +37,12 @@
     <div class="panel-header"><h2><i class="fa-solid fa-users-between-lines me-2 opacity-50"></i>Endorser Status</h2></div>
     <div class="panel-body flush">
         <div class="table-responsive">
-            <table id="endorsersTable" class="table admin-datatable mb-0">
-                <thead><tr><th>Endorser</th><th>Email</th><th class="text-center">Mentors</th><th class="text-end" style="width:180px">Action</th></tr></thead>
+            <table id="endorsersTable" class="table admin-datatable align-middle table-hover mb-0">
+                <thead><tr><th style="width:50px">#</th><th>Endorser</th><th>Email</th><th class="text-center">Mentors</th><th class="text-end" style="width:180px">Action</th></tr></thead>
                 <tbody>
                     {% for data in endorsers_with_counts %}
                     <tr>
+                        <td>{{ forloop.counter }}</td>
                         <td class="fw-semibold">{{ data.endorser.first_name }} {{ data.endorser.last_name }}</td>
                         <td class="text-muted">{{ data.endorser.email }}</td>
                         <td class="text-center">
@@ -110,10 +111,6 @@
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
 $(function(){
-    if ($('#endorsersTable').length && $('#endorsersTable tbody td[colspan]').length === 0) {
-        $('#endorsersTable').DataTable({language:{search:"_INPUT_",searchPlaceholder:"Search endorsers..."},dom:'<"d-flex justify-content-between align-items-center mb-3"f>t<"d-flex justify-content-between align-items-center mt-3"ip>'});
-    }
-
     $('.assign-btn').on('click',function(){
         var id=$(this).data('endorser'),name=$(this).data('endorser-name');
         $('#endorserId').val(id);$('#endorserNameModal').text(name);

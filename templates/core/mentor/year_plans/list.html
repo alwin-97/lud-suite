@@ -4,9 +4,9 @@
 
 {% block breadcrumb %}
 <a href="{% url 'dashboard' %}" class="text-muted"><i class="fa-solid fa-house fa-sm me-1"></i>Dashboard</a>
-<i class="fa-solid fa-chevron-right fa-2xs mx-2 text-muted"></i>
+<span class="mx-2 text-muted">/</span>
 <a href="{% url 'mentor_mentee_list' %}" class="text-muted">Mentees</a>
-<i class="fa-solid fa-chevron-right fa-2xs mx-2 text-muted"></i>
+<span class="mx-2 text-muted">/</span>
 <span>Year Plans</span>
 {% endblock %}
 
@@ -17,15 +17,14 @@
 </div>
 
     {% if year_plans %}
-        <div class="card">
-            <div class="card-header">
-                <span class="fw-semibold">Year Plan Items</span>
-            </div>
-            <div class="card-body p-0">
+        <div class="panel">
+            <div class="panel-header"><h2><i class="fa-solid fa-calendar-days me-2 opacity-50"></i>Year Plan Items</h2></div>
+            <div class="panel-body flush">
                 <div class="table-responsive">
-                <table class="table align-middle mb-0">
+                <table class="table admin-datatable align-middle table-hover mb-0">
                 <thead>
                     <tr>
+                        <th style="width:50px">#</th>
                         <th>Year</th>
                         <th>Milestone</th>
                         <th>Status</th>
@@ -36,6 +35,7 @@
                 <tbody>
                     {% for plan in year_plans %}
                         <tr>
+                            <td>{{ forloop.counter }}</td>
                             <td>{{ plan.get_year_display }}</td>
                             <td>{{ plan.milestone }}</td>
                             <td>{{ plan.status|default:"Unassigned" }}</td>

@@ -5,7 +5,7 @@
 
 {% block breadcrumb %}
 <a href="{% url 'dashboard' %}" class="text-muted"><i class="fa-solid fa-house fa-sm me-1"></i>Dashboard</a>
-<i class="fa-solid fa-chevron-right fa-2xs mx-2 text-muted"></i>
+<span class="mx-2 text-muted">/</span>
 <span>DIP YCLP</span>
 {% endblock %}
 
@@ -120,11 +120,11 @@
                 <label class="form-label small text-uppercase fw-bold text-muted">Duration (Hrs)</label>
                 {{ form.duration }}
               </div>
-              <div class="col-md-12">
+              <div class="col-md-6">
                 <label class="form-label small text-uppercase fw-bold text-muted">Activity Type</label>
                 {{ form.activity }}
               </div>
-              <div class="col-md-12" id="other-activity-container" style="display:none;">
+              <div class="col-md-6" id="other-activity-container" style="display:none;">
                 <label class="form-label small text-uppercase fw-bold text-muted">Specify Activity</label>
                 {{ form.other_activity }}
               </div>
@@ -132,11 +132,11 @@
                 <label class="form-label small text-uppercase fw-bold text-muted">Key Learnings</label>
                 {{ form.learnings }}
               </div>
-              <div class="col-12">
+              <div class="col-md-6">
                 <label class="form-label small text-uppercase fw-bold text-muted">Photo Evidence</label>
                 {{ form.photo }}
               </div>
-              <div class="col-12">
+              <div class="col-md-6">
                 <label class="form-label small text-uppercase fw-bold text-muted">Feedback/Notes</label>
                 {{ form.feedback }}
               </div>

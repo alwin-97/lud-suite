@@ -19,11 +19,12 @@
 <div class="panel">
     <div class="panel-body flush">
         <div class="table-responsive">
-            <table class="table admin-datatable mb-0">
-                <thead><tr><th>File</th><th>Total</th><th>Imported</th><th>Errors</th><th>By</th><th>Date</th><th style="width:80px"></th></tr></thead>
+            <table class="table admin-datatable align-middle table-hover mb-0">
+                <thead><tr><th style="width:50px">#</th><th>File</th><th>Total</th><th>Imported</th><th>Errors</th><th>By</th><th>Date</th><th style="width:80px"></th></tr></thead>
                 <tbody>
                     {% for log in logs %}
                     <tr>
+                        <td>{{ forloop.counter }}</td>
                         <td>{{ log.file_name }}</td>
                         <td>{{ log.total_rows }}</td>
                         <td class="text-success fw-semibold">{{ log.success_count }}</td>

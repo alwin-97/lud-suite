@@ -18,7 +18,14 @@
     <div class="panel-body admin-form">
         <form method="post">
             {% csrf_token %}
-            {{ form.as_p }}
+            <div class="row g-3">
+                {% for field in form %}
+                <div class="{% if field.field.widget.attrs.rows %}col-12{% else %}col-md-6{% endif %}">
+                    <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                    {{ field }}
+                </div>
+                {% endfor %}
+            </div>
             <div class="d-flex gap-2 mt-3">
                 <button type="submit" class="btn btn-sm btn-primary"><i class="fa-solid fa-check me-1"></i>Save</button>
                 <a class="btn btn-sm btn-outline-secondary" href="{% url 'admin_config_list' config_key %}">Cancel</a>

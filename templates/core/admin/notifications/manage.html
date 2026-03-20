@@ -34,11 +34,12 @@
     <div class="panel-header"><h2><i class="fa-solid fa-clock-rotate-left me-2 opacity-50"></i>Recent Notifications</h2></div>
     <div class="panel-body flush">
         <div class="table-responsive">
-            <table class="table admin-datatable mb-0">
-                <thead><tr><th>Subject</th><th>Message</th><th>Target</th><th>Sent By</th><th>Date</th><th class="text-end" style="width:80px"></th></tr></thead>
+            <table class="table admin-datatable align-middle table-hover mb-0">
+                <thead><tr><th style="width:50px">#</th><th>Subject</th><th>Message</th><th>Target</th><th>Sent By</th><th>Date</th><th class="text-end" style="width:80px"></th></tr></thead>
                 <tbody>
                     {% for n in notifications %}
                     <tr>
+                        <td>{{ forloop.counter }}</td>
                         <td class="fw-semibold">{{ n.subject|default:"-" }}</td>
                         <td>{{ n.message|truncatewords:15 }}</td>
                         <td><span class="role-badge">{{ n.get_target_group_display }}</span></td>

@@ -37,5 +37,14 @@ steps.
 
          python manage.py migrate
 
+3. Populating seed / configuration data
+
+   After migrations are applied, run the following command to populate the configuration master data (schools, locations,
+   chapters, academic cycles, programmes, statuses, session types, rating domains, domain indicators, rating scales,
+   mood categories, reference content, and template configs). The command is idempotent — running it multiple times will
+   never create duplicate records.
+
+         python manage.py seed_config_data
+
 Inorder to make the migrations apply, there should be migrations folder and the \____init____.py files to be present in
 the apps that are present in the project, this folder and file might have been removed from tracking to GitHub.

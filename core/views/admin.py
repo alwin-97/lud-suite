@@ -221,10 +221,12 @@ def admin_config_list_view(request, config_key):
     else:
         form = form_class()
 
+    items_with_forms = [(item, form_class(instance=item)) for item in items]
+
     return render(
         request,
         ADMIN_CONFIG_LIST_TEMPLATE,
-        {"items": items, "form": form, "title": title, "config_key": config_key, "active_page": "config"},
+        {"items": items, "items_with_forms": items_with_forms, "form": form, "title": title, "config_key": config_key, "active_page": "config"},
     )
 
 
@@ -244,15 +246,10 @@ def admin_config_edit_view(request, config_key, item_id):
         if form.is_valid():
             form.save()
             messages.success(request, f"{title} updated.")
-            return redirect("admin_config_list", config_key=config_key)
-    else:
-        form = form_class(instance=item)
-
-    return render(
-        request,
-        ADMIN_CONFIG_FORM_TEMPLATE,
-        {"form": form, "title": title, "config_key": config_key, "item": item, "active_page": "config"},
-    )
+        else:
+            messages.error(request, f"Failed to update {title}. Please ensure submitted fields are valid.")
+            
+    return redirect("admin_config_list", config_key=config_key)
 
 
 @role_required(allowed_roles=["admin"])

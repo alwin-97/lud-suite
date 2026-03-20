@@ -30,16 +30,18 @@
     <div class="panel-header"><h2><i class="fa-solid fa-users me-2 opacity-50"></i>System Users</h2></div>
     <div class="panel-body flush">
         <div class="table-responsive">
-            <table id="usersTable" class="table admin-datatable mb-0">
+            <table id="usersTable" class="table admin-datatable align-middle table-hover mb-0">
                 <thead><tr>
+                    <th style="width:50px">#</th>
                     <th>User</th>
                     <th>Role</th>
                     <th>Contact</th>
-                    <th class="text-end" style="width:140px">Actions</th>
+                    <th class="text-end" data-orderable="false" style="width:140px">Actions</th>
                 </tr></thead>
                 <tbody>
                     {% for user in users %}
                     <tr>
+                        <td>{{ forloop.counter }}</td>
                         <td>
                             <div class="d-flex align-items-center">
                                 <div class="bg-light text-secondary rounded-circle d-flex align-items-center justify-content-center me-2" style="width:34px;height:34px;font-size:.85rem">
@@ -63,7 +65,7 @@
                         </td>
                     </tr>
                     {% empty %}
-                    <tr><td colspan="4"><div class="empty-state"><i class="fa-solid fa-users-slash d-block"></i>No users found.</div></td></tr>
+                    <tr><td colspan="5"><div class="empty-state"><i class="fa-solid fa-users-slash d-block"></i>No users found.</div></td></tr>
                     {% endfor %}
                 </tbody>
             </table>
@@ -82,8 +84,8 @@
                     <div class="row g-3">
                         <div class="col-md-6"><label class="form-label">First Name</label><input type="text" name="first_name" class="form-control" required></div>
                         <div class="col-md-6"><label class="form-label">Last Name</label><input type="text" name="last_name" class="form-control" required></div>
-                        <div class="col-12"><label class="form-label">Email</label><input type="email" name="email" class="form-control" required></div>
-                        <div class="col-12"><label class="form-label">Phone</label><input type="text" name="phone" class="form-control" required></div>
+                        <div class="col-md-6"><label class="form-label">Email</label><input type="email" name="email" class="form-control" required></div>
+                        <div class="col-md-6"><label class="form-label">Phone</label><input type="text" name="phone" class="form-control" required></div>
                         <div class="col-md-6">
                             <label class="form-label">Primary Role</label>
                             <select name="role" class="form-select" required>
@@ -118,7 +120,7 @@
                         <div class="col-md-6"><label class="form-label">Year (Mentee)</label>
                             <select name="current_year" class="form-select"><option value="">N/A</option><option value="1">Year 1</option><option value="2">Year 2</option><option value="3">Year 3</option><option value="4">Year 4</option></select>
                         </div>
-                        <div class="col-12"><label class="form-label">Password</label><input type="password" name="password" class="form-control" placeholder="Optional"><div class="form-text small">Leave blank for SSO.</div></div>
+                        <div class="col-md-6"><label class="form-label">Password</label><input type="password" name="password" class="form-control" placeholder="Optional"><div class="form-text small">Leave blank for SSO.</div></div>
                     </div>
                     <div class="d-flex justify-content-end mt-4">
                         <button type="button" class="btn btn-sm btn-outline-secondary me-2" data-bs-dismiss="modal">Cancel</button>
@@ -142,8 +144,8 @@
                     <div class="row g-3">
                         <div class="col-md-6"><label class="form-label">First Name</label><input type="text" name="first_name" value="{{ user.first_name }}" class="form-control" required></div>
                         <div class="col-md-6"><label class="form-label">Last Name</label><input type="text" name="last_name" value="{{ user.last_name }}" class="form-control" required></div>
-                        <div class="col-12"><label class="form-label">Email</label><input type="email" name="email" value="{{ user.email }}" class="form-control" required></div>
-                        <div class="col-12"><label class="form-label">Phone</label><input type="text" name="phone" value="{{ user.phone }}" class="form-control" required></div>
+                        <div class="col-md-6"><label class="form-label">Email</label><input type="email" name="email" value="{{ user.email }}" class="form-control" required></div>
+                        <div class="col-md-6"><label class="form-label">Phone</label><input type="text" name="phone" value="{{ user.phone }}" class="form-control" required></div>
                         <div class="col-md-6">
                             <label class="form-label">Primary Role</label>
                             <select name="role" class="form-select" required>
@@ -184,7 +186,7 @@
                                 <option value="4" {% if user.mentee_profile_safe and user.mentee_profile_safe.current_year == 4 %}selected{% endif %}>Year 4</option>
                             </select>
                         </div>
-                        <div class="col-12"><label class="form-label">New Password</label><input type="password" name="password" class="form-control" placeholder="Leave blank to keep current"></div>
+                        <div class="col-md-6"><label class="form-label">New Password</label><input type="password" name="password" class="form-control" placeholder="Leave blank to keep current"></div>
                     </div>
                     <div class="d-flex justify-content-end mt-4">
                         <button type="button" class="btn btn-sm btn-outline-secondary me-2" data-bs-dismiss="modal">Cancel</button>
@@ -247,14 +249,6 @@
 document.addEventListener("DOMContentLoaded", function(){
     var tt=[].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
     tt.map(function(el){return new bootstrap.Tooltip(el)});
-    if ($('#usersTable').length && $('#usersTable tbody td[colspan]').length === 0) {
-        $('#usersTable').DataTable({
-            pageLength:10,lengthMenu:[5,10,25,50],ordering:true,searching:true,info:true,
-            dom:'<"row mb-3"<"col-md-6"f><"col-md-6 text-end"l>>rtip',
-            language:{search:"",searchPlaceholder:"Search users..."},
-            columnDefs:[{orderable:false,targets:3}]
-        });
-    }
 });
 </script>
 {% endblock %}

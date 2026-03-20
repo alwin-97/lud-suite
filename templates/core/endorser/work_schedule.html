@@ -4,7 +4,7 @@
 
 {% block breadcrumb %}
 <a href="{% url 'endorser_dashboard' %}" class="text-muted"><i class="fa-solid fa-house fa-sm me-1"></i>Dashboard</a>
-<i class="fa-solid fa-chevron-right fa-2xs mx-2 text-muted"></i>
+<span class="mx-2 text-muted">/</span>
 <span>Work Schedule</span>
 {% endblock %}
 
@@ -18,8 +18,9 @@
             </div>
         </div>
 
-            <div class="card border-0 shadow-sm">
-                <div class="card-body p-5">
+            <div class="panel">
+                <div class="panel-header"><h2><i class="fa-solid fa-calendar-check me-2 opacity-50"></i>Schedule Details</h2></div>
+                <div class="panel-body admin-form">
 
                     {% if messages %}
                     {% for message in messages %}
@@ -34,47 +35,39 @@
 
                     <form method="POST" novalidate>
                         {% csrf_token %}
-
-                        <!-- Mentors -->
-                        <div class="mb-4">
-                            <label class="form-label fw-bold small text-uppercase text-muted">Select Mentors</label>
-                            <div class="form-check-group border rounded-3 p-3 bg-light">
-                                {% for checkbox in form.mentors %}
-                                <div class="form-check mb-2">
-                                    {{ checkbox.tag }}
-                                    <label class="form-check-label ms-2 fw-semibold" for="{{ checkbox.id_for_label }}">
-                                        {{ checkbox.choice_label }}
-                                    </label>
+                        <div class="row g-3">
+                            <!-- Mentors (full width) -->
+                            <div class="col-12">
+                                <label class="form-label">Select Mentors</label>
+                                <div class="form-check-group border rounded-3 p-3 bg-light">
+                                    {% for checkbox in form.mentors %}
+                                    <div class="form-check form-check-inline mb-2">
+                                        {{ checkbox.tag }}
+                                        <label class="form-check-label ms-1" for="{{ checkbox.id_for_label }}">
+                                            {{ checkbox.choice_label }}
+                                        </label>
+                                    </div>
+                                    {% empty %}
+                                    <p class="text-muted small mb-0 text-center"><i class="fa-solid fa-user-slash me-2"></i>No mentors assigned to you.</p>
+                                    {% endfor %}
                                 </div>
-                                {% empty %}
-                                <p class="text-muted small mb-0 text-center"><i
-                                        class="fa-solid fa-user-slash me-2"></i>No mentors assigned to you.</p>
-                                {% endfor %}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Role</label>
+                                {{ form.role }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Due Date</label>
+                                {{ form.due_date }}
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Description</label>
+                                {{ form.description }}
                             </div>
                         </div>
-
-                        <!-- Role -->
-                        <div class="mb-4">
-                            <label class="form-label fw-bold small text-uppercase text-muted">Role</label>
-                            {{ form.role }}
-                        </div>
-
-                        <!-- Due Date -->
-                        <div class="mb-4">
-                            <label class="form-label fw-bold small text-uppercase text-muted">Due Date</label>
-                            {{ form.due_date }}
-                        </div>
-
-                        <!-- Description -->
-                        <div class="mb-4">
-                            <label class="form-label fw-bold small text-uppercase text-muted">Description</label>
-                            {{ form.description }}
-                        </div>
-
-                        <!-- Submit -->
-                        <div class="d-grid mt-5 pt-3 border-top">
-                            <button type="submit" class="btn btn-primary btn-lg fw-bold">
-                                <i class="fa-regular fa-paper-plane me-2"></i>Send Schedule
+                        <div class="d-flex justify-content-end mt-4 pt-3 border-top">
+                            <button type="submit" class="btn btn-sm btn-primary">
+                                <i class="fa-regular fa-paper-plane me-1"></i>Send Schedule
                             </button>
                         </div>
                     </form>

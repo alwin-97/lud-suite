@@ -110,7 +110,7 @@ body { font-family: var(--admin-font); background: var(--admin-bg); }
 .topbar-breadcrumb .breadcrumb { margin: 0; font-size: .85rem; }
 .topbar-breadcrumb a { text-decoration: none; color: #6b7280; }
 .topbar-breadcrumb a:hover { color: var(--sidebar-active); }
-.topbar-breadcrumb .breadcrumb-item + .breadcrumb-item::before { font-family: "Font Awesome 6 Free"; font-weight: 900; content: "\f054"; font-size: .55rem; vertical-align: middle; color: #9ca3af; }
+.topbar-breadcrumb .breadcrumb-item + .breadcrumb-item::before { content: "/"; font-size: .75rem; vertical-align: middle; color: #9ca3af; }
 .topbar-right { display: flex; align-items: center; gap: .75rem; }
 .topbar-user {
     display: flex;
@@ -383,6 +383,91 @@ body { font-family: var(--admin-font); background: var(--admin-bg); }
 .feed-title { font-size: .85rem; font-weight: 600; color: #1f2937; }
 .feed-sub { font-size: .78rem; color: #6b7280; margin-top: .1rem; }
 .feed-time { font-size: .72rem; color: #9ca3af; white-space: nowrap; }
+
+/* ===== DataTables inside panels / cards ===== */
+.panel .dataTables_wrapper,
+.card .dataTables_wrapper {
+    padding: 0;
+}
+.panel .dataTables_length,
+.panel .dataTables_filter,
+.panel .dataTables_info,
+.panel .dataTables_paginate,
+.card .dataTables_length,
+.card .dataTables_filter,
+.card .dataTables_info,
+.card .dataTables_paginate {
+    padding: .75rem 1.25rem;
+}
+.panel .dataTables_length,
+.panel .dataTables_filter,
+.card .dataTables_length,
+.card .dataTables_filter {
+    background: #f9fafb;
+    border-bottom: 1px solid #f0f2f5;
+}
+.panel .dataTables_info,
+.panel .dataTables_paginate,
+.card .dataTables_info,
+.card .dataTables_paginate {
+    border-top: 1px solid #f0f2f5;
+}
+.dataTables_wrapper .dataTables_length label,
+.dataTables_wrapper .dataTables_info {
+    font-size: .8rem;
+    color: #6b7280;
+    font-weight: 500;
+}
+.dataTables_wrapper .dataTables_length select.form-select {
+    display: inline-block;
+    width: auto;
+    font-size: .8rem;
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
+    padding: .35rem 2rem .35rem .75rem;
+    margin: 0 .35rem;
+    color: #1f2937;
+}
+.dataTables_wrapper .dataTables_filter input.form-control {
+    font-size: .8rem;
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
+    padding: .4rem .75rem;
+    min-width: 200px;
+}
+.dataTables_wrapper .dataTables_filter input.form-control:focus {
+    border-color: var(--sidebar-active);
+    box-shadow: 0 0 0 3px rgba(11,93,82,.12);
+}
+.dataTables_wrapper .dataTables_paginate .pagination .page-link {
+    font-size: .8rem;
+    padding: .35rem .7rem;
+    border-radius: 6px !important;
+    margin-left: 3px;
+    border: 1px solid #d1d5db;
+    color: #374151;
+    background: #fff;
+}
+.dataTables_wrapper .dataTables_paginate .pagination .page-link:hover {
+    background: #f0f2f5;
+    color: var(--sidebar-active);
+    border-color: var(--sidebar-active);
+}
+.dataTables_wrapper .dataTables_paginate .pagination .page-item.active .page-link {
+    background: var(--sidebar-active);
+    color: #fff;
+    border-color: var(--sidebar-active);
+    font-weight: 600;
+}
+.dataTables_wrapper .dataTables_paginate .pagination .page-item.disabled .page-link {
+    color: #9ca3af;
+    background: #f9fafb;
+    border-color: #e5e7eb;
+}
+.dataTables_wrapper table.dataTable {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+}
 
 /* Django form widget overrides for admin forms */
 .admin-form p { margin-bottom: .75rem; }

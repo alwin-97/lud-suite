@@ -4,7 +4,7 @@
 
 {% block breadcrumb %}
 <a href="{% url 'endorser_dashboard' %}" class="text-muted"><i class="fa-solid fa-house fa-sm me-1"></i>Dashboard</a>
-<i class="fa-solid fa-chevron-right fa-2xs mx-2 text-muted"></i>
+<span class="mx-2 text-muted">/</span>
 <span>Mentors Assigned</span>
 {% endblock %}
 
@@ -12,23 +12,23 @@
 <div class="mb-4">
     <h4 class="fw-bold mb-0">Mentors Assigned to You</h4>
 </div>
-<div class="card">
-    <div class="card-body p-0">
+<div class="panel">
+    <div class="panel-header"><h2><i class="fa-solid fa-users me-2 opacity-50"></i>Assigned Mentors</h2></div>
+    <div class="panel-body flush">
                 <div class="table-responsive">
-                    <table id="mentorsTable"
-                        class="table table-hover align-middle mb-0">
+                    <table id="mentorsTable" class="table admin-datatable align-middle table-hover mb-0">
                         <thead class="table-light">
                             <tr>
-                                <th class="text-center">ID</th>
+                                <th class="text-center" style="width:50px">#</th>
                                 <th class="text-center">Name</th>
                                 <th class="text-center">Email</th>
-                                <th class="text-center">Actions</th>
+                                <th class="text-center" data-orderable="false">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for mentor in assigned_mentors %}
                             <tr>
-                                <td class="text-center">{{ mentor.id }}</td>
+                                <td class="text-center">{{ forloop.counter }}</td>
                                 <td class="text-center">{{ mentor.first_name }} {{ mentor.last_name }}</td>
                                 <td class="text-center">{{ mentor.email }}</td>
                                 <td class="text-center">
@@ -128,17 +128,6 @@
     document.addEventListener("DOMContentLoaded", function () {
         var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
         tooltipTriggerList.map(function (el) { return new bootstrap.Tooltip(el); });
-
-        if ($('#mentorsTable').length && $('#mentorsTable tbody td[colspan]').length === 0) {
-            $('#mentorsTable').DataTable({
-                pageLength: 10,
-                lengthMenu: [5, 10, 25, 50],
-                ordering: true,
-                searching: true,
-                info: true,
-                columnDefs: [{ orderable: false, targets: 3 }]
-            });
-        }
     });
 </script>
 {% endblock extra_js %}

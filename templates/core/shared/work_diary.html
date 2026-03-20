@@ -11,14 +11,21 @@
         </div>
     </div>
 
-    <div class="card mb-4 border-0 shadow-sm">
-        <div class="card-body p-4">
-            <h5 class="card-title fw-bold text-primary mb-3">Add New Entry</h5>
+    <div class="panel mb-4">
+        <div class="panel-header"><h2><i class="fa-solid fa-pen-to-square me-2 opacity-50"></i>Add New Entry</h2></div>
+        <div class="panel-body admin-form">
             <form method="post">
                 {% csrf_token %}
-                {{ form.as_p }}
-                <button type="submit" class="btn btn-primary mt-3 px-4 rounded-pill">
-                    <i class="fa-solid fa-paper-plane me-2"></i>Submit Entry
+                <div class="row g-3">
+                    <div class="col-md-3"><label class="form-label">Date</label>{{ form.date }}</div>
+                    <div class="col-md-3"><label class="form-label">Duration (Hrs)</label>{{ form.duration }}</div>
+                    <div class="col-md-3"><label class="form-label">Location</label>{{ form.location }}</div>
+                    <div class="col-md-3"><label class="form-label">Linked Activity</label>{{ form.linked_activity }}</div>
+                    <div class="col-md-6"><label class="form-label">Narrative Entry</label>{{ form.narrative_entry }}</div>
+                    <div class="col-md-6"><label class="form-label">Review Status</label>{{ form.review_status }}</div>
+                </div>
+                <button type="submit" class="btn btn-sm btn-primary mt-3">
+                    <i class="fa-solid fa-paper-plane me-1"></i>Submit Entry
                 </button>
             </form>
         </div>

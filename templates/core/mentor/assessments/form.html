@@ -4,9 +4,9 @@
 
 {% block breadcrumb %}
 <a href="{% url 'dashboard' %}" class="text-muted"><i class="fa-solid fa-house fa-sm me-1"></i>Dashboard</a>
-<i class="fa-solid fa-chevron-right fa-2xs mx-2 text-muted"></i>
+<span class="mx-2 text-muted">/</span>
 <a href="{% url 'mentor_mentee_list' %}" class="text-muted">Mentees</a>
-<i class="fa-solid fa-chevron-right fa-2xs mx-2 text-muted"></i>
+<span class="mx-2 text-muted">/</span>
 <span>New Assessment</span>
 {% endblock %}
 
@@ -14,16 +14,25 @@
 <div class="mb-4">
     <h4 class="fw-bold mb-0">New Assessment: {{ mentee.full_name }}</h4>
 </div>
-    <form method="post" class="card">
+    <form method="post">
         {% csrf_token %}
-        <div class="card-body">
-            {{ form.as_p }}
-
-            <div class="card mt-3">
-                <div class="card-header">
-                    <span class="fw-semibold">Ratings</span>
+        <div class="panel mb-4">
+            <div class="panel-header"><h2><i class="fa-solid fa-clipboard-check me-2 opacity-50"></i>Assessment Details</h2></div>
+            <div class="panel-body admin-form">
+                <div class="row g-3">
+                    {% for field in form %}
+                    <div class="{% if field.field.widget.attrs.rows %}col-12{% else %}col-md-3{% endif %}">
+                        <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                        {{ field }}
+                    </div>
+                    {% endfor %}
                 </div>
-                <div class="card-body">
+            </div>
+        </div>
+
+            <div class="panel mb-4">
+                <div class="panel-header"><h2><i class="fa-solid fa-star me-2 opacity-50"></i>Ratings</h2></div>
+                <div class="panel-body flush">
                     {% if rating_errors %}
                         <div class="alert alert-warning">Missing ratings for: {{ rating_errors|join:", " }}</div>
                     {% endif %}
@@ -85,10 +94,9 @@
                 </div>
             </div>
 
-            <div class="d-flex gap-2 mt-3">
-                <button type="submit" class="btn btn-success">Save</button>
-                <a class="btn btn-secondary" href="{% url 'mentor_assessment_list' mentee.id %}">Cancel</a>
+            <div class="d-flex justify-content-end gap-2 mt-4">
+                <a class="btn btn-sm btn-outline-secondary" href="{% url 'mentor_assessment_list' mentee.id %}">Cancel</a>
+                <button type="submit" class="btn btn-sm btn-primary"><i class="fa-solid fa-check me-1"></i>Save Assessment</button>
             </div>
-        </div>
     </form>
 {% endblock page_content %}
