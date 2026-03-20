@@ -47,7 +47,7 @@
                             <td>{{ assessment.date }}</td>
                             <td>{{ assessment.get_year_display }}</td>
                             <td>{{ assessment.session_type }}</td>
-                            <td>{{ assessment.average_score|default:"-" }}</td>
+                            <td>{% if assessment.average_score %}{{ assessment.average_score }} / 5{% else %}-{% endif %}</td>
                         </tr>
                     {% endfor %}
                 </tbody>

@@ -29,27 +29,51 @@
                     {% if rating_errors %}
                         <div class="alert alert-warning">Missing ratings for: {{ rating_errors|join:", " }}</div>
                     {% endif %}
-                    {% if domains %}
+                    {% if domain_rows %}
                         <div class="table-responsive">
                             <table class="table align-middle mb-0">
                                 <thead>
                                     <tr>
                                         <th>Domain</th>
+                                        <th>Indicators</th>
+                                        <th>Scale Guidance</th>
                                         <th>Rating (1-5)</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {% for domain in domains %}
+                                    {% for row in domain_rows %}
                                         <tr>
-                                            <td>{{ domain.name }}</td>
+                                            <td>{{ row.domain.name }}</td>
                                             <td>
-                                                <select name="rating_{{ domain.id }}" class="form-select">
+                                                {% if row.domain.indicators.all %}
+                                                    <ul class="mb-0 ps-3 small">
+                                                        {% for indicator in row.domain.indicators.all %}
+                                                            <li>{{ indicator.description }}</li>
+                                                        {% endfor %}
+                                                    </ul>
+                                                {% else %}
+                                                    <span class="text-muted small">No indicators configured.</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if row.domain.scale_definitions.all %}
+                                                    <div class="small d-flex flex-column gap-1">
+                                                        {% for scale in row.domain.scale_definitions.all %}
+                                                            <div><strong>{{ scale.score }}</strong>: {{ scale.description }}</div>
+                                                        {% endfor %}
+                                                    </div>
+                                                {% else %}
+                                                    <span class="text-muted small">No rating guidance configured.</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <select name="rating_{{ row.domain.id }}" class="form-select">
                                                     <option value="">Select</option>
-                                                    <option value="1">1</option>
-                                                    <option value="2">2</option>
-                                                    <option value="3">3</option>
-                                                    <option value="4">4</option>
-                                                    <option value="5">5</option>
+                                                    <option value="1" {% if row.selected_rating == "1" %}selected{% endif %}>1</option>
+                                                    <option value="2" {% if row.selected_rating == "2" %}selected{% endif %}>2</option>
+                                                    <option value="3" {% if row.selected_rating == "3" %}selected{% endif %}>3</option>
+                                                    <option value="4" {% if row.selected_rating == "4" %}selected{% endif %}>4</option>
+                                                    <option value="5" {% if row.selected_rating == "5" %}selected{% endif %}>5</option>
                                                 </select>
                                             </td>
                                         </tr>

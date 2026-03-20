@@ -18,6 +18,7 @@ from .forms import (
     SessionTypeForm,
     RatingDomainForm,
     DomainIndicatorForm,
+    RatingScaleDefinitionForm,
     MoodCategoryForm,
     ReferenceContentForm,
     TemplateConfigForm,
@@ -39,6 +40,7 @@ from .models import (
     RatingDomain,
     SessionType,
     DomainIndicator,
+    RatingScaleDefinition,
     MoodCategory,
     ReferenceContent,
     TemplateConfig,
@@ -74,7 +76,11 @@ def _mentor_can_access_mentee(user, mentee):
 
 
 def _domains_for_year(year):
-    return RatingDomain.objects.filter(year=year, is_active=True).order_by("sort_order", "name")
+    return (
+        RatingDomain.objects.filter(year=year, is_active=True)
+        .prefetch_related("indicators", "scale_definitions")
+        .order_by("sort_order", "name")
+    )
 
 @role_required(allowed_roles=['admin'])
 def edit_user_view(request, user_id):
@@ -194,6 +200,7 @@ def admin_config_home_view(request):
         {"key": "session-types", "label": "Session Types"},
         {"key": "rating-domains", "label": "Rating Domains"},
         {"key": "domain-indicators", "label": "Domain Indicators"},
+        {"key": "rating-scale-definitions", "label": "Rating Scales"},
         {"key": "mood-categories", "label": "Mood Categories"},
         {"key": "reference-content", "label": "Reference Content"},
         {"key": "template-configs", "label": "Template Configs"},
@@ -221,6 +228,11 @@ CONFIG_REGISTRY = {
         "model": DomainIndicator,
         "form": DomainIndicatorForm,
         "title": "Domain Indicators",
+    },
+    "rating-scale-definitions": {
+        "model": RatingScaleDefinition,
+        "form": RatingScaleDefinitionForm,
+        "title": "Rating Scales",
     },
     "mood-categories": {
         "model": MoodCategory,
@@ -629,6 +641,7 @@ def mentor_assessment_create_view(request, mentee_id):
         return HttpResponse("You are not allowed to access this mentee.", status=403)
 
     rating_errors = []
+    current_ratings = {}
     if request.method == "POST":
         form = MenteeAssessmentForm(request.POST)
         if form.is_valid():
@@ -655,11 +668,23 @@ def mentor_assessment_create_view(request, mentee_id):
             else:
                 messages.success(request, "Assessment saved.")
                 return redirect("mentor_assessment_list", mentee_id=mentee.id)
+        current_ratings = {
+            key.removeprefix("rating_"): value
+            for key, value in request.POST.items()
+            if key.startswith("rating_")
+        }
     else:
         form = MenteeAssessmentForm(initial={"year": mentee.current_year})
 
     year_value = form.data.get("year") or form.initial.get("year") or mentee.current_year
-    domains = _domains_for_year(year_value)
+    domains = list(_domains_for_year(year_value))
+    domain_rows = [
+        {
+            "domain": domain,
+            "selected_rating": current_ratings.get(str(domain.id), ""),
+        }
+        for domain in domains
+    ]
 
     return render(
         request,
@@ -667,7 +692,7 @@ def mentor_assessment_create_view(request, mentee_id):
         {
             "mentee": mentee,
             "form": form,
-            "domains": domains,
+            "domain_rows": domain_rows,
             "rating_errors": rating_errors,
         },
     )
@@ -683,7 +708,16 @@ def export_mentee_progress_csv(request, mentee_id):
 
     objectives = ObjectiveItem.objects.filter(mentee=mentee).select_related("status")
     year_plans = YearPlanItem.objects.filter(mentee=mentee).select_related("status")
-    assessments = MenteeAssessment.objects.filter(mentee=mentee).select_related("session_type")
+    assessments = (
+        MenteeAssessment.objects.filter(mentee=mentee)
+        .select_related("session_type")
+        .prefetch_related("ratings__domain")
+    )
+    assessment_domains = list(
+        RatingDomain.objects.filter(assessmentrating__assessment__mentee=mentee)
+        .distinct()
+        .order_by("year", "sort_order", "name")
+    )
 
     response = HttpResponse(content_type="text/csv")
     response["Content-Disposition"] = f'attachment; filename="{mentee.id}_progress.csv"'
@@ -754,8 +788,13 @@ def export_mentee_progress_csv(request, mentee_id):
         "Average",
         "Mentor Remarks",
         "Action Plan",
+        *[f"{domain.get_year_display()} - {domain.name}" for domain in assessment_domains],
     ])
     for assessment in assessments:
+        rating_map = {
+            rating.domain_id: rating.value
+            for rating in assessment.ratings.all()
+        }
         writer.writerow([
             assessment.date,
             assessment.get_year_display(),
@@ -766,6 +805,7 @@ def export_mentee_progress_csv(request, mentee_id):
             assessment.average_score(),
             assessment.mentor_remarks,
             assessment.action_plan,
+            *[rating_map.get(domain.id, "") for domain in assessment_domains],
         ])
 
     return response

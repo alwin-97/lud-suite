@@ -56,10 +56,10 @@
                                 {% if assessment.average_score %}
                                 <span
                                     class="badge rounded-pill
-                                            {% if assessment.average_score >= 80 %}bg-success-subtle text-success border border-success-subtle
-                                            {% elif assessment.average_score >= 50 %}bg-warning-subtle text-warning border border-warning-subtle
+                                            {% if assessment.average_score >= 4 %}bg-success-subtle text-success border border-success-subtle
+                                            {% elif assessment.average_score >= 2.5 %}bg-warning-subtle text-warning border border-warning-subtle
                                             {% else %}bg-danger-subtle text-danger border border-danger-subtle{% endif %}">
-                                    {{ assessment.average_score }} / 100
+                                    {{ assessment.average_score }} / 5
                                 </span>
                                 {% else %}
                                 <span class="text-muted small">-</span>

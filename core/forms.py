@@ -14,6 +14,7 @@ from .models import (
     SessionType,
     RatingDomain,
     DomainIndicator,
+    RatingScaleDefinition,
     MoodCategory,
     ReferenceContent,
     TemplateConfig,
@@ -240,6 +241,27 @@ class MenteeAssessmentForm(forms.ModelForm):
             "action_plan": forms.Textarea(attrs={"class": "form-control", "rows": 3}),
         }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        mood_choices = [
+            (category.name, category.name)
+            for category in MoodCategory.objects.order_by("sort_order", "name")
+        ]
+        if mood_choices:
+            select_widget = forms.Select(attrs={"class": "form-select"})
+            self.fields["beginning_mood"] = forms.ChoiceField(
+                choices=[("", "Select")] + mood_choices,
+                required=False,
+                widget=select_widget,
+            )
+            self.fields["end_mood"] = forms.ChoiceField(
+                choices=[("", "Select")] + mood_choices,
+                required=False,
+                widget=forms.Select(attrs={"class": "form-select"}),
+            )
+            self.initial.setdefault("beginning_mood", self.instance.beginning_mood if self.instance.pk else "")
+            self.initial.setdefault("end_mood", self.instance.end_mood if self.instance.pk else "")
+
 
 # -------------------- Admin Config Forms --------------------
 class MentorMenteeAssignmentForm(forms.ModelForm):
@@ -294,6 +316,17 @@ class DomainIndicatorForm(forms.ModelForm):
             "domain": forms.Select(attrs={"class": "form-select"}),
             "description": forms.Textarea(attrs={"class": "form-control", "rows": 3}),
             "sort_order": forms.NumberInput(attrs={"class": "form-control"}),
+        }
+
+
+class RatingScaleDefinitionForm(forms.ModelForm):
+    class Meta:
+        model = RatingScaleDefinition
+        fields = ["domain", "score", "description"]
+        widgets = {
+            "domain": forms.Select(attrs={"class": "form-select"}),
+            "score": forms.NumberInput(attrs={"class": "form-control", "min": 1, "max": 5}),
+            "description": forms.Textarea(attrs={"class": "form-control", "rows": 3}),
         }
 
 

@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
-{% load socialaccount %} {# load allauth's tag library #}
+{% load socialaccount %}
 
 {% block title %}
 Login
@@ -13,41 +13,95 @@ Login
 {% endblock links %}
 
 {% block content %}
-
-<div class="row m-0 vh-100">
-    <div class="col-sm-12 col-lg-6 left">
-        <div class="ps-5 pe-5">
-            <div class="fw-bolder fs-1">Let Us Dream</div>
-            <div class="fst-italic fs-3">Application Suite</div>
-            <p class="mt-4">
-                Let Us Dream Application Suite is a unified digital platform designed to streamline and manage
-                initiatives, events, collaborations, and impact stories of the Let Us Dream.
-                It empowers coordinators, volunteers, and stakeholders with easy access to planning tools,
-                communication channels, reports, and resources—ensuring transparency, efficiency,
-                and meaningful engagement across all programs.
+<main class="login-shell">
+    <section class="login-hero">
+        <div class="login-hero__backdrop"></div>
+        <div class="login-hero__content">
+            <div class="login-kicker">Let Us Dream</div>
+            <h1 class="login-title">One suite for mentoring, tracking, and program delivery.</h1>
+            <p class="login-lead">
+                Manage DIP and YCLP workflows from one place. Track mentee progress, guide mentor activity,
+                review assessments, and keep every program update visible to the right people.
             </p>
-        </div>
-    </div>
-    <div class="col-sm-12 col-lg-6 right">
-        <img src="{% static 'images/lud.png' %}" class="mb-5 mt-5" alt="Let Us Dream Logo">
 
-        {% if messages %}
-        <div class="w-75 mb-4">
-            {% for message in messages %}
-            <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show text-start"
-                role="alert">
-                {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            <div class="login-feature-grid">
+                <article class="login-feature-card">
+                    <span class="login-feature-icon"><i class="fa-solid fa-users"></i></span>
+                    <div>
+                        <h2>Role-based workspaces</h2>
+                        <p>Separate views for admins, mentors, mentees, reviewers, and endorsers.</p>
+                    </div>
+                </article>
+                <article class="login-feature-card">
+                    <span class="login-feature-icon"><i class="fa-solid fa-chart-line"></i></span>
+                    <div>
+                        <h2>Progress visibility</h2>
+                        <p>Objectives, year plans, assessments, and exports stay connected.</p>
+                    </div>
+                </article>
+                <article class="login-feature-card">
+                    <span class="login-feature-icon"><i class="fa-solid fa-clipboard-check"></i></span>
+                    <div>
+                        <h2>Structured reviews</h2>
+                        <p>Capture ratings, mentor guidance, remarks, and audit history in one flow.</p>
+                    </div>
+                </article>
             </div>
-            {% endfor %}
+
+            <div class="login-highlight">
+                <div class="login-highlight__label">Inside the suite</div>
+                <div class="login-highlight__items">
+                    <span>DIP Mentee Tracker</span>
+                    <span>YCLP Reflexive Reports</span>
+                    <span>Assignment Management</span>
+                    <span>Configurable Assessment Models</span>
+                </div>
+            </div>
         </div>
-        {% endif %}
+    </section>
 
-        <a href="{% provider_login_url 'google' %}" class="google-btn mb-5">
-            <img src="{% static 'images/icons/g-logo.png' %}" alt="Google Logo" class="google-logo">
-            <div> Continue with Google</div>
-        </a>
-    </div>
-</div>
+    <aside class="login-panel">
+        <div class="login-card">
+            <div class="login-card__content">
+                <div class="login-brand">
+                    <img src="{% static 'images/lud.png' %}" alt="Let Us Dream Logo" class="login-brand__logo">
+                    <div>
+                        <div class="login-brand__title">Application Suite</div>
+                        <div class="login-brand__subtitle">Access your Let Us Dream ecosystem</div>
+                    </div>
+                </div>
 
+                <div class="login-copy">
+                    <h2>Sign in with your Google account</h2>
+                    <p>
+                        Use Google to continue. Your role and assigned workspace will determine the dashboard you
+                        land on after sign-in.
+                    </p>
+                </div>
+
+                {% if messages %}
+                <div class="login-alerts">
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show text-start mb-2"
+                        role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <a href="{% provider_login_url 'google' %}" class="google-btn">
+                    <img src="{% static 'images/icons/g-logo.png' %}" alt="Google Logo" class="google-logo">
+                    <span>Continue with Google</span>
+                </a>
+
+                <div class="login-note">
+                    Access is provisioned by the program team. If your account is missing a role or you cannot reach
+                    the correct dashboard, contact an administrator.
+                </div>
+            </div>
+        </div>
+    </aside>
+</main>
 {% endblock content %}
