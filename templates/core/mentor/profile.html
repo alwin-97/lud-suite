@@ -1,36 +1,20 @@
-{% extends 'base.html' %}
-{% load static %}
+{% extends 'core/mentor/base_mentor.html' %}
 
-{% block title %}
-Home
-{% endblock title %}
+{% block title %}Profile{% endblock title %}
 
-{% block links %}
-<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
-{% endblock links %}
+{% block breadcrumb %}
+<a href="{% url 'dashboard' %}" class="text-muted"><i class="fa-solid fa-house fa-sm me-1"></i>Dashboard</a>
+<i class="fa-solid fa-chevron-right fa-2xs mx-2 text-muted"></i>
+<span>Profile</span>
+{% endblock %}
 
-{% block content %}
+{% block page_content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold mb-0">My Profile</h4>
+    <a href="{% url 'profile_edit' %}" class="btn btn-outline-secondary btn-sm">Edit Profile</a>
+</div>
 
-{% include 'partials/head.html' %}
-    <div class="container my-4">
-        <div class="card mb-3">
-            <div class="card-body">
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb mb-0">
-                        <li class="breadcrumb-item">
-                            <a href="{% url 'dashboard' %}" class="text-decoration-none">Home</a>
-                        </li>
-                        <li class="breadcrumb-item active" aria-current="page">Profile</li>
-                    </ol>
-                </nav>
-            </div>
-        </div>
-
-        <div class="text-end mb-3">
-            <a href="{% url 'profile_edit' %}" class="btn btn-outline-secondary btn-sm">Edit Profile</a>
-        </div>
-
-        <div class="row mt-3">
+<div class="row mt-3">
             <!-- Left Sidebar (Profile Photo stays same) -->
             <div class="col-md-3">
                 <div class="card">
@@ -95,29 +79,4 @@ Home
             </div>
         </div>
     </div>
-<script>
-    function previewProfilePhoto(event) {
-        const input = event.target;
-        const preview = document.getElementById('profilePreview');
-
-        if (input.files && input.files[0]) {
-            const reader = new FileReader();
-            reader.onload = function (e) {
-                preview.src = e.target.result;
-            }
-            reader.readAsDataURL(input.files[0]);
-        }
-    }
-
-    // Optional: Toggle Edit Mode
-    document.getElementById('editProfileBtn').addEventListener('click', function () {
-        this.style.display = 'none';
-        document.querySelector('form').style.display = 'block';
-    });
-
-    document.getElementById('cancelEditBtn').addEventListener('click', function () {
-        document.querySelector('form').style.display = 'none';
-        document.getElementById('editProfileBtn').style.display = 'inline-block';
-    });
-</script>
-{% endblock %}
+{% endblock page_content %}

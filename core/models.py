@@ -13,9 +13,18 @@ class CustomUser(AbstractUser):
         ('mentor', 'Mentor'),
         ('mentee', 'Mentee'),
         ('reviewer', 'Reviewer'),
+        ('volunteer', 'Volunteer'),
+        ('community_leader', 'Community Leader'),
+        ('faculty_leader', 'Faculty Leader'),
+        ('strategic_team', 'Strategic Team'),
+        ('principal', 'Principal'),
+        ('coordinator', 'Coordinator'),
     )
 
+    ROLE_KEYS = [k for k, _ in ROLE_CHOICES]
+
     role = models.CharField(max_length=20, choices=ROLE_CHOICES)
+    roles = models.JSONField(default=list, blank=True, help_text="All roles assigned to this user")
     phone = models.CharField(max_length=20, blank=True, null=True)
     profile_pic = models.ImageField(upload_to='profile_pics/', blank=True, null=True)
     gender = models.CharField(max_length=20, blank=True, null=True)
@@ -33,7 +42,17 @@ class CustomUser(AbstractUser):
     def save(self, *args, **kwargs):
         if self.is_superuser:
             self.role = 'admin'
+        # Ensure active role is always in the roles list
+        if self.role and self.role not in (self.roles or []):
+            self.roles = list(self.roles or []) + [self.role]
         super().save(*args, **kwargs)
+
+    def has_role(self, role_name):
+        return role_name in (self.roles or [])
+
+    def get_roles_display(self):
+        role_map = dict(self.ROLE_CHOICES)
+        return [role_map.get(r, r) for r in (self.roles or [])]
 
     def __str__(self):
         return f"{self.username} ({self.role})"
@@ -88,10 +107,19 @@ class Notification(models.Model):
     ROLE_CHOICES = [
         ('endorser', 'Endorser'),
         ('mentor', 'Mentor'),
-        ('both', 'Both'),
+        ('mentee', 'Mentee'),
+        ('volunteer', 'Volunteer'),
+        ('community_leader', 'Community Leader'),
+        ('faculty_leader', 'Faculty Leader'),
+        ('strategic_team', 'Strategic Team'),
+        ('principal', 'Principal'),
+        ('coordinator', 'Coordinator'),
+        ('all', 'All Users'),
     ]
     message = models.TextField()
+    subject = models.CharField(max_length=200, blank=True)
     target_group = models.CharField(max_length=20, choices=ROLE_CHOICES)
+    is_read = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='notifications'
@@ -153,6 +181,70 @@ class School(models.Model):
         return self.name
 
 
+# -------------------- Location --------------------
+class Location(models.Model):
+    name = models.CharField(max_length=150, unique=True)
+    code = models.CharField(max_length=20, unique=True)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["name"]
+
+    def __str__(self):
+        return f"{self.name} ({self.code})"
+
+
+# -------------------- Chapter --------------------
+class Chapter(models.Model):
+    name = models.CharField(max_length=150)
+    code = models.CharField(max_length=20, blank=True)
+    school = models.ForeignKey(School, on_delete=models.CASCADE, related_name="chapters")
+    location = models.ForeignKey(Location, on_delete=models.SET_NULL, null=True, blank=True, related_name="chapters")
+    leader = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="led_chapters",
+    )
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["school__name", "name"]
+        unique_together = [("school", "name")]
+
+    def __str__(self):
+        return f"{self.name} - {self.school.name}"
+
+
+# -------------------- Academic Cycle --------------------
+class AcademicCycle(models.Model):
+    year_label = models.CharField(max_length=50, unique=True)
+    start_date = models.DateField()
+    end_date = models.DateField()
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["-start_date"]
+
+    def __str__(self):
+        return self.year_label
+
+
+# -------------------- Programme --------------------
+class Programme(models.Model):
+    name = models.CharField(max_length=150, unique=True)
+    code = models.CharField(max_length=20, blank=True)
+    description = models.TextField(blank=True)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["name"]
+
+    def __str__(self):
+        return self.name
+
+
 class Mentee(models.Model):
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
@@ -163,14 +255,22 @@ class Mentee(models.Model):
         limit_choices_to={"role": "mentee"},
     )
     full_name = models.CharField(max_length=150)
+    register_no = models.CharField(max_length=50, blank=True)
     grade = models.CharField(max_length=50, blank=True)
+    cls = models.CharField(max_length=50, blank=True, verbose_name="Class")
     school = models.ForeignKey(School, on_delete=models.SET_NULL, null=True, blank=True)
+    chapter = models.ForeignKey('Chapter', on_delete=models.SET_NULL, null=True, blank=True, related_name="mentees")
+    location = models.ForeignKey('Location', on_delete=models.SET_NULL, null=True, blank=True, related_name="mentees")
+    programme_fk = models.ForeignKey('Programme', on_delete=models.SET_NULL, null=True, blank=True, related_name="mentees")
+    academic_cycle = models.ForeignKey('AcademicCycle', on_delete=models.SET_NULL, null=True, blank=True, related_name="mentees")
     programme = models.CharField(max_length=150, blank=True)
     department = models.CharField(max_length=150, blank=True)
     batch = models.CharField(max_length=100, blank=True)
     joining_date = models.DateField(null=True, blank=True)
     expected_completion_date = models.DateField(null=True, blank=True)
     current_year = models.PositiveSmallIntegerField(choices=ProgramYear.choices)
+    guardian_name = models.CharField(max_length=150, blank=True)
+    guardian_contact = models.CharField(max_length=20, blank=True)
     assigned_mentor = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
@@ -460,4 +560,183 @@ class AssessmentRating(models.Model):
 
     def __str__(self):
         return f"{self.assessment} - {self.domain.name}: {self.value}"
+
+
+# -------------------- Approval Log (Audit Trail) --------------------
+class ApprovalLog(models.Model):
+    DECISION_CHOICES = [
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+        ('returned', 'Returned for Revision'),
+        ('escalated', 'Escalated'),
+    ]
+    RECORD_TYPE_CHOICES = [
+        ('assessment', 'Assessment'),
+        ('objective', 'Objective'),
+        ('year_plan', 'Year Plan'),
+        ('reflective_report', 'Reflective Report'),
+    ]
+    record_type = models.CharField(max_length=30, choices=RECORD_TYPE_CHOICES)
+    record_id = models.PositiveIntegerField()
+    reviewer = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name="approval_logs"
+    )
+    decision = models.CharField(max_length=20, choices=DECISION_CHOICES)
+    comments = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.record_type} #{self.record_id} - {self.decision}"
+
+
+# -------------------- Mentee Upload Log --------------------
+class MenteeUploadLog(models.Model):
+    file_name = models.CharField(max_length=255)
+    uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name="mentee_uploads"
+    )
+    total_rows = models.PositiveIntegerField(default=0)
+    success_count = models.PositiveIntegerField(default=0)
+    error_count = models.PositiveIntegerField(default=0)
+    error_details = models.JSONField(default=list, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.file_name} ({self.created_at:%Y-%m-%d})"
+
+
+# -------------------- Reflective Report --------------------
+class ReflectiveReport(models.Model):
+    STATUS_CHOICES = [
+        ('Draft', 'Draft'),
+        ('Submitted', 'Submitted'),
+        ('Approved', 'Approved'),
+        ('Returned', 'Returned for Revision'),
+    ]
+
+    programme = models.ForeignKey(Programme, on_delete=models.SET_NULL, null=True, blank=True, related_name="reflective_reports")
+    location = models.ForeignKey(Location, on_delete=models.SET_NULL, null=True, blank=True, related_name="reflective_reports")
+    activity_name = models.CharField(max_length=255)
+    duration = models.DecimalField(max_digits=5, decimal_places=2)
+    endorser = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="endorsed_reports")
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="reflective_reports")
+    date = models.DateField()
+    learnings = models.TextField(blank=True)
+    feedback = models.TextField(blank=True)
+    photo = models.ImageField(upload_to="reflective_reports/", blank=True, null=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Draft')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-date"]
+
+    def __str__(self):
+        return f"{self.user} - {self.activity_name} ({self.get_status_display()})"
+
+
+# -------------------- Work Diary --------------------
+class DiaryEntry(models.Model):
+    STATUS_CHOICES = [
+        ('Pending', 'Pending'),
+        ('Reviewed', 'Reviewed'),
+    ]
+
+    volunteer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, limit_choices_to={"role": "volunteer"}, related_name="diary_entries")
+    date = models.DateField()
+    duration = models.DecimalField(max_digits=5, decimal_places=2)
+    location = models.ForeignKey(Location, on_delete=models.SET_NULL, null=True, blank=True, related_name="diary_entries")
+    linked_activity = models.CharField(max_length=255, blank=True)
+    narrative_entry = models.TextField()
+    review_status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-date"]
+
+    def __str__(self):
+        return f"{self.volunteer} - {self.date} ({self.get_review_status_display()})"
+
+
+# -------------------- Volunteer Transcript --------------------
+class VolunteerTranscript(models.Model):
+    STATUS_CHOICES = [
+        ('Draft', 'Draft'),
+        ('Pending Approval', 'Pending Approval'),
+        ('Approved', 'Approved'),
+    ]
+
+    volunteer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, limit_choices_to={"role": "volunteer"}, related_name="transcripts")
+    template_choice = models.CharField(max_length=100)
+    generated_summary = models.TextField(blank=True)
+    reviewer_notes = models.TextField(blank=True)
+    approval_status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Draft')
+    export_file = models.FileField(upload_to="transcripts/", null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"Transcript for {self.volunteer} ({self.get_approval_status_display()})"
+
+
+# -------------------- Profile Artifact --------------------
+class ProfileArtifact(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="profile_artifacts")
+    title = models.CharField(max_length=200)
+    document = models.FileField(upload_to="profile_artifacts/")
+    is_public = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.user} - {self.title}"
+
+
+# -------------------- Shared Data Repository --------------------
+class RepositoryAsset(models.Model):
+    ROLE_VISIBILITY_CHOICES = [
+        ('all', 'All Users'),
+        ('admin', 'Admins Only'),
+        ('mentor', 'Mentors Only'),
+        ('volunteer', 'Volunteers Only'),
+        ('leadership', 'Leadership Only'),
+    ]
+
+    title = models.CharField(max_length=200)
+    category = models.CharField(max_length=100)
+    file_upload = models.FileField(upload_to="repository/")
+    tags = models.CharField(max_length=255, blank=True)
+    uploaded_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name="uploaded_assets")
+    role_visibility = models.CharField(max_length=20, choices=ROLE_VISIBILITY_CHOICES, default='all')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.title} ({self.get_role_visibility_display()})"
+
+
+class EvidenceAttachment(models.Model):
+    asset = models.ForeignKey(RepositoryAsset, on_delete=models.CASCADE, related_name="attachments")
+    linked_model = models.CharField(max_length=100, help_text="e.g., MenteeAssessment, ReflectiveReport")
+    linked_id = models.PositiveIntegerField()
+    uploaded_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Evidence {self.id} for {self.linked_model} #{self.linked_id}"
 

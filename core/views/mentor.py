@@ -1,6 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse
+from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
@@ -26,7 +26,7 @@ MENTOR_PROFILE_TEMPLATE = "core/mentor/profile.html"
 def dashboard_view(request):
     assignments = active_assignments_qs(request.user).select_related("mentee")
     mentees = [assignment.mentee for assignment in assignments]
-    return render(request, MENTOR_DASHBOARD_TEMPLATE, {"assignments": assignments, "mentees": mentees})
+    return render(request, MENTOR_DASHBOARD_TEMPLATE, {"assignments": assignments, "mentees": mentees, "active_page": "dashboard"})
 
 
 @login_required
@@ -36,7 +36,7 @@ def mentor_mentee_list_view(request):
         mentees = Mentee.objects.filter(mentor_assignments__in=active_assignments_qs(request.user)).distinct()
     else:
         mentees = Mentee.objects.all()
-    return render(request, MENTOR_MENTEES_TEMPLATE, {"mentees": mentees})
+    return render(request, MENTOR_MENTEES_TEMPLATE, {"mentees": mentees, "active_page": "mentees"})
 
 
 @login_required
@@ -44,9 +44,9 @@ def mentor_mentee_list_view(request):
 def mentor_objective_list_view(request, mentee_id):
     mentee = get_object_or_404(Mentee, id=mentee_id)
     if request.user.role == "mentor" and not mentor_can_access_mentee(request.user, mentee):
-        return HttpResponse("You are not allowed to access this mentee.", status=403)
+        raise PermissionDenied("You are not allowed to access this mentee.")
     objectives = ObjectiveItem.objects.filter(mentee=mentee).select_related("status")
-    return render(request, MENTOR_OBJECTIVE_LIST_TEMPLATE, {"mentee": mentee, "objectives": objectives})
+    return render(request, MENTOR_OBJECTIVE_LIST_TEMPLATE, {"mentee": mentee, "objectives": objectives, "active_page": "mentees"})
 
 
 @login_required
@@ -54,7 +54,7 @@ def mentor_objective_list_view(request, mentee_id):
 def mentor_objective_update_view(request, objective_id):
     objective = get_object_or_404(ObjectiveItem, id=objective_id)
     if request.user.role == "mentor" and not mentor_can_access_mentee(request.user, objective.mentee):
-        return HttpResponse("You are not allowed to access this mentee.", status=403)
+        raise PermissionDenied("You are not allowed to access this mentee.")
     if request.method == "POST":
         form = ObjectiveItemMentorForm(request.POST, instance=objective)
         if form.is_valid():
@@ -67,7 +67,7 @@ def mentor_objective_update_view(request, objective_id):
             return redirect("mentor_objective_list", mentee_id=objective.mentee_id)
     else:
         form = ObjectiveItemMentorForm(instance=objective)
-    return render(request, MENTOR_OBJECTIVE_FORM_TEMPLATE, {"form": form, "objective": objective})
+    return render(request, MENTOR_OBJECTIVE_FORM_TEMPLATE, {"form": form, "objective": objective, "active_page": "mentees"})
 
 
 @login_required
@@ -75,9 +75,9 @@ def mentor_objective_update_view(request, objective_id):
 def mentor_year_plan_list_view(request, mentee_id):
     mentee = get_object_or_404(Mentee, id=mentee_id)
     if request.user.role == "mentor" and not mentor_can_access_mentee(request.user, mentee):
-        return HttpResponse("You are not allowed to access this mentee.", status=403)
+        raise PermissionDenied("You are not allowed to access this mentee.")
     year_plans = YearPlanItem.objects.filter(mentee=mentee).select_related("status")
-    return render(request, MENTOR_YEAR_PLAN_LIST_TEMPLATE, {"mentee": mentee, "year_plans": year_plans})
+    return render(request, MENTOR_YEAR_PLAN_LIST_TEMPLATE, {"mentee": mentee, "year_plans": year_plans, "active_page": "mentees"})
 
 
 @login_required
@@ -85,7 +85,7 @@ def mentor_year_plan_list_view(request, mentee_id):
 def mentor_year_plan_update_view(request, year_plan_id):
     year_plan = get_object_or_404(YearPlanItem, id=year_plan_id)
     if request.user.role == "mentor" and not mentor_can_access_mentee(request.user, year_plan.mentee):
-        return HttpResponse("You are not allowed to access this mentee.", status=403)
+        raise PermissionDenied("You are not allowed to access this mentee.")
     if request.method == "POST":
         form = YearPlanItemMentorForm(request.POST, instance=year_plan)
         if form.is_valid():
@@ -96,7 +96,7 @@ def mentor_year_plan_update_view(request, year_plan_id):
             return redirect("mentor_year_plan_list", mentee_id=year_plan.mentee_id)
     else:
         form = YearPlanItemMentorForm(instance=year_plan)
-    return render(request, MENTOR_YEAR_PLAN_FORM_TEMPLATE, {"form": form, "year_plan": year_plan})
+    return render(request, MENTOR_YEAR_PLAN_FORM_TEMPLATE, {"form": form, "year_plan": year_plan, "active_page": "mentees"})
 
 
 @login_required
@@ -104,12 +104,12 @@ def mentor_year_plan_update_view(request, year_plan_id):
 def mentor_assessment_list_view(request, mentee_id):
     mentee = get_object_or_404(Mentee, id=mentee_id)
     if request.user.role == "mentor" and not mentor_can_access_mentee(request.user, mentee):
-        return HttpResponse("You are not allowed to access this mentee.", status=403)
+        raise PermissionDenied("You are not allowed to access this mentee.")
     assessments = MenteeAssessment.objects.filter(mentee=mentee).select_related("session_type")
     return render(
         request,
         MENTOR_ASSESSMENT_LIST_TEMPLATE,
-        {"mentee": mentee, "assessments": assessments},
+        {"mentee": mentee, "assessments": assessments, "active_page": "mentees"},
     )
 
 
@@ -118,7 +118,7 @@ def mentor_assessment_list_view(request, mentee_id):
 def mentor_assessment_create_view(request, mentee_id):
     mentee = get_object_or_404(Mentee, id=mentee_id)
     if request.user.role == "mentor" and not mentor_can_access_mentee(request.user, mentee):
-        return HttpResponse("You are not allowed to access this mentee.", status=403)
+        raise PermissionDenied("You are not allowed to access this mentee.")
 
     rating_errors = []
     current_ratings = {}
@@ -172,6 +172,7 @@ def mentor_assessment_create_view(request, mentee_id):
             "form": form,
             "domain_rows": domain_rows,
             "rating_errors": rating_errors,
+            "active_page": "mentees",
         },
     )
 
@@ -180,11 +181,11 @@ def mentor_assessment_create_view(request, mentee_id):
 @role_required(allowed_roles=["mentor"])
 def my_activities_view(request):
     activities = Activity.objects.filter(user=request.user).order_by("-date")
-    return render(request, MENTOR_ACTIVITIES_TEMPLATE, {"activities": activities})
+    return render(request, MENTOR_ACTIVITIES_TEMPLATE, {"activities": activities, "active_page": "activities"})
 
 
 @login_required
 def mentor_profile(request):
     if request.user.role != "mentor":
         return redirect("role-redirect")
-    return render(request, MENTOR_PROFILE_TEMPLATE, {"mentor": request.user})
+    return render(request, MENTOR_PROFILE_TEMPLATE, {"mentor": request.user, "active_page": "profile"})

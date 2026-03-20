@@ -1,0 +1,76 @@
+{% extends 'core/mentor/base_mentor.html' %}
+
+{% block title %}Shared Data Repository{% endblock title %}
+
+{% block page_content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="fw-bold mb-1">Shared Data Repository</h4>
+            <p class="text-muted mb-0">Access centralized resources, training guides, and shared assets.</p>
+        </div>
+        <button class="btn btn-primary rounded-pill px-4 shadow-sm" data-bs-toggle="collapse" data-bs-target="#uploadAssetForm">
+            <i class="fa-solid fa-cloud-arrow-up me-2"></i>Upload Asset
+        </button>
+    </div>
+
+    <!-- Upload Form (Collapsible) -->
+    <div class="collapse mb-4" id="uploadAssetForm">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <h5 class="card-title fw-bold text-primary mb-3">Upload New Resource</h5>
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <div class="text-end">
+                        <button type="submit" class="btn btn-success px-4 rounded-pill">
+                            <i class="fa-solid fa-check me-2"></i>Save Asset
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Repository Grid -->
+    <div class="row g-4">
+        {% for asset in assets %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body p-4 d-flex flex-column">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h5 class="fw-bold text-truncate mb-0" title="{{ asset.title }}">{{ asset.title }}</h5>
+                        <span class="badge bg-secondary ms-2">{{ asset.category }}</span>
+                    </div>
+                    <p class="text-muted small mb-3">
+                        <i class="fa-solid fa-user me-1"></i>{{ asset.uploaded_by.get_full_name|default:asset.uploaded_by.username }}<br>
+                        <i class="fa-regular fa-clock me-1"></i>{{ asset.created_at|date:"M d, Y" }}
+                    </p>
+                    {% if asset.tags %}
+                    <p class="mb-3">
+                        {% for tag in asset.tags.split %}
+                        <span class="badge bg-light text-dark border">{{ tag }}</span>
+                        {% endfor %}
+                    </p>
+                    {% endif %}
+                    
+                    <div class="mt-auto pt-3 border-top d-flex justify-content-between align-items-center">
+                        <small class="text-muted">Visibility: {{ asset.get_role_visibility_display }}</small>
+                        {% if asset.file_upload %}
+                        <a href="{{ asset.file_upload.url }}" class="btn btn-outline-primary btn-sm rounded-pill px-3" target="_blank">
+                            <i class="fa-solid fa-download me-1"></i>Download
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center p-5 card border-0 shadow-sm">
+            <i class="fa-regular fa-folder-open fa-3x text-muted mb-3"></i>
+            <h5 class="text-muted mb-0">No assets available in the repository.</h5>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock page_content %}

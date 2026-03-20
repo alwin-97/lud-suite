@@ -1,6 +1,7 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse, JsonResponse
+from django.core.exceptions import PermissionDenied
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
@@ -20,7 +21,7 @@ ENDORSER_MENTOR_ACTIVITY_TEMPLATE = "core/endorser/mentor_activity_list.html"
 
 @role_required(allowed_roles=["endorser"])
 def endorser_dashboard(request):
-    return render(request, ENDORSER_DASHBOARD_TEMPLATE)
+    return render(request, ENDORSER_DASHBOARD_TEMPLATE, {"active_page": "dashboard"})
 
 
 @login_required
@@ -52,7 +53,7 @@ def endorser_work_schedule(request):
     else:
         form = WorkScheduleForm(endorser=endorser)
 
-    return render(request, ENDORSER_WORK_SCHEDULE_TEMPLATE, {"form": form})
+    return render(request, ENDORSER_WORK_SCHEDULE_TEMPLATE, {"form": form, "active_page": "schedule"})
 
 
 @login_required
@@ -60,7 +61,7 @@ def endorser_work_schedule(request):
 def endorser_profile(request):
     if request.user.role != "endorser":
         return redirect("role-redirect")
-    return render(request, ENDORSER_PROFILE_TEMPLATE)
+    return render(request, ENDORSER_PROFILE_TEMPLATE, {"active_page": "profile"})
 
 
 @login_required
@@ -84,26 +85,26 @@ def endorser_edit_profile(request):
         user.save()
         return redirect("endorser_profile")
 
-    return render(request, ENDORSER_PROFILE_EDIT_TEMPLATE, {"user": user})
+    return render(request, ENDORSER_PROFILE_EDIT_TEMPLATE, {"user": user, "active_page": "profile"})
 
 
 @role_required(allowed_roles=["endorser"])
 def activity_log(request):
     assigned_mentors = request.user.mentors.all()
-    return render(request, ENDORSER_ACTIVITY_LOG_TEMPLATE, {"assigned_mentors": assigned_mentors})
+    return render(request, ENDORSER_ACTIVITY_LOG_TEMPLATE, {"assigned_mentors": assigned_mentors, "active_page": "activity_log"})
 
 
 @role_required(allowed_roles=["endorser"])
 def mentor_activity_list(request, mentor_id):
     mentor = get_object_or_404(User, id=mentor_id, role="mentor")
     if not request.user.mentors.filter(id=mentor.id).exists():
-        return HttpResponse("You are not allowed to access this mentor.", status=403)
+        raise PermissionDenied("You are not allowed to access this mentor.")
 
     activities = Activity.objects.filter(user=mentor).order_by("-date")
     return render(
         request,
         ENDORSER_MENTOR_ACTIVITY_TEMPLATE,
-        {"mentor": mentor, "activities": activities},
+        {"mentor": mentor, "activities": activities, "active_page": "activity_log"},
     )
 
 

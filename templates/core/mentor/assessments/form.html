@@ -1,21 +1,19 @@
-{% extends 'base.html' %}
-{% load static %}
+{% extends 'core/mentor/base_mentor.html' %}
 
 {% block title %}New Assessment{% endblock title %}
 
-{% block links %}
-<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
-{% endblock links %}
+{% block breadcrumb %}
+<a href="{% url 'dashboard' %}" class="text-muted"><i class="fa-solid fa-house fa-sm me-1"></i>Dashboard</a>
+<i class="fa-solid fa-chevron-right fa-2xs mx-2 text-muted"></i>
+<a href="{% url 'mentor_mentee_list' %}" class="text-muted">Mentees</a>
+<i class="fa-solid fa-chevron-right fa-2xs mx-2 text-muted"></i>
+<span>New Assessment</span>
+{% endblock %}
 
-{% block content %}
-{% include 'partials/_header.html' %}
-
-<div class="container py-4">
-    <div class="card mb-4">
-        <div class="card-body">
-            <h3 class="mb-0">New Assessment: {{ mentee.full_name }}</h3>
-        </div>
-    </div>
+{% block page_content %}
+<div class="mb-4">
+    <h4 class="fw-bold mb-0">New Assessment: {{ mentee.full_name }}</h4>
+</div>
     <form method="post" class="card">
         {% csrf_token %}
         <div class="card-body">
@@ -93,5 +91,4 @@
             </div>
         </div>
     </form>
-</div>
-{% endblock content %}
+{% endblock page_content %}

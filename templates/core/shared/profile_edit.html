@@ -1,27 +1,25 @@
-{% extends 'base.html' %}
-{% load static %}
+{% extends 'core/mentor/base_mentor.html' %}
 
 {% block title %}Edit Profile{% endblock title %}
 
-{% block links %}
-<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
-{% endblock links %}
+{% block breadcrumb %}
+<a href="{% url 'dashboard' %}" class="text-muted"><i class="fa-solid fa-house fa-sm me-1"></i>Dashboard</a>
+<i class="fa-solid fa-chevron-right fa-2xs mx-2 text-muted"></i>
+<a href="{% url 'profile' %}" class="text-muted">Profile</a>
+<i class="fa-solid fa-chevron-right fa-2xs mx-2 text-muted"></i>
+<span>Edit</span>
+{% endblock %}
 
-{% block content %}
-{% include 'partials/_header.html' %}
-
-<div class="container py-5">
-    <div class="d-flex justify-content-between align-items-center mb-5">
-        <div>
-            <h1 class="display-5 fw-bold text-primary">Edit Profile</h1>
-            <p class="text-muted lead mb-0">Update your personal information and settings.</p>
-        </div>
-        <div>
-            <a href="{% url 'profile' %}" class="btn btn-outline-secondary rounded-pill px-4">
-                <i class="fa-solid fa-arrow-left me-2"></i>Back to Profile
-            </a>
-        </div>
+{% block page_content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h4 class="fw-bold mb-1">Edit Profile</h4>
+        <p class="text-muted mb-0">Update your personal information and settings.</p>
     </div>
+    <a href="{% url 'profile' %}" class="btn btn-outline-secondary rounded-pill px-4">
+        <i class="fa-solid fa-arrow-left me-2"></i>Back to Profile
+    </a>
+</div>
 
     <form method="post" enctype="multipart/form-data" action="{% url 'profile_edit' %}">
         {% csrf_token %}
@@ -70,10 +68,10 @@
                                 <label class="form-label small text-muted text-uppercase fw-bold">Gender</label>
                                 <select name="gender" class="form-select">
                                     <option value="" {% if not user.gender %}selected{% endif %}>Select Gender</option>
-                                    <option value="Male" {% if user.gender=='Male' %}selected{% endif %}>Male</option>
-                                    <option value="Female" {% if user.gender=='Female' %}selected{% endif %}>Female
+                                    <option value="Male" {% if user.gender == 'Male' %}selected{% endif %}>Male</option>
+                                    <option value="Female" {% if user.gender == 'Female' %}selected{% endif %}>Female
                                     </option>
-                                    <option value="Other" {% if user.gender=='Other' %}selected{% endif %}>Other
+                                    <option value="Other" {% if user.gender == 'Other' %}selected{% endif %}>Other
                                     </option>
                                 </select>
                             </div>
@@ -140,13 +138,12 @@
             </div>
         </div>
     </form>
-</div>
 
+{% block extra_js %}
 <script>
     function previewProfilePhoto(event) {
         const input = event.target;
         const preview = document.getElementById('profilePreview');
-
         if (input.files && input.files[0]) {
             const reader = new FileReader();
             reader.onload = function (e) {
@@ -156,4 +153,5 @@
         }
     }
 </script>
-{% endblock content %}
+{% endblock extra_js %}
+{% endblock page_content %}

@@ -1,0 +1,146 @@
+{% extends 'core/admin/base_admin.html' %}
+
+{% block title %}User Role Manager{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb"><ol class="breadcrumb mb-0">
+    <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}"><i class="fa-solid fa-house fa-sm me-1"></i>Dashboard</a></li>
+    <li class="breadcrumb-item active">User Role Manager</li>
+</ol></nav>
+{% endblock %}
+
+{% block page_content %}
+<div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-4">
+    <div class="page-header mb-0"><h1>User Role Manager</h1></div>
+</div>
+
+<div class="panel">
+    <div class="panel-header"><h2><i class="fa-solid fa-user-shield me-2 opacity-50"></i>Manage User Roles</h2></div>
+    <div class="panel-body flush">
+        <div class="table-responsive">
+            <table id="roleTable" class="table admin-datatable mb-0">
+                <thead><tr>
+                    <th>User</th>
+                    <th>Active Role</th>
+                    <th>All Roles</th>
+                    <th class="text-end" style="width:100px">Actions</th>
+                </tr></thead>
+                <tbody>
+                    {% for u in users %}
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="bg-light text-secondary rounded-circle d-flex align-items-center justify-content-center me-2" style="width:34px;height:34px;font-size:.85rem">
+                                    <span class="fw-bold">{{ u.first_name|first|default:"U" }}</span>
+                                </div>
+                                <div>
+                                    <div class="fw-semibold">{{ u.first_name }} {{ u.last_name }}</div>
+                                    <div class="small text-muted">{{ u.email }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td><span class="role-badge">{{ u.get_role_display }}</span></td>
+                        <td>
+                            {% for r in u.get_roles_display %}
+                            <span class="role-badge me-1">{{ r }}</span>
+                            {% empty %}
+                            <span class="text-muted small">—</span>
+                            {% endfor %}
+                        </td>
+                        <td class="text-end">
+                            <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editRolesModal{{ u.id }}" title="Edit Roles">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Roles Modals -->
+{% for u in users %}
+<div class="modal fade" id="editRolesModal{{ u.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form method="post" action="{% url 'update_user_roles' u.id %}">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">Edit Roles — {{ u.get_full_name }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body admin-form">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Assign Roles</label>
+                        <div class="row g-2">
+                            {% for key, label in role_choices %}
+                            {% if key != "admin" %}
+                            <div class="col-6">
+                                <div class="form-check">
+                                    <input class="form-check-input role-check" type="checkbox" name="roles" value="{{ key }}" id="role_{{ u.id }}_{{ key }}" {% if key in u.roles %}checked{% endif %} data-user="{{ u.id }}">
+                                    <label class="form-check-label" for="role_{{ u.id }}_{{ key }}">{{ label }}</label>
+                                </div>
+                            </div>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Primary (Active) Role</label>
+                        <select name="primary_role" class="form-select" id="primaryRole{{ u.id }}">
+                            {% for key, label in role_choices %}
+                            {% if key != "admin" %}
+                            <option value="{{ key }}" {% if key == u.role %}selected{% endif %} {% if key not in u.roles %}class="d-none"{% endif %}>{{ label }}</option>
+                            {% endif %}
+                            {% endfor %}
+                        </select>
+                        <div class="form-text small">This role determines the user's default dashboard.</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-sm btn-primary"><i class="fa-solid fa-check me-1"></i>Save Roles</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.querySelectorAll('.role-check').forEach(function(cb) {
+    cb.addEventListener('change', function() {
+        var userId = this.dataset.user;
+        var select = document.getElementById('primaryRole' + userId);
+        var checked = document.querySelectorAll('.role-check[data-user="' + userId + '"]:checked');
+        var checkedVals = Array.from(checked).map(function(c) { return c.value; });
+
+        // Show/hide primary role options based on checked roles
+        Array.from(select.options).forEach(function(opt) {
+            if (checkedVals.indexOf(opt.value) >= 0) {
+                opt.classList.remove('d-none');
+                opt.disabled = false;
+            } else {
+                opt.classList.add('d-none');
+                opt.disabled = true;
+                if (opt.selected) opt.selected = false;
+            }
+        });
+
+        // If current selection is hidden, select first visible
+        if (select.selectedOptions.length === 0 || select.selectedOptions[0].disabled) {
+            for (var i = 0; i < select.options.length; i++) {
+                if (!select.options[i].disabled) {
+                    select.options[i].selected = true;
+                    break;
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

@@ -18,20 +18,19 @@ from .models import (
     MoodCategory,
     ReferenceContent,
     TemplateConfig,
+    School,
+    Location,
+    Chapter,
+    AcademicCycle,
+    Programme,
+    ReflectiveReport,
+    DiaryEntry,
+    VolunteerTranscript,
+    ProfileArtifact,
+    RepositoryAsset,
 )
 from decimal import Decimal
 User = get_user_model()
-
-
-# -------------------- Notification Form --------------------
-class NotificationForm(forms.ModelForm):
-    class Meta:
-        model = Notification
-        fields = ["message", "target_group"]
-        widgets = {
-            "message": forms.Textarea(attrs={"class": "form-control", "rows": 4, "placeholder": "Enter instructions..."}),
-            "target_group": forms.Select(attrs={"class": "form-select"}),
-        }
 
 
 # -------------------- Activity Form --------------------
@@ -363,4 +362,139 @@ class TemplateConfigForm(forms.ModelForm):
             "scope": forms.Select(attrs={"class": "form-select"}),
             "year": forms.Select(attrs={"class": "form-select"}),
             "fields_config": forms.Textarea(attrs={"class": "form-control", "rows": 4}),
+        }
+
+
+# -------------------- New Config Forms (SRS FR-03) --------------------
+class SchoolForm(forms.ModelForm):
+    class Meta:
+        model = School
+        fields = ["name"]
+        widgets = {
+            "name": forms.TextInput(attrs={"class": "form-control"}),
+        }
+
+
+class LocationForm(forms.ModelForm):
+    class Meta:
+        model = Location
+        fields = ["name", "code", "is_active"]
+        widgets = {
+            "name": forms.TextInput(attrs={"class": "form-control"}),
+            "code": forms.TextInput(attrs={"class": "form-control"}),
+        }
+
+
+class ChapterForm(forms.ModelForm):
+    class Meta:
+        model = Chapter
+        fields = ["name", "code", "school", "location", "leader", "is_active"]
+        widgets = {
+            "name": forms.TextInput(attrs={"class": "form-control"}),
+            "code": forms.TextInput(attrs={"class": "form-control"}),
+            "school": forms.Select(attrs={"class": "form-select"}),
+            "location": forms.Select(attrs={"class": "form-select"}),
+            "leader": forms.Select(attrs={"class": "form-select"}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["leader"].queryset = User.objects.filter(
+            role__in=["community_leader", "faculty_leader", "endorser"]
+        )
+        self.fields["leader"].required = False
+
+
+class AcademicCycleForm(forms.ModelForm):
+    class Meta:
+        model = AcademicCycle
+        fields = ["year_label", "start_date", "end_date", "is_active"]
+        widgets = {
+            "year_label": forms.TextInput(attrs={"class": "form-control"}),
+            "start_date": forms.DateInput(attrs={"type": "date", "class": "form-control"}),
+            "end_date": forms.DateInput(attrs={"type": "date", "class": "form-control"}),
+        }
+
+
+class ProgrammeForm(forms.ModelForm):
+    class Meta:
+        model = Programme
+        fields = ["name", "code", "description", "is_active"]
+        widgets = {
+            "name": forms.TextInput(attrs={"class": "form-control"}),
+            "code": forms.TextInput(attrs={"class": "form-control"}),
+            "description": forms.Textarea(attrs={"class": "form-control", "rows": 3}),
+        }
+
+
+class NotificationForm(forms.ModelForm):
+    class Meta:
+        model = Notification
+        fields = ["subject", "message", "target_group"]
+        widgets = {
+            "subject": forms.TextInput(attrs={"class": "form-control", "placeholder": "Notification subject"}),
+            "message": forms.Textarea(attrs={"class": "form-control", "rows": 4, "placeholder": "Enter message..."}),
+            "target_group": forms.Select(attrs={"class": "form-select"}),
+        }
+
+
+# -------------------- Reflective Report Form --------------------
+class ReflectiveReportForm(forms.ModelForm):
+    class Meta:
+        model = ReflectiveReport
+        fields = ["programme", "location", "activity_name", "duration", "endorser", "date", "learnings", "feedback", "photo", "status"]
+        widgets = {
+            "programme": forms.Select(attrs={"class": "form-select"}),
+            "location": forms.Select(attrs={"class": "form-select"}),
+            "activity_name": forms.TextInput(attrs={"class": "form-control"}),
+            "duration": forms.NumberInput(attrs={"class": "form-control", "step": "0.25"}),
+            "endorser": forms.Select(attrs={"class": "form-select"}),
+            "date": forms.DateInput(attrs={"type": "date", "class": "form-control"}),
+            "learnings": forms.Textarea(attrs={"class": "form-control", "rows": 3}),
+            "feedback": forms.Textarea(attrs={"class": "form-control", "rows": 3}),
+            "photo": forms.ClearableFileInput(attrs={"class": "form-control"}),
+            "status": forms.Select(attrs={"class": "form-select"}),
+        }
+
+
+# -------------------- Work Diary Form --------------------
+class DiaryEntryForm(forms.ModelForm):
+    class Meta:
+        model = DiaryEntry
+        fields = ["date", "duration", "location", "linked_activity", "narrative_entry", "review_status"]
+        widgets = {
+            "date": forms.DateInput(attrs={"type": "date", "class": "form-control"}),
+            "duration": forms.NumberInput(attrs={"class": "form-control", "step": "0.25"}),
+            "location": forms.Select(attrs={"class": "form-select"}),
+            "linked_activity": forms.TextInput(attrs={"class": "form-control"}),
+            "narrative_entry": forms.Textarea(attrs={"class": "form-control", "rows": 4}),
+            "review_status": forms.Select(attrs={"class": "form-select"}),
+        }
+
+
+# -------------------- Volunteer Transcript Form --------------------
+class VolunteerTranscriptForm(forms.ModelForm):
+    class Meta:
+        model = VolunteerTranscript
+        fields = ["template_choice", "generated_summary", "reviewer_notes", "approval_status", "export_file"]
+        widgets = {
+            "template_choice": forms.TextInput(attrs={"class": "form-control"}),
+            "generated_summary": forms.Textarea(attrs={"class": "form-control", "rows": 6}),
+            "reviewer_notes": forms.Textarea(attrs={"class": "form-control", "rows": 3}),
+            "approval_status": forms.Select(attrs={"class": "form-select"}),
+            "export_file": forms.ClearableFileInput(attrs={"class": "form-control"}),
+        }
+
+
+# -------------------- Repository Form --------------------
+class RepositoryAssetForm(forms.ModelForm):
+    class Meta:
+        model = RepositoryAsset
+        fields = ["title", "category", "file_upload", "tags", "role_visibility"]
+        widgets = {
+            "title": forms.TextInput(attrs={"class": "form-control"}),
+            "category": forms.TextInput(attrs={"class": "form-control"}),
+            "file_upload": forms.ClearableFileInput(attrs={"class": "form-control"}),
+            "tags": forms.TextInput(attrs={"class": "form-control", "placeholder": "comma separated tags"}),
+            "role_visibility": forms.Select(attrs={"class": "form-select"}),
         }

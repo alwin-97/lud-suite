@@ -1,0 +1,68 @@
+{% extends 'core/admin/base_admin.html' %}
+
+{% block title %}Import Mentees{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb"><ol class="breadcrumb mb-0">
+    <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}"><i class="fa-solid fa-house fa-sm me-1"></i>Dashboard</a></li>
+    <li class="breadcrumb-item active">Import Mentees</li>
+</ol></nav>
+{% endblock %}
+
+{% block page_content %}
+<div class="page-header"><h1>Import Mentees</h1></div>
+
+<!-- Upload -->
+<div class="panel mb-4">
+    <div class="panel-header"><h2><i class="fa-solid fa-file-import me-2 opacity-50"></i>Bulk Upload</h2></div>
+    <div class="panel-body admin-form">
+        <p class="text-muted small mb-3">Upload a CSV or Excel file with mentee master data. Schools that don't exist will be auto-created.</p>
+        <div class="alert alert-light border small mb-3" style="border-radius:8px">
+            <strong>Required columns:</strong>
+            <code>FULL_NAME, REGISTER_NO, GRADE, CLASS, SCHOOL, CHAPTER, LOCATION, PROGRAMME, YEAR, MENTOR_EMAIL, GUARDIAN_NAME, GUARDIAN_CONTACT</code>
+            <br><small class="text-muted">FULL_NAME and YEAR are mandatory.</small>
+        </div>
+        <a href="{% url 'download_mentee_template' %}" class="btn btn-sm btn-outline-secondary mb-3">
+            <i class="fa-solid fa-download me-1"></i>Download Template
+        </a>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="row g-3 align-items-end">
+                <div class="col-md-8">
+                    <label class="form-label">Select File</label>
+                    <input type="file" name="file" class="form-control" accept=".csv,.xlsx,.xls" required>
+                </div>
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-sm btn-primary w-100"><i class="fa-solid fa-upload me-1"></i>Upload &amp; Import</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Recent logs -->
+{% if upload_logs %}
+<div class="panel">
+    <div class="panel-header"><h2><i class="fa-solid fa-clock-rotate-left me-2 opacity-50"></i>Recent Uploads</h2></div>
+    <div class="panel-body flush">
+        <div class="table-responsive">
+            <table class="table admin-datatable mb-0">
+                <thead><tr><th>File</th><th>Total</th><th>Imported</th><th>Errors</th><th>By</th><th>Date</th></tr></thead>
+                <tbody>
+                    {% for log in upload_logs %}
+                    <tr>
+                        <td>{{ log.file_name }}</td>
+                        <td>{{ log.total_rows }}</td>
+                        <td class="text-success fw-semibold">{{ log.success_count }}</td>
+                        <td>{% if log.error_count %}<span class="text-danger fw-semibold">{{ log.error_count }}</span>{% else %}<span class="text-muted">0</span>{% endif %}</td>
+                        <td>{{ log.uploaded_by.get_full_name|default:"-" }}</td>
+                        <td class="text-muted">{{ log.created_at|date:"M d, Y H:i" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

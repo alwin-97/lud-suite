@@ -1,48 +1,29 @@
-{% extends 'base.html' %}
-{% load static %}
+{% extends 'core/admin/base_admin.html' %}
 
-{% block title %}Edit {{ title }}{% endblock title %}
+{% block title %}Edit {{ title }}{% endblock %}
 
-{% block links %}
-<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
-{% endblock links %}
+{% block breadcrumb %}
+<nav aria-label="breadcrumb"><ol class="breadcrumb mb-0">
+    <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}"><i class="fa-solid fa-house fa-sm me-1"></i>Dashboard</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'admin_config_home' %}">Config</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'admin_config_list' config_key %}">{{ title }}</a></li>
+    <li class="breadcrumb-item active">Edit</li>
+</ol></nav>
+{% endblock %}
 
-{% block content %}
-{% include 'partials/_header.html' %}
+{% block page_content %}
+<div class="page-header"><h1>Edit {{ title }}</h1></div>
 
-<div class="container py-4">
-    <div class="card mb-4">
-        <div class="card-body">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb mb-0">
-                    <li class="breadcrumb-item">
-                        <a href="{% url 'admin_dashboard' %}" class="text-decoration-none">Admin Dashboard</a>
-                    </li>
-                    <li class="breadcrumb-item">
-                        <a href="{% url 'admin_config_home' %}" class="text-decoration-none">Admin Config</a>
-                    </li>
-                    <li class="breadcrumb-item">
-                        <a href="{% url 'admin_config_list' config_key %}" class="text-decoration-none">{{ title }}</a>
-                    </li>
-                    <li class="breadcrumb-item active" aria-current="page">Edit</li>
-                </ol>
-            </nav>
-        </div>
-    </div>
-    <div class="card mb-4">
-        <div class="card-body">
-            <h3 class="mb-0">Edit {{ title }}</h3>
-        </div>
-    </div>
-    <form method="post" class="card">
-        {% csrf_token %}
-        <div class="card-body">
+<div class="panel" style="max-width:640px">
+    <div class="panel-body admin-form">
+        <form method="post">
+            {% csrf_token %}
             {{ form.as_p }}
-            <div class="d-flex gap-2">
-                <button type="submit" class="btn btn-success">Save</button>
-                <a class="btn btn-secondary" href="{% url 'admin_config_list' config_key %}">Cancel</a>
+            <div class="d-flex gap-2 mt-3">
+                <button type="submit" class="btn btn-sm btn-primary"><i class="fa-solid fa-check me-1"></i>Save</button>
+                <a class="btn btn-sm btn-outline-secondary" href="{% url 'admin_config_list' config_key %}">Cancel</a>
             </div>
-        </div>
-    </form>
+        </form>
+    </div>
 </div>
-{% endblock content %}
+{% endblock %}

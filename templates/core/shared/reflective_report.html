@@ -1,0 +1,46 @@
+{% extends 'core/mentor/base_mentor.html' %}
+
+{% block title %}Reflective Reporting{% endblock title %}
+
+{% block page_content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="fw-bold mb-1">Reflective Reports (DIP/YCLP)</h4>
+            <p class="text-muted mb-0">Submit structured reflective reports for your program activities.</p>
+        </div>
+    </div>
+
+    <div class="card mb-4 border-0 shadow-sm">
+        <div class="card-body p-4">
+            <h5 class="card-title fw-bold text-primary mb-3">Submit New Report</h5>
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit" class="btn btn-primary mt-3 px-4 rounded-pill">
+                    <i class="fa-solid fa-paper-plane me-2"></i>Submit Report
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <h5 class="fw-bold text-primary mb-3">Submitted Reports</h5>
+    <div class="list-group shadow-sm">
+        {% for report in reports %}
+        <div class="list-group-item flex-column align-items-start mb-2 border rounded p-4">
+            <div class="d-flex w-100 justify-content-between mb-2">
+                <h5 class="mb-1 fw-bold">{{ report.activity_name }}</h5>
+                <small class="text-muted">{{ report.date|date:"F d, Y" }} ({{ report.duration }} hrs)</small>
+            </div>
+            <p class="mb-1"><strong>Learnings:</strong> {{ report.learnings }}</p>
+            <p class="mb-2"><strong>Feedback:</strong> {{ report.feedback }}</p>
+            <small>Status: <span class="badge bg-info p-2">{{ report.get_status_display }}</span></small>
+        </div>
+        {% empty %}
+        <div class="text-center p-4">
+            <p class="text-muted mb-0">No reports found.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock page_content %}

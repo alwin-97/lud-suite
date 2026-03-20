@@ -1,29 +1,22 @@
-{% extends 'base.html' %}
-{% load static %}
+{% extends 'core/endorser/base_endorser.html' %}
 
-{% block title %}Assign Schedule{% endblock title %}
+{% block title %}Work Schedule{% endblock title %}
 
-{% block links %}
-<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
-{% endblock links %}
+{% block breadcrumb %}
+<a href="{% url 'endorser_dashboard' %}" class="text-muted"><i class="fa-solid fa-house fa-sm me-1"></i>Dashboard</a>
+<i class="fa-solid fa-chevron-right fa-2xs mx-2 text-muted"></i>
+<span>Work Schedule</span>
+{% endblock %}
 
-{% block content %}
-{% include 'partials/_header.html' %}
-
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <div class="d-flex justify-content-between align-items-center mb-5">
-                <div>
-                    <h1 class="display-5 fw-bold text-primary">Assign Schedule</h1>
-                    <p class="text-muted lead mb-0">Delegate tasks and set deadlines for mentors.</p>
-                </div>
-                <div>
-                    <a href="{% url 'endorser_dashboard' %}" class="btn btn-outline-secondary rounded-pill px-4">
-                        <i class="fa-solid fa-arrow-left me-2"></i>Dashboard
-                    </a>
-                </div>
+{% block page_content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h4 class="fw-bold mb-1">Assign Schedule</h4>
+                <p class="text-muted mb-0">Delegate tasks and set deadlines for mentors.</p>
             </div>
+        </div>
 
             <div class="card border-0 shadow-sm">
                 <div class="card-body p-5">
@@ -91,9 +84,9 @@
     </div>
 </div>
 
+{% block extra_js %}
 <script>
     document.addEventListener("DOMContentLoaded", function () {
-        // Auto-style form inputs
         var formFields = document.querySelectorAll('input:not([type="checkbox"]):not([type="radio"]), textarea, select');
         formFields.forEach(function (field) {
             field.classList.add('form-control');
@@ -101,13 +94,10 @@
             field.classList.add('border-0');
             field.style.padding = "0.75rem 1rem";
         });
-
         var checkBoxes = document.querySelectorAll('input[type="checkbox"]');
         checkBoxes.forEach(function (box) {
             box.classList.add('form-check-input');
         });
-
-        // Auto-dismiss alerts
         setTimeout(() => {
             const alert = document.querySelector('.alert');
             if (alert) {
@@ -117,4 +107,5 @@
         }, 3000);
     });
 </script>
-{% endblock %}
+{% endblock extra_js %}
+{% endblock page_content %}

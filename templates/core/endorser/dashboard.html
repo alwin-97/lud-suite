@@ -1,35 +1,18 @@
-{% extends 'base.html' %}
-{% load static %}
+{% extends 'core/endorser/base_endorser.html' %}
 
 {% block title %}Dashboard{% endblock title %}
 
-{% block links %}
-<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
-{% endblock links %}
+{% block breadcrumb %}
+<i class="fa-solid fa-house fa-sm text-muted me-1"></i><span class="text-muted">Dashboard</span>
+{% endblock %}
 
-{% block content %}
-{% include 'partials/_header.html' %}
+{% block page_content %}
+<div class="mb-4">
+    <h4 class="fw-bold mb-1">Welcome Back, {{ user.first_name }}!</h4>
+    <p class="text-muted mb-0">Manage your endorsements, review schedules, and track activity logs.</p>
+</div>
 
-<div class="container py-5">
-    <!-- Welcome Section -->
-    <div class="row mb-5">
-        <div class="col-12">
-            <div class="card bg-primary text-white border-0 shadow-sm overflow-hidden position-relative">
-                <div class="card-body p-5 position-relative z-1">
-                    <h1 class="display-5 fw-bold mb-2">Welcome Back, {{ user.first_name }}!</h1>
-                    <p class="lead mb-0 opacity-75">Manage your endorsements, review schedules, and track activity logs
-                        efficiently.</p>
-                </div>
-                <!-- Decorative Circle -->
-                <div class="position-absolute top-0 end-0 translate-middle-y me-n5 mt-n5 rounded-circle bg-white opacity-10"
-                    style="width: 300px; height: 300px;"></div>
-                <div class="position-absolute bottom-0 start-0 translate-middle-x ms-n5 mb-n5 rounded-circle bg-white opacity-10"
-                    style="width: 200px; height: 200px;"></div>
-            </div>
-        </div>
-    </div>
-
-    <div class="row g-4 justify-content-center">
+<div class="row g-4 justify-content-center">
         <!-- Work Schedule -->
         <div class="col-lg-3 col-md-6">
             <a href="{% url 'endorser_work_schedule' %}" class="text-decoration-none group-hover-card">
@@ -94,16 +77,11 @@
             </a>
         </div>
     </div>
-</div>
 
+{% block extra_css %}
 <style>
-    .hover-lift {
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    .hover-lift:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .15) !important;
-    }
+    .hover-lift { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+    .hover-lift:hover { transform: translateY(-5px); box-shadow: 0 .5rem 1rem rgba(0,0,0,.15) !important; }
 </style>
-{% endblock %}
+{% endblock extra_css %}
+{% endblock page_content %}

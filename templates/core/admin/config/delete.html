@@ -1,48 +1,30 @@
-{% extends 'base.html' %}
-{% load static %}
+{% extends 'core/admin/base_admin.html' %}
 
-{% block title %}Delete {{ title }}{% endblock title %}
+{% block title %}Delete {{ title }}{% endblock %}
 
-{% block links %}
-<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
-{% endblock links %}
+{% block breadcrumb %}
+<nav aria-label="breadcrumb"><ol class="breadcrumb mb-0">
+    <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}"><i class="fa-solid fa-house fa-sm me-1"></i>Dashboard</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'admin_config_home' %}">Config</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'admin_config_list' config_key %}">{{ title }}</a></li>
+    <li class="breadcrumb-item active">Delete</li>
+</ol></nav>
+{% endblock %}
 
-{% block content %}
-{% include 'partials/_header.html' %}
+{% block page_content %}
+<div class="page-header"><h1>Delete {{ title }}</h1></div>
 
-<div class="container py-4">
-    <div class="card mb-4">
-        <div class="card-body">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb mb-0">
-                    <li class="breadcrumb-item">
-                        <a href="{% url 'admin_dashboard' %}" class="text-decoration-none">Admin Dashboard</a>
-                    </li>
-                    <li class="breadcrumb-item">
-                        <a href="{% url 'admin_config_home' %}" class="text-decoration-none">Admin Config</a>
-                    </li>
-                    <li class="breadcrumb-item">
-                        <a href="{% url 'admin_config_list' config_key %}" class="text-decoration-none">{{ title }}</a>
-                    </li>
-                    <li class="breadcrumb-item active" aria-current="page">Delete</li>
-                </ol>
-            </nav>
+<div class="panel" style="max-width:540px">
+    <div class="panel-body">
+        <div class="alert alert-warning mb-3" style="border-radius:8px">
+            <i class="fa-solid fa-triangle-exclamation me-2"></i>
+            Are you sure you want to delete <strong>{{ item }}</strong>? This cannot be undone.
         </div>
-    </div>
-    <div class="card mb-4">
-        <div class="card-body">
-            <h3 class="mb-0">Delete {{ title }}</h3>
-        </div>
-    </div>
-    <div class="card">
-        <div class="card-body">
-            <p>Are you sure you want to delete <strong>{{ item }}</strong>?</p>
-            <form method="post" class="d-flex gap-2">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-danger">Delete</button>
-                <a class="btn btn-secondary" href="{% url 'admin_config_list' config_key %}">Cancel</a>
-            </form>
-        </div>
+        <form method="post" class="d-flex gap-2">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-sm btn-danger"><i class="fa-solid fa-trash me-1"></i>Delete</button>
+            <a class="btn btn-sm btn-outline-secondary" href="{% url 'admin_config_list' config_key %}">Cancel</a>
+        </form>
     </div>
 </div>
-{% endblock content %}
+{% endblock %}

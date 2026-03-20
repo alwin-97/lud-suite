@@ -17,6 +17,15 @@ from .models import (
     RatingDomain,
     RatingScaleDefinition,
     SessionType,
+    ReflectiveReport,
+    DiaryEntry,
+    VolunteerTranscript,
+    ProfileArtifact,
+    RepositoryAsset,
+    EvidenceAttachment,
+    Programme,
+    Location,
+    AcademicCycle,
 )
 
 
@@ -147,3 +156,82 @@ class ProgressExportTests(TestCase):
 
         self.assertIn("Year 1 - Communication", assessment_header)
         self.assertEqual(assessment_row[-1], "4")
+
+
+class SRSModelsTests(TestCase):
+    def setUp(self):
+        self.volunteer = CustomUser.objects.create_user(
+            username="vol@example.com", email="vol@example.com",
+            password="pass", role="volunteer"
+        )
+        self.academic_cycle = AcademicCycle.objects.create(
+            year_label="2026-2027", start_date=timezone.now().date(), end_date=timezone.now().date()
+        )
+        self.programme = Programme.objects.create(name="DIP", code="DIP01")
+        self.location = Location.objects.create(name="Main Campus", code="MC")
+
+    def test_reflective_report_creation(self):
+        report = ReflectiveReport.objects.create(
+            user=self.volunteer,
+            programme=self.programme,
+            location=self.location,
+            activity_name="Leadership Workshop",
+            duration=2.5,
+            date=timezone.now().date(),
+            learnings="Learned a lot."
+        )
+        self.assertEqual(report.status, 'Draft')
+        self.assertEqual(ReflectiveReport.objects.count(), 1)
+
+    def test_diary_entry_creation(self):
+        entry = DiaryEntry.objects.create(
+            volunteer=self.volunteer,
+            date=timezone.now().date(),
+            duration=4.0,
+            location=self.location,
+            linked_activity="Community Clean Up",
+            narrative_entry="Cleaned the park."
+        )
+        self.assertEqual(entry.review_status, 'Pending')
+        self.assertEqual(DiaryEntry.objects.count(), 1)
+
+    def test_volunteer_transcript_creation(self):
+        transcript = VolunteerTranscript.objects.create(
+            volunteer=self.volunteer,
+            template_choice="Standard Template",
+            generated_summary="A very good volunteer."
+        )
+        self.assertEqual(transcript.approval_status, 'Draft')
+
+    def test_profile_artifact_creation(self):
+        artifact = ProfileArtifact.objects.create(
+            user=self.volunteer,
+            title="First Aid Certificate",
+            is_public=True
+        )
+        self.assertEqual(ProfileArtifact.objects.count(), 1)
+
+    def test_repository_asset_creation(self):
+        asset = RepositoryAsset.objects.create(
+            title="Training Guide",
+            category="Training",
+            uploaded_by=self.volunteer,
+            role_visibility="all"
+        )
+        self.assertEqual(RepositoryAsset.objects.count(), 1)
+
+    def test_evidence_attachment_creation(self):
+        asset = RepositoryAsset.objects.create(
+            title="Session Photo",
+            category="Evidence",
+            uploaded_by=self.volunteer,
+            role_visibility="leadership"
+        )
+        attachment = EvidenceAttachment.objects.create(
+            asset=asset,
+            linked_model="MenteeAssessment",
+            linked_id=1,
+            uploaded_by=self.volunteer
+        )
+        self.assertEqual(EvidenceAttachment.objects.count(), 1)
+

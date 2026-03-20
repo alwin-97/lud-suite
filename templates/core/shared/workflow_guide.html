@@ -1,37 +1,20 @@
-{% extends 'base.html' %}
-{% load static %}
+{% extends 'core/mentor/base_mentor.html' %}
 
 {% block title %}Workflow Guide{% endblock title %}
 
-{% block links %}
-<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
-{% endblock links %}
+{% block breadcrumb %}
+<a href="{% url 'role-redirect' %}" class="text-muted"><i class="fa-solid fa-house fa-sm me-1"></i>Home</a>
+<i class="fa-solid fa-chevron-right fa-2xs mx-2 text-muted"></i>
+<span>Workflow Guide</span>
+{% endblock %}
 
-{% block content %}
-{% include 'partials/_header.html' %}
-
-<div class="container py-4">
-    <div class="card mb-4">
-        <div class="card-body">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb mb-0">
-                    <li class="breadcrumb-item">
-                        <a href="{% url 'role-redirect' %}" class="text-decoration-none">Home</a>
-                    </li>
-                    <li class="breadcrumb-item active" aria-current="page">Workflow Guide</li>
-                </ol>
-            </nav>
-        </div>
-    </div>
-
-    <div class="card mb-4">
-        <div class="card-body">
-            <h3 class="mb-2">Workflow Guide</h3>
-            <p class="text-muted mb-0">
-                This guide walks through the recommended setup and day-to-day flow for admins, mentors, and mentees.
-            </p>
-        </div>
-    </div>
+{% block page_content %}
+<div class="mb-4">
+    <h4 class="fw-bold mb-1">Workflow Guide</h4>
+    <p class="text-muted mb-0">
+        This guide walks through the recommended setup and day-to-day flow for admins, mentors, and mentees.
+    </p>
+</div>
 
     <div class="row g-3">
         <div class="col-lg-6">
@@ -124,5 +107,4 @@
             </div>
         </div>
     </div>
-</div>
-{% endblock content %}
+{% endblock page_content %}

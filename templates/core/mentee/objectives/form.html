@@ -1,24 +1,23 @@
-{% extends 'base.html' %}
-{% load static %}
+{% extends 'core/mentee/base_mentee.html' %}
 
 {% block title %}Objective{% endblock title %}
 
-{% block links %}
-<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
-{% endblock links %}
+{% block breadcrumb %}
+<a href="{% url 'mentee_dashboard' %}" class="text-muted"><i class="fa-solid fa-house fa-sm me-1"></i>Dashboard</a>
+<i class="fa-solid fa-chevron-right fa-2xs mx-2 text-muted"></i>
+<a href="{% url 'objective_list' %}" class="text-muted">Objectives</a>
+<i class="fa-solid fa-chevron-right fa-2xs mx-2 text-muted"></i>
+<span>{% if mode == "edit" %}Edit{% else %}New{% endif %}</span>
+{% endblock %}
 
-{% block content %}
-{% include 'partials/_header.html' %}
-
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <div class="d-flex justify-content-between align-items-center mb-5">
-                <div>
-                    <h1 class="display-5 fw-bold text-primary">{% if mode == "edit" %}Edit Objective{% else %}New
-                        Objective{% endif %}</h1>
-                    <p class="text-muted lead mb-0">Define your learning goals and milestones.</p>
-                </div>
+{% block page_content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h4 class="fw-bold mb-1">{% if mode == "edit" %}Edit Objective{% else %}New Objective{% endif %}</h4>
+                <p class="text-muted mb-0">Define your learning goals and milestones.</p>
+            </div>
                 <div>
                     <a href="{% url 'objective_list' %}" class="btn btn-outline-secondary rounded-pill px-4">
                         <i class="fa-solid fa-arrow-left me-2"></i>Back
@@ -57,8 +56,8 @@
             </div>
         </div>
     </div>
-</div>
 
+{% block extra_js %}
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         var formFields = document.querySelectorAll('input:not([type="checkbox"]):not([type="radio"]), textarea, select');
@@ -68,11 +67,11 @@
             field.classList.add('border-0');
             field.style.padding = "0.75rem 1rem";
         });
-
         var checkBoxes = document.querySelectorAll('input[type="checkbox"]');
         checkBoxes.forEach(function (box) {
             box.classList.add('form-check-input');
         });
     });
 </script>
-{% endblock content %}
+{% endblock extra_js %}
+{% endblock page_content %}

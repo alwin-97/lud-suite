@@ -1,31 +1,25 @@
-{% extends 'base.html' %}
-{% load static %}
+{% extends 'core/mentor/base_mentor.html' %}
 
 {% block title %}My Activities{% endblock title %}
 
-{% block links %}
-<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
-{% endblock links %}
+{% block breadcrumb %}
+<a href="{% url 'dashboard' %}" class="text-muted"><i class="fa-solid fa-house fa-sm me-1"></i>Dashboard</a>
+<i class="fa-solid fa-chevron-right fa-2xs mx-2 text-muted"></i>
+<a href="{% url 'dip_yclp' %}" class="text-muted">DIP YCLP</a>
+<i class="fa-solid fa-chevron-right fa-2xs mx-2 text-muted"></i>
+<span>My Activities</span>
+{% endblock %}
 
-{% block content %}
-{% include 'partials/_header.html' %}
-
-<div class="container py-5">
-  <div class="d-flex justify-content-between align-items-center mb-5">
+{% block page_content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-      <h1 class="display-5 fw-bold text-primary">My Activities</h1>
-      <p class="text-muted lead mb-0">Track and manage your reflexive report entries.</p>
+        <h4 class="fw-bold mb-1">My Activities</h4>
+        <p class="text-muted mb-0">Track and manage your reflexive report entries.</p>
     </div>
-    <div>
-      <nav aria-label="breadcrumb">
-        <ol class="breadcrumb mb-0">
-          <li class="breadcrumb-item"><a href="{% url 'dashboard' %}" class="text-decoration-none">Dashboard</a></li>
-          <li class="breadcrumb-item"><a href="{% url 'dip_yclp' %}" class="text-decoration-none">DIP YCLP</a></li>
-          <li class="breadcrumb-item active" aria-current="page">My Activities</li>
-        </ol>
-      </nav>
-    </div>
-  </div>
+    <a href="{% url 'dip_yclp' %}" class="btn btn-sm btn-primary rounded-pill px-3">
+        <i class="fa-solid fa-plus me-1"></i>New Activity
+    </a>
+</div>
 
   <div class="card border-0 shadow-sm">
     <div class="card-header bg-white border-bottom-0 pt-4 px-4 d-flex justify-content-between align-items-center">
@@ -90,5 +84,4 @@
       </div>
     </div>
   </div>
-</div>
-{% endblock content %}
+{% endblock page_content %}

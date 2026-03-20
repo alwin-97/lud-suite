@@ -1,62 +1,28 @@
-{% extends 'base.html' %}
-{% load static %}
+{% extends 'core/admin/base_admin.html' %}
 
-{% block title %}Admin Config{% endblock title %}
+{% block title %}Configuration{% endblock %}
 
-{% block links %}
-<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
-{% endblock links %}
+{% block breadcrumb %}
+<nav aria-label="breadcrumb"><ol class="breadcrumb mb-0">
+    <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}"><i class="fa-solid fa-house fa-sm me-1"></i>Dashboard</a></li>
+    <li class="breadcrumb-item active">Configuration</li>
+</ol></nav>
+{% endblock %}
 
-{% block content %}
-{% include 'partials/_header.html' %}
-
-<div class="container py-4">
-    <div class="card mb-4">
-        <div class="card-body">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb mb-0">
-                    <li class="breadcrumb-item">
-                        <a href="{% url 'admin_dashboard' %}" class="text-decoration-none">Admin Dashboard</a>
-                    </li>
-                    <li class="breadcrumb-item active" aria-current="page">Admin Config</li>
-                </ol>
-            </nav>
-        </div>
-    </div>
-    <div class="card mb-4">
-        <div class="card-body">
-            <h3 class="mb-0">Admin Configuration</h3>
-        </div>
-    </div>
-    <div class="row g-3">
-        {% for item in config_items %}
-            <div class="col-md-4 col-sm-6">
-                <a class="text-decoration-none" href="{% url 'admin_config_list' item.key %}">
-                    <div class="card text-center h-100">
-                        <div class="card-body d-flex flex-column align-items-center justify-content-center gap-2">
-                            {% if item.key == "statuses" %}
-                                <i class="fa-solid fa-tags fa-lg text-primary"></i>
-                            {% elif item.key == "session-types" %}
-                                <i class="fa-solid fa-calendar-days fa-lg text-primary"></i>
-                            {% elif item.key == "rating-domains" %}
-                                <i class="fa-solid fa-chart-line fa-lg text-primary"></i>
-                            {% elif item.key == "domain-indicators" %}
-                                <i class="fa-solid fa-list-check fa-lg text-primary"></i>
-                            {% elif item.key == "rating-scale-definitions" %}
-                                <i class="fa-solid fa-ranking-star fa-lg text-primary"></i>
-                            {% elif item.key == "mood-categories" %}
-                                <i class="fa-solid fa-face-smile fa-lg text-primary"></i>
-                            {% elif item.key == "reference-content" %}
-                                <i class="fa-solid fa-book-open fa-lg text-primary"></i>
-                            {% elif item.key == "template-configs" %}
-                                <i class="fa-solid fa-sliders fa-lg text-primary"></i>
-                            {% endif %}
-                            <h6 class="fw-semibold mb-0">{{ item.label }}</h6>
-                        </div>
-                    </div>
-                </a>
-            </div>
-        {% endfor %}
-    </div>
+{% block page_content %}
+<div class="page-header">
+    <h1>Configuration</h1>
+    <p>Manage schools, chapters, locations, academic years, programmes, assessment settings, and other system data.</p>
 </div>
-{% endblock content %}
+
+<div class="row g-3">
+    {% for item in config_items %}
+    <div class="col-md-6 col-lg-4">
+        <a href="{% url 'admin_config_list' item.key %}" class="config-tile">
+            <div class="tile-icon"><i class="fa-solid {{ item.icon }}"></i></div>
+            <div class="tile-label">{{ item.label }}</div>
+        </a>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

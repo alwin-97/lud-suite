@@ -1,315 +1,148 @@
-{% extends 'base.html' %}
-{% load static %}
+{% extends 'core/admin/base_admin.html' %}
 
-{% block title %}Manage Assignment{% endblock %}
+{% block title %}Endorser Assignments{% endblock %}
 
-{% block links %}
-<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+{% block extra_css %}
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-
 {% endblock %}
 
-{% block content %}
-{% include 'partials/_header.html' %}
+{% block breadcrumb %}
+<nav aria-label="breadcrumb"><ol class="breadcrumb mb-0">
+    <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}"><i class="fa-solid fa-house fa-sm me-1"></i>Dashboard</a></li>
+    <li class="breadcrumb-item active">Endorser Assignments</li>
+</ol></nav>
+{% endblock %}
 
-<div class="container py-5">
-  <div class="d-flex justify-content-between align-items-center mb-5">
-    <div>
-      <h1 class="display-5 fw-bold text-primary">Assignment Manager</h1>
-      <p class="text-muted lead mb-0">Link Endorsers with Mentors.</p>
-    </div>
-    <div>
-      <nav aria-label="breadcrumb">
-        <ol class="breadcrumb mb-0">
-          <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}" class="text-decoration-none">Dashboard</a>
-          </li>
-          <li class="breadcrumb-item active" aria-current="page">Assignments (Endorser)</li>
-        </ol>
-      </nav>
-    </div>
-  </div>
+{% block page_content %}
+<div class="page-header"><h1>Endorser &rarr; Mentor Assignments</h1></div>
 
-  <!-- Stats Cards -->
-  <div class="row g-4 mb-4">
-    <div class="col-md-6">
-      <div class="card border-0 shadow-sm bg-warning-subtle text-warning-emphasis">
-        <div class="card-body p-4 text-center">
-          <div class="display-6 fw-bold">{{ unassigned_endorsers.count }}/{{ total_endorsers }}</div>
-          <div class="text-uppercase small fw-bold mt-1 opacity-75">Unassigned Endorsers</div>
+<!-- Stats -->
+<div class="row g-3 mb-4">
+    <div class="col-sm-6">
+        <div class="stat-card" style="--accent:#f59e0b">
+            <div class="stat-value">{{ unassigned_endorsers.count }}/{{ total_endorsers }}</div>
+            <div class="stat-label">Unassigned Endorsers</div>
         </div>
-      </div>
     </div>
-    <div class="col-md-6">
-      <div class="card border-0 shadow-sm bg-info-subtle text-info-emphasis">
-        <div class="card-body p-4 text-center">
-          <div class="display-6 fw-bold">{{ unassigned_mentors.count }}/{{ total_mentors }}</div>
-          <div class="text-uppercase small fw-bold mt-1 opacity-75">Unassigned Mentors</div>
+    <div class="col-sm-6">
+        <div class="stat-card" style="--accent:#3b82f6">
+            <div class="stat-value">{{ unassigned_mentors.count }}/{{ total_mentors }}</div>
+            <div class="stat-label">Unassigned Mentors</div>
         </div>
-      </div>
     </div>
-  </div>
+</div>
 
-  <div class="card border-0 shadow-sm">
-    <div class="card-header bg-white border-bottom-0 pt-4 px-4">
-      <h5 class="fw-bold mb-0">Endorser Status</h5>
+<!-- Table -->
+<div class="panel">
+    <div class="panel-header"><h2><i class="fa-solid fa-users-between-lines me-2 opacity-50"></i>Endorser Status</h2></div>
+    <div class="panel-body flush">
+        <div class="table-responsive">
+            <table id="endorsersTable" class="table admin-datatable mb-0">
+                <thead><tr><th>Endorser</th><th>Email</th><th class="text-center">Mentors</th><th class="text-end" style="width:180px">Action</th></tr></thead>
+                <tbody>
+                    {% for data in endorsers_with_counts %}
+                    <tr>
+                        <td class="fw-semibold">{{ data.endorser.first_name }} {{ data.endorser.last_name }}</td>
+                        <td class="text-muted">{{ data.endorser.email }}</td>
+                        <td class="text-center">
+                            {% if data.mentor_count > 0 %}<span class="badge bg-success-subtle text-success rounded-pill">{{ data.mentor_count }}</span>{% else %}<span class="badge bg-secondary-subtle text-secondary rounded-pill">0</span>{% endif %}
+                        </td>
+                        <td class="text-end">
+                            <button class="btn btn-sm btn-outline-primary assign-btn me-1" data-bs-toggle="modal" data-bs-target="#assignModal" data-endorser="{{ data.endorser.id }}" data-endorser-name="{{ data.endorser.first_name }} {{ data.endorser.last_name }}"><i class="fa-solid fa-link me-1"></i>Assign</button>
+                            <button class="btn btn-sm btn-outline-secondary view-mentors-btn" data-bs-toggle="modal" data-bs-target="#viewMentorsModal" data-endorser="{{ data.endorser.id }}" data-endorser-name="{{ data.endorser.first_name }} {{ data.endorser.last_name }}"><i class="fa-solid fa-eye me-1"></i>View</button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
-    <div class="card-body p-0">
-      <div class="table-responsive">
-        <table id="endorsersTable" class="table align-middle table-hover mb-0">
-          <thead class="bg-light">
-            <tr>
-              <th class="ps-4 py-3">Endorser Name</th>
-              <th class="py-3">Email</th>
-              <th class="py-3 text-center">Assigned Mentors</th>
-              <th class="py-3 text-end pe-4">Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for data in endorsers_with_counts %}
-            <tr>
-              <td class="ps-4 fw-semibold text-dark">{{ data.endorser.first_name }} {{ data.endorser.last_name }}</td>
-              <td class="text-muted">{{ data.endorser.email }}</td>
-              <td class="text-center">
-                {% if data.mentor_count > 0 %}
-                <span class="badge bg-success-subtle text-success rounded-pill px-3">{{ data.mentor_count }}</span>
-                {% else %}
-                <span class="badge bg-secondary-subtle text-secondary rounded-pill px-3">0</span>
-                {% endif %}
-              </td>
-              <td class="text-end pe-4">
-                <button class="btn btn-outline-primary btn-sm rounded-pill assign-btn me-1" data-bs-toggle="modal"
-                  data-bs-target="#assignModal" data-endorser="{{ data.endorser.id }}"
-                  data-endorser-name="{{ data.endorser.first_name }} {{ data.endorser.last_name }}">
-                  <i class="fa-solid fa-link me-1"></i>Assign
-                </button>
-
-                <button class="btn btn-outline-secondary btn-sm rounded-pill view-mentors-btn" data-bs-toggle="modal"
-                  data-bs-target="#viewMentorsModal" data-endorser="{{ data.endorser.id }}"
-                  data-endorser-name="{{ data.endorser.first_name }} {{ data.endorser.last_name }}">
-                  <i class="fa-solid fa-eye me-1"></i>View
-                </button>
-              </td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
 </div>
 
 <!-- Assign Modal -->
-<div class="modal fade" id="assignModal" tabindex="-1" aria-labelledby="assignModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-    <div class="modal-content border-0 shadow-lg">
-      <div class="modal-header bg-primary text-white border-bottom-0">
-        <h5 class="modal-title fw-bold" id="assignModalLabel">Assign Mentors</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-      </div>
-
-      <div class="modal-body p-4">
-        <p id="endorserNameModal" class="fw-bold fs-5 text-dark mb-3"></p>
-        <form id="assignForm">
-          <input type="hidden" id="endorserId">
-
-          <div class="mb-3">
-            <label class="form-label text-uppercase small fw-bold text-muted">Select Mentors</label>
-            <div class="list-group" id="mentorCheckboxList" style="max-height: 300px; overflow-y: auto;">
-              {% for mentor in unassigned_mentors %}
-              <label class="list-group-item d-flex align-items-center border-0 bg-light mb-1 rounded">
-                <input class="form-check-input me-3" type="checkbox" name="mentor_ids" value="{{ mentor.id }}">
-                <div>
-                  <div class="fw-semibold">{{ mentor.first_name }} {{ mentor.last_name }}</div>
-                  <small class="text-muted">{{ mentor.email }}</small>
-                </div>
-              </label>
-              {% empty %}
-              <div class="text-center py-3 text-muted">
-                <i class="fa-solid fa-user-slash mb-2"></i><br>
-                No unassigned mentors available.
-              </div>
-              {% endfor %}
+<div class="modal fade" id="assignModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header"><h5 class="modal-title fw-bold">Assign Mentors</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body">
+                <p id="endorserNameModal" class="fw-bold mb-3"></p>
+                <form id="assignForm"><input type="hidden" id="endorserId">
+                    <label class="form-label small text-muted">Select Mentors</label>
+                    <div class="list-group" id="mentorCheckboxList" style="max-height:300px;overflow-y:auto">
+                        {% for mentor in unassigned_mentors %}
+                        <label class="list-group-item d-flex align-items-center border-0 bg-light mb-1 rounded">
+                            <input class="form-check-input me-3" type="checkbox" name="mentor_ids" value="{{ mentor.id }}">
+                            <div><div class="fw-semibold">{{ mentor.first_name }} {{ mentor.last_name }}</div><small class="text-muted">{{ mentor.email }}</small></div>
+                        </label>
+                        {% empty %}
+                        <div class="text-center py-3 text-muted"><i class="fa-solid fa-user-slash"></i><br>No unassigned mentors.</div>
+                        {% endfor %}
+                    </div>
+                </form>
             </div>
-          </div>
-        </form>
-      </div>
-
-      <div class="modal-footer border-top-0 px-4 pb-4">
-        <button class="btn btn-light" data-bs-dismiss="modal">Close</button>
-        <button class="btn btn-primary px-4" id="saveAssignment">Save Assignment</button>
-      </div>
+            <div class="modal-footer">
+                <button class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+                <button class="btn btn-sm btn-primary" id="saveAssignment">Save</button>
+            </div>
+        </div>
     </div>
-  </div>
 </div>
-
 
 <!-- View Mentors Modal -->
-<div class="modal fade" id="viewMentorsModal" tabindex="-1" aria-labelledby="viewMentorsModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-    <div class="modal-content border-0 shadow-lg">
-      <div class="modal-header bg-secondary text-white border-bottom-0">
-        <h5 class="modal-title fw-bold" id="viewMentorsModalLabel">Assigned Mentors</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-      </div>
-
-      <div class="modal-body p-4">
-        <p id="endorserNameViewModal" class="fw-bold fs-5 text-dark mb-3"></p>
-
-        <form id="unassignForm">
-          <div class="list-group" id="mentorsCheckboxList" style="max-height: 300px; overflow-y: auto;">
-            <li class="list-group-item text-center text-muted border-0 bg-light">Loading...</li>
-          </div>
-        </form>
-      </div>
-
-      <div class="modal-footer border-top-0 px-4 pb-4">
-        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-danger px-4" id="unassignSelected">Unassign Selected</button>
-      </div>
+<div class="modal fade" id="viewMentorsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header"><h5 class="modal-title fw-bold">Assigned Mentors</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body">
+                <p id="endorserNameViewModal" class="fw-bold mb-3"></p>
+                <form id="unassignForm"><div class="list-group" id="mentorsCheckboxList" style="max-height:300px;overflow-y:auto"><li class="list-group-item text-center text-muted border-0 bg-light">Loading...</li></div></form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-sm btn-danger" id="unassignSelected">Unassign Selected</button>
+            </div>
+        </div>
     </div>
-  </div>
 </div>
+{% endblock %}
 
-
-
-
-<!-- JS -->
-
-<script>
-  $(function () {
-    $('#endorsersTable').DataTable({
-      language: {
-        search: "_INPUT_",
-        searchPlaceholder: "Search endorsers..."
-      },
-      dom: '<"d-flex justify-content-between align-items-center mb-3"f>t<"d-flex justify-content-between align-items-center mt-3"ip>',
-    });
-
-    // Assign button setup
-    $('.assign-btn').on('click', function () {
-      const id = $(this).data('endorser');
-      const name = $(this).data('endorser-name');
-      $('#endorserId').val(id);
-      $('#endorserNameModal').text(`${name}`);
-
-      // clear all previous selections
-      $('#mentorCheckboxList input[type="checkbox"]').prop('checked', false);
-    });
-
-    // Save assignment
-    $('#saveAssignment').on('click', function () {
-      const endorserId = $('#endorserId').val();
-      const selectedMentors = [];
-
-      $('#mentorCheckboxList input[name="mentor_ids"]:checked').each(function () {
-        selectedMentors.push($(this).val());
-      });
-
-      if (selectedMentors.length === 0) {
-        alert('Please select at least one mentor.');
-        return;
-      }
-      console.log("ENDORSE ID:", endorserId);
-      console.log("MENTORS:", selectedMentors);
-      $.ajax({
-        url: "{% url 'assign_mentors' %}",
-        method: "POST",
-        data: {
-          endorser_id: endorserId,              // correct variable
-          mentor_ids: selectedMentors,          // correct variable
-          csrfmiddlewaretoken: '{{ csrf_token }}'
-        },
-        success: function (response) {
-          if (response.status === 'success') {
-            // alert('Mentors assigned successfully!');
-            location.reload();
-          } else {
-            alert('Failed: ' + (response.message || 'Unknown error'));
-          }
-        },
-        error: function (xhr) {
-          alert('Error assigning mentors: ' + xhr.statusText);
-        }
-      });
-    });
-
-
-    // View mentors dynamically via AJAX
-    $('.view-mentors-btn').on('click', function () {
-      const endorserId = $(this).data('endorser');
-      const endorserName = $(this).data('endorser-name');
-      $('#endorserNameViewModal').text(`${endorserName}`);
-      $('#mentorsCheckboxList').html('<li class="list-group-item text-center text-muted border-0 bg-light">Loading...</li>');
-      $('#unassignSelected').data('endorser', endorserId);
-
-      $.get("{% url 'get_assigned_mentors' %}", { endorser_id: endorserId }, function (data) {
-        const list = $('#mentorsCheckboxList');
-        list.empty();
-
-        if (!data.mentors || data.mentors.length === 0) {
-          list.append('<li class="list-group-item text-center text-muted border-0 bg-light">No mentors assigned</li>');
-        } else {
-          data.mentors.forEach(m => {
-            list.append(`
-            <label class="list-group-item d-flex align-items-center border-0 bg-light mb-1 rounded">
-              <input class="form-check-input me-3" type="checkbox" name="mentor_ids" value="${m.id}">
-              <div>
-                 <div class="fw-semibold">${m.first_name} ${m.last_name}</div>
-                 <small class="text-muted">${m.email}</small>
-              </div>
-            </label>
-          `);
-          });
-        }
-      }).fail(() => {
-        $('#mentorsCheckboxList').html('<li class="list-group-item text-danger text-center border-0 bg-light">Error loading mentors</li>');
-      });
-    });
-
-    // Unassign selected mentors
-    $('#unassignSelected').on('click', function () {
-      const endorserId = $(this).data('endorser');
-      const mentorsToUnassign = [];
-      $('#mentorsCheckboxList input[name="mentor_ids"]:checked').each(function () {
-        mentorsToUnassign.push($(this).val());
-      });
-
-      if (mentorsToUnassign.length === 0) {
-        alert('Select at least one mentor to unassign.');
-        return;
-      }
-
-      $.ajax({
-        url: "{% url 'unassign_mentor' %}",
-        method: "POST",
-        data: {
-          endorser_id: endorserId,
-          'mentor_ids[]': mentorsToUnassign,
-          csrfmiddlewaretoken: '{{ csrf_token }}'
-        },
-        success: function () {
-          // alert('Selected mentors unassigned successfully!');
-
-          // Refresh the modal mentors list
-          $(`.view-mentors-btn[data-endorser="${endorserId}"]`).click();
-
-          // Update mentor count dynamically in the table
-          const countCell = $(`button.view-mentors-btn[data-endorser="${endorserId}"]`)
-            .closest('tr')
-            .find('td:nth-child(3) .badge'); // 3rd column = mentor count badge
-
-          // Refetch or just reload page safer since counts might be tricky with "Unassigned" counts elsewhere
-          location.reload();
-        },
-
-        error: function () {
-          alert('Error unassigning mentors.');
-        }
-      });
-    });
-  });
-
-
-</script>
+{% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+$(function(){
+    if ($('#endorsersTable').length && $('#endorsersTable tbody td[colspan]').length === 0) {
+        $('#endorsersTable').DataTable({language:{search:"_INPUT_",searchPlaceholder:"Search endorsers..."},dom:'<"d-flex justify-content-between align-items-center mb-3"f>t<"d-flex justify-content-between align-items-center mt-3"ip>'});
+    }
+
+    $('.assign-btn').on('click',function(){
+        var id=$(this).data('endorser'),name=$(this).data('endorser-name');
+        $('#endorserId').val(id);$('#endorserNameModal').text(name);
+        $('#mentorCheckboxList input[type="checkbox"]').prop('checked',false);
+    });
+
+    $('#saveAssignment').on('click',function(){
+        var endorserId=$('#endorserId').val(),selected=[];
+        $('#mentorCheckboxList input[name="mentor_ids"]:checked').each(function(){selected.push($(this).val())});
+        if(!selected.length){alert('Select at least one mentor.');return}
+        $.ajax({url:"{% url 'assign_mentors' %}",method:"POST",data:{endorser_id:endorserId,mentor_ids:selected,csrfmiddlewaretoken:'{{ csrf_token }}'},success:function(r){if(r.status==='success')location.reload();else alert('Failed: '+(r.message||'Unknown error'))},error:function(x){alert('Error: '+x.statusText)}});
+    });
+
+    $('.view-mentors-btn').on('click',function(){
+        var id=$(this).data('endorser'),name=$(this).data('endorser-name');
+        $('#endorserNameViewModal').text(name);$('#mentorsCheckboxList').html('<li class="list-group-item text-center text-muted border-0 bg-light">Loading...</li>');$('#unassignSelected').data('endorser',id);
+        $.get("{% url 'get_assigned_mentors' %}",{endorser_id:id},function(data){
+            var list=$('#mentorsCheckboxList');list.empty();
+            if(!data.mentors||!data.mentors.length){list.append('<li class="list-group-item text-center text-muted border-0 bg-light">No mentors assigned</li>')}
+            else{data.mentors.forEach(function(m){list.append('<label class="list-group-item d-flex align-items-center border-0 bg-light mb-1 rounded"><input class="form-check-input me-3" type="checkbox" name="mentor_ids" value="'+m.id+'"><div><div class="fw-semibold">'+m.first_name+' '+m.last_name+'</div><small class="text-muted">'+m.email+'</small></div></label>')})}
+        }).fail(function(){$('#mentorsCheckboxList').html('<li class="list-group-item text-danger text-center border-0 bg-light">Error loading mentors</li>')});
+    });
+
+    $('#unassignSelected').on('click',function(){
+        var endorserId=$(this).data('endorser'),arr=[];
+        $('#mentorsCheckboxList input[name="mentor_ids"]:checked').each(function(){arr.push($(this).val())});
+        if(!arr.length){alert('Select at least one.');return}
+        $.ajax({url:"{% url 'unassign_mentor' %}",method:"POST",data:{endorser_id:endorserId,'mentor_ids[]':arr,csrfmiddlewaretoken:'{{ csrf_token }}'},success:function(){location.reload()},error:function(){alert('Error unassigning.')}});
+    });
+});
+</script>
 {% endblock %}

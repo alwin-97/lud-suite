@@ -1,199 +1,118 @@
-{% extends 'base.html' %}
-{% load static %}
+{% extends 'core/admin/base_admin.html' %}
 
-{% block title %}Admin Dashboard{% endblock title %}
+{% block title %}Dashboard{% endblock %}
 
-{% block links %}
-<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
-{% endblock links %}
+{% block breadcrumb %}
+<nav aria-label="breadcrumb"><ol class="breadcrumb mb-0"><li class="breadcrumb-item active"><i class="fa-solid fa-house fa-sm me-1"></i>Dashboard</li></ol></nav>
+{% endblock %}
 
-{% block content %}
-{% include 'partials/_header.html' %}
+{% block page_content %}
+<div class="page-header">
+    <h1>Dashboard</h1>
+    <p>System overview and quick access to management tools.</p>
+</div>
 
-<div class="container py-5">
-    <!-- Welcome Section -->
-    <div class="row mb-5">
-        <div class="col-12">
-            <h1 class="display-5 fw-bold text-primary">Admin Dashboard</h1>
-            <p class="text-muted lead">Overview of system status and quick management actions.</p>
-        </div>
+<!-- Stat row -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-4 col-xl-2"><div class="stat-card"><div class="stat-value text-primary">{{ total_users }}</div><div class="stat-label">Total Users</div></div></div>
+    <div class="col-6 col-md-4 col-xl-2"><div class="stat-card"><div class="stat-value" style="color:#059669">{{ total_mentees }}</div><div class="stat-label">Active Mentees</div></div></div>
+    <div class="col-6 col-md-4 col-xl-2"><div class="stat-card"><div class="stat-value" style="color:#4f6ef7">{{ total_mentors }}</div><div class="stat-label">Mentors</div></div></div>
+    <div class="col-6 col-md-4 col-xl-2"><div class="stat-card"><div class="stat-value" style="color:#d97706">{{ total_schools }}</div><div class="stat-label">Schools</div></div></div>
+    <div class="col-6 col-md-4 col-xl-2"><div class="stat-card"><div class="stat-value text-secondary">{{ total_chapters }}</div><div class="stat-label">Chapters</div></div></div>
+    <div class="col-6 col-md-4 col-xl-2"><div class="stat-card"><div class="stat-value text-dark">{{ total_assessments }}</div><div class="stat-label">Assessments</div></div></div>
+</div>
+
+{% if active_cycle %}
+<div class="alert alert-info py-2 px-3 mb-4" style="font-size:.85rem; border-radius:10px;">
+    <i class="fa-solid fa-calendar-check me-1"></i>
+    <strong>Active Cycle:</strong> {{ active_cycle.year_label }}
+    ({{ active_cycle.start_date|date:"M d, Y" }} &ndash; {{ active_cycle.end_date|date:"M d, Y" }})
+</div>
+{% endif %}
+
+<!-- Quick actions -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-4 col-lg-3"><a href="{% url 'manage_user' %}" class="action-card"><i class="fa-solid fa-users"></i><div class="action-title">Users</div><div class="action-desc">Add, edit or remove</div></a></div>
+    <div class="col-6 col-md-4 col-lg-3"><a href="{% url 'manage_mentee_assignments' %}" class="action-card"><i class="fa-solid fa-user-group"></i><div class="action-title">Mentee Assign</div><div class="action-desc">Map mentees to mentors</div></a></div>
+    <div class="col-6 col-md-4 col-lg-3"><a href="{% url 'admin_config_home' %}" class="action-card"><i class="fa-solid fa-sliders"></i><div class="action-title">Configuration</div><div class="action-desc">Schools, chapters & more</div></a></div>
+    <div class="col-6 col-md-4 col-lg-3"><a href="{% url 'bulk_upload_mentees' %}" class="action-card"><i class="fa-solid fa-file-import"></i><div class="action-title">Import Mentees</div><div class="action-desc">Bulk CSV / Excel upload</div></a></div>
+    <div class="col-6 col-md-4 col-lg-3"><a href="{% url 'admin_notifications' %}" class="action-card"><i class="fa-solid fa-bell"></i><div class="action-title">Notifications</div><div class="action-desc">Send announcements</div></a></div>
+    <div class="col-6 col-md-4 col-lg-3"><a href="{% url 'manage_assignment' %}" class="action-card"><i class="fa-solid fa-link"></i><div class="action-title">Endorser Assign</div><div class="action-desc">Mentor-endorser mapping</div></a></div>
+    <div class="col-6 col-md-4 col-lg-3"><a href="{% url 'mentor_mentee_list' %}" class="action-card"><i class="fa-solid fa-users-line"></i><div class="action-title">View Mentees</div><div class="action-desc">Browse mentee profiles</div></a></div>
+    <div class="col-6 col-md-4 col-lg-3"><a href="{% url 'mentee_upload_log' %}" class="action-card"><i class="fa-solid fa-clipboard-list"></i><div class="action-title">Upload Logs</div><div class="action-desc">Import history & errors</div></a></div>
+    <div class="col-6 col-md-4 col-lg-3"><a href="{% url 'export_reflective_reports' %}" class="action-card" target="_blank"><i class="fa-solid fa-file-excel"></i><div class="action-title">Export Reports</div><div class="action-desc">Download reflective reports</div></a></div>
+    <div class="col-6 col-md-4 col-lg-3"><a href="{% url 'export_work_diaries' %}" class="action-card" target="_blank"><i class="fa-solid fa-file-excel"></i><div class="action-title">Export Diaries</div><div class="action-desc">Download volunteer diaries</div></a></div>
+</div>
+
+<!-- Charts -->
+<div class="row g-3 mb-4">
+    <div class="col-lg-4">
+        <div class="chart-box"><h3>Infrastructure</h3><canvas id="overviewChart" style="max-height:220px;"></canvas></div>
     </div>
-
-    <!-- Quick Actions Grid -->
-    <div class="row g-4 mb-5">
-        <div class="col-6 col-md-3">
-            <a href="{% url 'manage_user' %}" class="text-decoration-none">
-                <div class="card custom-card h-100">
-                    <div class="card-body d-flex flex-column align-items-center justify-content-center">
-                        <i class="fa-solid fa-users card-icon display-4 mb-3"></i>
-                        <h5 class="card-title">Manage Users</h5>
-                        <p class="small opacity-75 mb-0">Add, edit, or remove users</p>
-                    </div>
-                </div>
-            </a>
-        </div>
-        <div class="col-6 col-md-3">
-            <a href="{% url 'manage_mentee_assignments' %}" class="text-decoration-none">
-                <div class="card custom-card h-100">
-                    <div class="card-body d-flex flex-column align-items-center justify-content-center">
-                        <i class="fa-solid fa-user-group card-icon display-4 mb-3"></i>
-                        <h5 class="card-title">Mentee Assignments</h5>
-                        <p class="small opacity-75 mb-0">Assign mentees to mentors</p>
-                    </div>
-                </div>
-            </a>
-        </div>
-        <div class="col-6 col-md-3">
-            <a href="{% url 'manage_assignment' %}" class="text-decoration-none">
-                <div class="card custom-card h-100">
-                    <div class="card-body d-flex flex-column align-items-center justify-content-center">
-                        <i class="fa-solid fa-link card-icon display-4 mb-3"></i>
-                        <h5 class="card-title">General Assignments</h5>
-                        <p class="small opacity-75 mb-0">Manage other assignments</p>
-                    </div>
-                </div>
-            </a>
-        </div>
-        <div class="col-6 col-md-3">
-            <a href="{% url 'admin_config_home' %}" class="text-decoration-none">
-                <div class="card custom-card h-100">
-                    <div class="card-body d-flex flex-column align-items-center justify-content-center">
-                        <i class="fa-solid fa-sliders card-icon display-4 mb-3"></i>
-                        <h5 class="card-title">Configuration</h5>
-                        <p class="small opacity-75 mb-0">System dropdowns & settings</p>
-                    </div>
-                </div>
-            </a>
-        </div>
-        <div class="col-6 col-md-3">
-            <a href="{% url 'mentor_mentee_list' %}" class="text-decoration-none">
-                <div class="card custom-card h-100">
-                    <div class="card-body d-flex flex-column align-items-center justify-content-center">
-                        <i class="fa-solid fa-users-line card-icon display-4 mb-3"></i>
-                        <h5 class="card-title">View Mentees</h5>
-                        <p class="small opacity-75 mb-0">Access mentee profiles</p>
-                    </div>
-                </div>
-            </a>
-        </div>
+    <div class="col-lg-4">
+        <div class="chart-box"><h3>Endorser Status</h3><canvas id="endorserChart" style="max-height:220px;"></canvas></div>
     </div>
-
-    <!-- Analytics Section -->
-    <div class="row g-4">
-        <div class="col-lg-4 col-md-6">
-            <div class="card h-100 border-0 shadow-sm">
-                <div class="card-header bg-white border-bottom-0 pt-4 px-4">
-                    <h5 class="fw-bold mb-0">User Distribution</h5>
-                </div>
-                <div class="card-body d-flex align-items-center justify-content-center p-4">
-                    <canvas id="overviewChart" style="max-height: 250px;"></canvas>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-4 col-md-6">
-            <div class="card h-100 border-0 shadow-sm">
-                <div class="card-header bg-white border-bottom-0 pt-4 px-4">
-                    <h5 class="fw-bold mb-0">Endorser Status</h5>
-                </div>
-                <div class="card-body d-flex align-items-center justify-content-center p-4">
-                    <canvas id="endorserChart" style="max-height: 250px;"></canvas>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-4 col-md-12">
-            <div class="card h-100 border-0 shadow-sm">
-                <div class="card-header bg-white border-bottom-0 pt-4 px-4">
-                    <h5 class="fw-bold mb-0">Mentors vs Endorsers</h5>
-                </div>
-                <div class="card-body d-flex align-items-center justify-content-center p-4">
-                    <canvas id="mentorEndorserChart" style="max-height: 250px;"></canvas>
-                </div>
-            </div>
-        </div>
+    <div class="col-lg-4">
+        <div class="chart-box"><h3>User Composition</h3><canvas id="mentorEndorserChart" style="max-height:220px;"></canvas></div>
     </div>
 </div>
 
+<!-- Feed row -->
+<div class="row g-3">
+    <div class="col-lg-6">
+        <div class="panel">
+            <div class="panel-header"><h2><i class="fa-solid fa-bell me-2 opacity-50"></i>Recent Notifications</h2></div>
+            {% if recent_notifications %}
+                {% for n in recent_notifications %}
+                <div class="feed-item">
+                    <div>
+                        <div class="feed-title">{{ n.subject|default:"Notification" }}</div>
+                        <div class="feed-sub">{{ n.message|truncatewords:18 }}</div>
+                        <span class="badge bg-light text-dark border mt-1" style="font-size:.7rem">{{ n.get_target_group_display }}</span>
+                    </div>
+                    <div class="feed-time">{{ n.created_at|timesince }} ago</div>
+                </div>
+                {% endfor %}
+            {% else %}
+            <div class="empty-state"><i class="fa-solid fa-bell-slash d-block"></i>No notifications yet.</div>
+            {% endif %}
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="panel">
+            <div class="panel-header"><h2><i class="fa-solid fa-file-import me-2 opacity-50"></i>Recent Uploads</h2></div>
+            {% if recent_uploads %}
+                {% for log in recent_uploads %}
+                <div class="feed-item">
+                    <div>
+                        <div class="feed-title">{{ log.file_name }}</div>
+                        <div class="feed-sub">
+                            <span class="text-success">{{ log.success_count }} added</span>
+                            {% if log.error_count %}<span class="text-danger ms-2">{{ log.error_count }} errors</span>{% endif %}
+                        </div>
+                    </div>
+                    <div class="feed-time">{{ log.created_at|timesince }} ago</div>
+                </div>
+                {% endfor %}
+            {% else %}
+            <div class="empty-state"><i class="fa-solid fa-file-circle-xmark d-block"></i>No uploads yet.</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        // Chart Defaults
-        Chart.defaults.font.family = "'Outfit', sans-serif";
-        Chart.defaults.color = '#64748b';
+document.addEventListener('DOMContentLoaded', function () {
+    Chart.defaults.font.family = "'Inter', sans-serif";
+    Chart.defaults.color = '#6b7280';
+    const c = { primary:'#0b5d52', secondary:'#6b7280', success:'#10b981', warning:'#d97706', info:'#0e9384', light:'#e5e7eb' };
+    const opts = (cut) => ({ responsive:true, maintainAspectRatio:false, cutout:cut, plugins:{ legend:{ position:'bottom', labels:{ usePointStyle:true, padding:14, font:{size:11} } } } });
 
-        // Colors
-        const colors = {
-            primary: '#2f3b81',  // Your brand blue
-            secondary: '#575e71',
-            success: '#10b981',
-            warning: '#f59e0b',
-            info: '#3b82f6',
-            danger: '#ef4444',
-            light: '#e2e8f0'
-        };
-
-        // 1. Endorsers Assignment (Doughnut)
-        new Chart(document.getElementById('endorserChart').getContext('2d'), {
-            type: 'doughnut',
-            data: {
-                labels: ['Assigned', 'Unassigned'],
-                datasets: [{
-                    data: [{{ assigned_endorsers }}, {{ unassigned_endorsers }}],
-            backgroundColor: [colors.success, colors.light],
-            borderWidth: 0,
-            hoverOffset: 4
-        }]
-            },
-        options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20 } }
-        },
-        cutout: '70%'
-    }
-        });
-
-    // 2. Mentors vs Endorsers (Pie)
-    new Chart(document.getElementById('mentorEndorserChart').getContext('2d'), {
-        type: 'pie',
-        data: {
-            labels: ['Mentors', 'Endorsers'],
-            datasets: [{
-                data: [{{ total_mentors }}, {{ total_endorsers }}],
-        backgroundColor: [colors.primary, colors.warning],
-        borderWidth: 0
-    }]
-            },
-        options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20 } }
-        }
-    }
-        });
-
-    // 3. User Overview (Bar - repurposed from Doughnut for variety, or keep Doughnut)
-    // Let's keep Doughnut for consistency but stylized
-    new Chart(document.getElementById('overviewChart').getContext('2d'), {
-        type: 'doughnut',
-        data: {
-            labels: ['Mentors', 'Endorsers'],
-            datasets: [{
-                data: [{{ total_mentors }}, {{ total_endorsers }}],
-        backgroundColor: [colors.info, colors.secondary],
-        borderWidth: 0,
-        hoverOffset: 4
-    }]
-            },
-        options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        cutout: '60%',
-        plugins: {
-            legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20 } }
-        }
-    }
-        });
-    });
+    new Chart(document.getElementById('endorserChart'),   { type:'doughnut', data:{ labels:['Assigned','Unassigned'], datasets:[{ data:[{{ assigned_endorsers }},{{ unassigned_endorsers }}], backgroundColor:[c.success,c.light], borderWidth:0 }] }, options:opts('68%') });
+    new Chart(document.getElementById('mentorEndorserChart'), { type:'pie', data:{ labels:['Mentors','Endorsers','Mentees'], datasets:[{ data:[{{ total_mentors }},{{ total_endorsers }},{{ total_mentees }}], backgroundColor:[c.primary,c.warning,c.success], borderWidth:0 }] }, options:opts(0) });
+    new Chart(document.getElementById('overviewChart'),   { type:'doughnut', data:{ labels:['Schools','Chapters','Locations','Programmes'], datasets:[{ data:[{{ total_schools }},{{ total_chapters }},{{ total_locations }},{{ total_programmes }}], backgroundColor:[c.info,c.secondary,c.warning,c.success], borderWidth:0 }] }, options:opts('58%') });
+});
 </script>
 {% endblock %}

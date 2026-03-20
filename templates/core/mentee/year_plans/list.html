@@ -1,27 +1,23 @@
-{% extends 'base.html' %}
-{% load static %}
+{% extends 'core/mentee/base_mentee.html' %}
 
 {% block title %}Year Plans{% endblock title %}
 
-{% block links %}
-<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
-{% endblock links %}
+{% block breadcrumb %}
+<a href="{% url 'mentee_dashboard' %}" class="text-muted"><i class="fa-solid fa-house fa-sm me-1"></i>Dashboard</a>
+<i class="fa-solid fa-chevron-right fa-2xs mx-2 text-muted"></i>
+<span>Year Plans</span>
+{% endblock %}
 
-{% block content %}
-{% include 'partials/_header.html' %}
-
-<div class="container py-5">
-    <div class="d-flex justify-content-between align-items-center mb-5">
-        <div>
-            <h1 class="display-5 fw-bold text-primary">Year Plans</h1>
-            <p class="text-muted lead mb-0">Plan your milestones for each academic year.</p>
-        </div>
-        <div>
-            <a class="btn btn-primary rounded-pill px-4" href="{% url 'year_plan_create' %}">
-                <i class="fa-solid fa-plus me-2"></i>Add Year Plan
-            </a>
-        </div>
+{% block page_content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h4 class="fw-bold mb-1">Year Plans</h4>
+        <p class="text-muted mb-0">Plan your milestones for each academic year.</p>
     </div>
+    <a class="btn btn-primary rounded-pill px-4" href="{% url 'year_plan_create' %}">
+        <i class="fa-solid fa-plus me-2"></i>Add Year Plan
+    </a>
+</div>
 
     {% if not mentee %}
     <div class="alert alert-warning border-0 shadow-sm d-flex align-items-center">
@@ -103,14 +99,13 @@
     </div>
     {% endif %}
     {% endif %}
-</div>
 
+{% block extra_js %}
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl);
-        });
+        tooltipTriggerList.map(function (el) { return new bootstrap.Tooltip(el); });
     });
 </script>
-{% endblock content %}
+{% endblock extra_js %}
+{% endblock page_content %}

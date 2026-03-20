@@ -15,7 +15,7 @@ DIP_YCLP_TEMPLATE = "core/dip/yclp.html"
 def dip_yclp_view(request):
     form = ActivityForm()
     recent_activities = Activity.objects.filter(user=request.user).order_by("-date")[:6]
-    return render(request, DIP_YCLP_TEMPLATE, {"form": form, "recent_activities": recent_activities})
+    return render(request, DIP_YCLP_TEMPLATE, {"form": form, "recent_activities": recent_activities, "active_page": "dip"})
 
 
 @login_required
@@ -90,4 +90,4 @@ def dip_home(request):
             return redirect("dashboard")
 
     recent_activities = Activity.objects.filter(user=user).order_by("-date")[:5]
-    return render(request, DIP_YCLP_TEMPLATE, {"form": form, "recent_activities": recent_activities})
+    return render(request, DIP_YCLP_TEMPLATE, {"form": form, "recent_activities": recent_activities, "active_page": "dip"})

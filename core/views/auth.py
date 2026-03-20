@@ -2,6 +2,7 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
+from django.views.decorators.http import require_POST
 
 from core.models import CustomUser
 
@@ -49,3 +50,19 @@ def role_redirect_view(request):
     if user.role == "reviewer":
         return redirect("mentor_mentee_list")
     return redirect("profile")
+
+
+@login_required
+@require_POST
+def switch_role_view(request):
+    new_role = request.POST.get("role", "").strip()
+    user = request.user
+    valid_roles = user.roles or []
+
+    if new_role not in valid_roles:
+        messages.error(request, "You do not have that role.")
+        return redirect("role-redirect")
+
+    user.role = new_role
+    user.save(update_fields=["role"])
+    return redirect("role-redirect")

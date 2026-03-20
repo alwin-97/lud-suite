@@ -1,29 +1,27 @@
-{% extends 'base.html' %}
-{% load static %}
+{% extends 'core/mentor/base_mentor.html' %}
 
 {% block title %}Mentee Assessments{% endblock title %}
 
-{% block links %}
-<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
-{% endblock links %}
+{% block breadcrumb %}
+<a href="{% url 'dashboard' %}" class="text-muted"><i class="fa-solid fa-house fa-sm me-1"></i>Dashboard</a>
+<i class="fa-solid fa-chevron-right fa-2xs mx-2 text-muted"></i>
+<a href="{% url 'mentor_mentee_list' %}" class="text-muted">Mentees</a>
+<i class="fa-solid fa-chevron-right fa-2xs mx-2 text-muted"></i>
+<span>Assessments</span>
+{% endblock %}
 
-{% block content %}
-{% include 'partials/_header.html' %}
-
-<div class="container py-4">
-    <div class="card mb-4">
-        <div class="card-body d-flex justify-content-between align-items-center">
-            <h3 class="mb-0">Assessments: {{ mentee.full_name }}</h3>
-            <div class="d-flex gap-2">
-                <a class="btn btn-outline-secondary" href="{% url 'mentor_mentee_list' %}">
-                    <i class="fa-solid fa-arrow-left me-1"></i>Back to Mentees
-                </a>
-                <a class="btn btn-primary" href="{% url 'mentor_assessment_create' mentee.id %}">
-                    <i class="fa-solid fa-plus me-1"></i>New Assessment
-                </a>
-            </div>
-        </div>
+{% block page_content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold mb-0">Assessments: {{ mentee.full_name }}</h4>
+    <div class="d-flex gap-2">
+        <a class="btn btn-outline-secondary btn-sm" href="{% url 'mentor_mentee_list' %}">
+            <i class="fa-solid fa-arrow-left me-1"></i>Back to Mentees
+        </a>
+        <a class="btn btn-primary btn-sm" href="{% url 'mentor_assessment_create' mentee.id %}">
+            <i class="fa-solid fa-plus me-1"></i>New Assessment
+        </a>
     </div>
+</div>
 
     {% if assessments %}
         <div class="card">
@@ -58,5 +56,4 @@
     {% else %}
         <p class="text-muted">No assessments yet.</p>
     {% endif %}
-</div>
-{% endblock content %}
+{% endblock page_content %}

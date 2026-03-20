@@ -1,0 +1,54 @@
+{% extends 'core/admin/base_admin.html' %}
+
+{% block title %}Upload Logs{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb"><ol class="breadcrumb mb-0">
+    <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}"><i class="fa-solid fa-house fa-sm me-1"></i>Dashboard</a></li>
+    <li class="breadcrumb-item active">Upload Logs</li>
+</ol></nav>
+{% endblock %}
+
+{% block page_content %}
+<div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-4">
+    <div class="page-header mb-0"><h1>Upload Logs</h1></div>
+    <a class="btn btn-sm btn-outline-primary" href="{% url 'bulk_upload_mentees' %}"><i class="fa-solid fa-file-import me-1"></i>New Upload</a>
+</div>
+
+{% if logs %}
+<div class="panel">
+    <div class="panel-body flush">
+        <div class="table-responsive">
+            <table class="table admin-datatable mb-0">
+                <thead><tr><th>File</th><th>Total</th><th>Imported</th><th>Errors</th><th>By</th><th>Date</th><th style="width:80px"></th></tr></thead>
+                <tbody>
+                    {% for log in logs %}
+                    <tr>
+                        <td>{{ log.file_name }}</td>
+                        <td>{{ log.total_rows }}</td>
+                        <td class="text-success fw-semibold">{{ log.success_count }}</td>
+                        <td>{% if log.error_count %}<span class="text-danger fw-semibold">{{ log.error_count }}</span>{% else %}<span class="text-muted">0</span>{% endif %}</td>
+                        <td>{{ log.uploaded_by.get_full_name|default:"-" }}</td>
+                        <td class="text-muted">{{ log.created_at|date:"M d, Y H:i" }}</td>
+                        <td>
+                            {% if log.error_details %}
+                            <button class="btn btn-sm btn-outline-warning" data-bs-toggle="modal" data-bs-target="#errorModal{{ log.id }}">View</button>
+                            <div class="modal fade" id="errorModal{{ log.id }}" tabindex="-1">
+                                <div class="modal-dialog modal-lg"><div class="modal-content">
+                                    <div class="modal-header"><h5 class="modal-title fw-bold">Errors — {{ log.file_name }}</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                                    <div class="modal-body"><ul class="list-group list-group-flush">{% for err in log.error_details %}<li class="list-group-item text-danger small">{{ err }}</li>{% endfor %}</ul></div>
+                                </div></div>
+                            </div>
+                            {% else %}<span class="text-muted">-</span>{% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="panel"><div class="empty-state"><i class="fa-solid fa-inbox d-block"></i>No upload logs yet.</div></div>
+{% endif %}
+{% endblock %}
