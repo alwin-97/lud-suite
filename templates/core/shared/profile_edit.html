@@ -1,9 +1,9 @@
-{% extends 'core/mentor/base_mentor.html' %}
+{% extends base_template %}
 
 {% block title %}Edit Profile{% endblock title %}
 
 {% block breadcrumb %}
-<a href="{% url 'dashboard' %}" class="text-muted"><i class="fa-solid fa-house fa-sm me-1"></i>Dashboard</a>
+<a href="{% url home_url_name %}" class="text-muted"><i class="fa-solid fa-house fa-sm me-1"></i>Home</a>
 <span class="mx-2 text-muted">/</span>
 <a href="{% url 'profile' %}" class="text-muted">Profile</a>
 <span class="mx-2 text-muted">/</span>
@@ -11,133 +11,150 @@
 {% endblock %}
 
 {% block page_content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h4 class="fw-bold mb-1">Edit Profile</h4>
-        <p class="text-muted mb-0">Update your personal information and settings.</p>
-    </div>
-    <a href="{% url 'profile' %}" class="btn btn-outline-secondary rounded-pill px-4">
-        <i class="fa-solid fa-arrow-left me-2"></i>Back to Profile
-    </a>
-</div>
+<form method="post" enctype="multipart/form-data" action="{% url 'profile_edit' %}">
+    {% csrf_token %}
 
-    <form method="post" enctype="multipart/form-data" action="{% url 'profile_edit' %}">
-        {% csrf_token %}
+    <div class="profile-shell">
+        <section class="profile-hero">
+            <div class="profile-hero-content">
+                <div>
+                    <p class="text-uppercase fw-semibold small mb-2" style="letter-spacing:.14em;">Let Us Dream Workspace</p>
+                    <h1 class="profile-hero-title">Edit Profile</h1>
+                    <p class="profile-hero-text">
+                        Update your profile details, contact information, and workspace identity so your records stay consistent across the platform.
+                    </p>
+                    <div class="profile-badges">
+                        <span class="profile-badge"><i class="fa-solid fa-user-tag"></i>{{ user.get_role_display }}</span>
+                        <span class="profile-badge"><i class="fa-solid fa-camera"></i>Profile Photo Supported</span>
+                    </div>
+                </div>
+                <div class="profile-hero-actions">
+                    <a href="{% url 'profile' %}" class="btn btn-outline-light rounded-pill px-4 fw-semibold">
+                        <i class="fa-solid fa-arrow-left me-2"></i>Back to Profile
+                    </a>
+                    <button type="submit" class="btn btn-light rounded-pill px-4 fw-semibold">
+                        <i class="fa-solid fa-floppy-disk me-2"></i>Save Changes
+                    </button>
+                </div>
+            </div>
+        </section>
+
         <div class="row g-4">
-            <!-- Left Sidebar: Profile Photo -->
-            <div class="col-md-4 col-lg-3">
-                <div class="card border-0 shadow-sm text-center p-4 h-100">
-                    <div class="card-body">
-                        <div class="position-relative d-inline-block mb-3">
-                            <div class="ratio ratio-1x1 mx-auto" style="width: 150px;">
-                                <img src="{% if user.profile_pic %}{{ user.profile_pic.url }}{% else %}https://cdn-icons-png.flaticon.com/512/3135/3135715.png{% endif %}"
-                                    alt="Profile Photo" id="profilePreview"
-                                    class="rounded-circle border border-4 border-light shadow-sm object-fit-cover">
-                            </div>
-                            <label for="id_profile_pic"
-                                class="position-absolute bottom-0 end-0 bg-primary text-white p-2 rounded-circle shadow-sm border border-2 border-white"
-                                style="cursor: pointer; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
-                                <i class="fa-solid fa-camera"></i>
-                            </label>
-                            <input type="file" name="profile_pic" id="id_profile_pic" class="d-none"
-                                onchange="previewProfilePhoto(event)" accept="image/*">
+            <div class="col-lg-4 col-xl-3">
+                <div class="profile-panel profile-sidecard">
+                    <div class="position-relative d-inline-block">
+                        <div class="profile-avatar-frame">
+                            <img
+                                src="{% if user.profile_pic %}{{ user.profile_pic.url }}{% else %}https://cdn-icons-png.flaticon.com/512/3135/3135715.png{% endif %}"
+                                alt="Profile Photo"
+                                id="profilePreview"
+                                class="profile-avatar-preview">
                         </div>
-                        <h5 class="fw-bold mb-1">{{ user.get_full_name }}</h5>
-                        <p class="text-muted small mb-2">{{ user.email }}</p>
-                        <div class="badge bg-primary-subtle text-primary rounded-pill px-3 py-2">
-                            {{ user.role|title }}
+                        <label for="id_profile_pic" class="profile-upload-trigger">
+                            <i class="fa-solid fa-camera"></i>
+                        </label>
+                        <input type="file" name="profile_pic" id="id_profile_pic" class="d-none" onchange="previewProfilePhoto(event)" accept="image/*">
+                    </div>
+                    <h4 class="fw-bold mb-1 mt-3 profile-name">{{ user.get_full_name|default:user.username }}</h4>
+                    <p class="text-muted mb-0 profile-email">{{ user.email }}</p>
+                    <div class="profile-role-pill">{{ user.get_role_display }}</div>
+                    <p class="profile-help-text mt-3 mb-0">Use the camera icon to upload a new profile picture.</p>
+
+                    <div class="profile-side-meta">
+                        <div class="profile-side-meta-item">
+                            <span class="profile-side-meta-label">Current Phone</span>
+                            <div class="profile-side-meta-value">{{ user.phone|default:"Not updated" }}</div>
+                        </div>
+                        <div class="profile-side-meta-item">
+                            <span class="profile-side-meta-label">Current Institution</span>
+                            <div class="profile-side-meta-value">{{ user.institution|default:"Not updated" }}</div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Right Content: Form Fields -->
-            <div class="col-md-8 col-lg-9">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-body p-4">
-                        <!-- Personal Details -->
-                        <h5 class="fw-bold text-primary mb-3">Personal Details</h5>
-                        <div class="row g-3 mb-4">
+            <div class="col-lg-8 col-xl-9">
+                <div class="profile-panel profile-maincard">
+                    <div class="profile-form-section">
+                        <div class="profile-section-header">
+                            <span class="profile-section-icon"><i class="fa-solid fa-user"></i></span>
+                            <h2 class="profile-section-title">Personal Details</h2>
+                        </div>
+                        <div class="row g-3">
                             <div class="col-md-6">
-                                <label class="form-label small text-muted text-uppercase fw-bold">Full Name (Read
-                                    Only)</label>
-                                <input type="text" class="form-control bg-light" value="{{ user.get_full_name }}"
-                                    readonly>
+                                <label class="form-label">Full Name</label>
+                                <input type="text" class="form-control bg-light" value="{{ user.get_full_name }}" readonly>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label small text-muted text-uppercase fw-bold">Gender</label>
+                                <label class="form-label">Gender</label>
                                 <select name="gender" class="form-select">
                                     <option value="" {% if not user.gender %}selected{% endif %}>Select Gender</option>
                                     <option value="Male" {% if user.gender == 'Male' %}selected{% endif %}>Male</option>
-                                    <option value="Female" {% if user.gender == 'Female' %}selected{% endif %}>Female
-                                    </option>
-                                    <option value="Other" {% if user.gender == 'Other' %}selected{% endif %}>Other
-                                    </option>
+                                    <option value="Female" {% if user.gender == 'Female' %}selected{% endif %}>Female</option>
+                                    <option value="Other" {% if user.gender == 'Other' %}selected{% endif %}>Other</option>
                                 </select>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label small text-muted text-uppercase fw-bold">Date of Birth</label>
-                                <input type="date" name="date_of_birth" class="form-control"
-                                    value="{{ user.date_of_birth|date:'Y-m-d' }}">
+                                <label class="form-label">Date of Birth</label>
+                                <input type="date" name="date_of_birth" class="form-control" value="{{ user.date_of_birth|date:'Y-m-d' }}">
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label small text-muted text-uppercase fw-bold">Religion</label>
-                                <input type="text" name="religion" class="form-control"
-                                    value="{{ user.religion|default:'' }}" placeholder="Religion">
+                                <label class="form-label">Religion</label>
+                                <input type="text" name="religion" class="form-control" value="{{ user.religion|default:'' }}" placeholder="Religion">
                             </div>
                         </div>
+                    </div>
 
-                        <hr class="text-muted opacity-25 my-4">
-
-                        <!-- Contact Details -->
-                        <h5 class="fw-bold text-primary mb-3">Contact Details</h5>
-                        <div class="row g-3 mb-4">
+                    <div class="profile-form-section">
+                        <div class="profile-section-header">
+                            <span class="profile-section-icon"><i class="fa-solid fa-address-book"></i></span>
+                            <h2 class="profile-section-title">Contact Details</h2>
+                        </div>
+                        <div class="row g-3">
                             <div class="col-md-6">
-                                <label class="form-label small text-muted text-uppercase fw-bold">Phone Number</label>
-                                <input type="text" name="phone" class="form-control" value="{{ user.phone|default:'' }}"
-                                    placeholder="+1 234 567 8900">
+                                <label class="form-label">Phone Number</label>
+                                <input type="text" name="phone" class="form-control" value="{{ user.phone|default:'' }}" placeholder="+91 98765 43210">
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label small text-muted text-uppercase fw-bold">Email (Read
-                                    Only)</label>
+                                <label class="form-label">Email</label>
                                 <input type="text" class="form-control bg-light" value="{{ user.email }}" readonly>
                             </div>
                             <div class="col-12">
-                                <label class="form-label small text-muted text-uppercase fw-bold">Permanent
-                                    Address</label>
-                                <textarea name="permanent_address" class="form-control" rows="2"
-                                    placeholder="Your address here...">{{ user.permanent_address|default:'' }}</textarea>
+                                <label class="form-label">Permanent Address</label>
+                                <textarea name="permanent_address" class="form-control" rows="3" placeholder="Your address here...">{{ user.permanent_address|default:'' }}</textarea>
                             </div>
                         </div>
+                    </div>
 
-                        <hr class="text-muted opacity-25 my-4">
-
-                        <!-- Qualification -->
-                        <h5 class="fw-bold text-primary mb-3">Qualification</h5>
+                    <div class="profile-form-section">
+                        <div class="profile-section-header">
+                            <span class="profile-section-icon"><i class="fa-solid fa-graduation-cap"></i></span>
+                            <h2 class="profile-section-title">Professional and Academic Details</h2>
+                        </div>
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label class="form-label small text-muted text-uppercase fw-bold">Institution</label>
-                                <input type="text" name="institution" class="form-control"
-                                    value="{{ user.institution|default:'' }}" placeholder="University/School">
+                                <label class="form-label">Institution</label>
+                                <input type="text" name="institution" class="form-control" value="{{ user.institution|default:'' }}" placeholder="University or school">
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label small text-muted text-uppercase fw-bold">Designation</label>
-                                <input type="text" name="designation" class="form-control"
-                                    value="{{ user.designation|default:'' }}" placeholder="Student/Professor">
+                                <label class="form-label">Designation</label>
+                                <input type="text" name="designation" class="form-control" value="{{ user.designation|default:'' }}" placeholder="Student, mentor, faculty, etc.">
                             </div>
                         </div>
+                    </div>
 
-                        <div class="d-flex justify-content-end mt-5 pt-3 border-top">
-                            <a href="{% url 'profile' %}" class="btn btn-light me-2">Cancel</a>
-                            <button type="submit" class="btn btn-primary px-4 fw-bold">
-                                <i class="fa-solid fa-floppy-disk me-2"></i>Save Changes
-                            </button>
-                        </div>
+                    <div class="d-flex justify-content-end gap-2 mt-4 pt-4 border-top">
+                        <a href="{% url 'profile' %}" class="btn btn-light">Cancel</a>
+                        <button type="submit" class="btn btn-primary px-4 fw-semibold">
+                            <i class="fa-solid fa-floppy-disk me-2"></i>Save Changes
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
-    </form>
+    </div>
+</form>
+{% endblock page_content %}
 
 {% block extra_js %}
 <script>
@@ -148,10 +165,9 @@
             const reader = new FileReader();
             reader.onload = function (e) {
                 preview.src = e.target.result;
-            }
+            };
             reader.readAsDataURL(input.files[0]);
         }
     }
 </script>
 {% endblock extra_js %}
-{% endblock page_content %}

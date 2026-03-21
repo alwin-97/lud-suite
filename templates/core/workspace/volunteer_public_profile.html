@@ -1,0 +1,45 @@
+{% extends base_template %}
+
+{% block title %}Volunteer Public Profile{% endblock %}
+
+{% block breadcrumb %}
+<a href="{% url home_url_name %}" class="text-muted"><i class="fa-solid fa-house fa-sm me-1"></i>Home</a>
+<span class="mx-2 text-muted">/</span>
+<span>Volunteer Public Profile</span>
+{% endblock %}
+
+{% block page_content %}
+<div class="page-header mb-4">
+    <h1>{{ volunteer_profile.get_full_name|default:volunteer_profile.username }}</h1>
+    <p class="mb-0">Public-facing volunteer profile with approved highlights.</p>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4"><div class="stat-card"><div class="stat-value text-primary">{{ approved_reports_count }}</div><div class="stat-label">Approved Reports</div></div></div>
+    <div class="col-md-4"><div class="stat-card"><div class="stat-value" style="color:#0e9384">{{ approved_diaries_count }}</div><div class="stat-label">Approved Diaries</div></div></div>
+    <div class="col-md-4"><div class="stat-card"><div class="stat-value" style="color:#d97706">{{ approved_transcripts|length }}</div><div class="stat-label">Approved Transcripts</div></div></div>
+</div>
+
+<div class="panel mb-4">
+    <div class="panel-header"><h2><i class="fa-solid fa-address-card me-2 opacity-50"></i>Profile Overview</h2></div>
+    <div class="panel-body">
+        <p class="mb-2"><strong>Institution:</strong> {{ volunteer_profile.institution|default:"-" }}</p>
+        <p class="mb-2"><strong>Designation:</strong> {{ volunteer_profile.designation|default:"-" }}</p>
+        <p class="mb-0"><strong>Role:</strong> Volunteer</p>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-header"><h2><i class="fa-solid fa-photo-film me-2 opacity-50"></i>Public Artifacts</h2></div>
+    <div class="panel-body flush">
+        {% for artifact in artifacts %}
+        <div class="feed-item">
+            <div><div class="feed-title">{{ artifact.title }}</div><div class="feed-sub">{{ artifact.created_at|date:"M d, Y" }}</div></div>
+            {% if artifact.document %}<a class="btn btn-sm btn-outline-primary" href="{{ artifact.document.url }}" target="_blank">Open</a>{% endif %}
+        </div>
+        {% empty %}
+        <div class="empty-state"><i class="fa-solid fa-photo-film d-block"></i>No public artifacts available.</div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

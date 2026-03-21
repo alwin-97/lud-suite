@@ -1,11 +1,13 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import get_user_model
+from django.db.models import Q
 from .models import (
     CustomUser,
     Activity,
     Notification,
     WorkSchedule,
+    WorkScheduleAssignment,
     ObjectiveItem,
     YearPlanItem,
     StatusConfig,
@@ -28,6 +30,7 @@ from .models import (
     VolunteerTranscript,
     ProfileArtifact,
     RepositoryAsset,
+    VolunteerReportingAssignment,
 )
 from decimal import Decimal
 User = get_user_model()
@@ -97,7 +100,7 @@ class ProfileForm(forms.ModelForm):
 
 # -------------------- Work Schedule Form --------------------
 class WorkScheduleForm(forms.ModelForm):
-    mentors = forms.ModelMultipleChoiceField(
+    assignees = forms.ModelMultipleChoiceField(
         queryset=User.objects.none(),
         widget=forms.CheckboxSelectMultiple(attrs={'class': 'form-check-input'}),
         required=True
@@ -105,7 +108,7 @@ class WorkScheduleForm(forms.ModelForm):
 
     class Meta:
         model = WorkSchedule
-        fields = ['mentors', 'role', 'due_date', 'description']
+        fields = ['role', 'due_date', 'description']
         widgets = {
             'role': forms.TextInput(attrs={'class': 'form-control'}),
             'due_date': forms.DateInput(
@@ -113,13 +116,35 @@ class WorkScheduleForm(forms.ModelForm):
             ),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
         }
+
     def __init__(self, *args, **kwargs):
-        endorser = kwargs.pop('endorser', None)
+        creator = kwargs.pop("creator", None)
+        if creator is None:
+            creator = kwargs.pop("endorser", None)
         super().__init__(*args, **kwargs)
-        if endorser:
-            # Show only mentors assigned to this endorser (using the CustomUser.mentors M2M field)
-            self.fields['mentors'].queryset = endorser.mentors.filter(role='mentor')
-        self.fields['mentors'].label_from_instance = lambda obj: obj.email
+        if creator:
+            if creator.role == "admin":
+                assignee_queryset = User.objects.exclude(role="admin")
+            else:
+                assignee_queryset = User.objects.filter(
+                    Q(role="mentor") | Q(role="volunteer", reporting_assignment__endorser=creator)
+                )
+            self.fields["assignees"].queryset = assignee_queryset.distinct().order_by("first_name", "username")
+        if self.instance.pk:
+            self.fields["assignees"].initial = self.instance.mentors.all()
+        self.fields['assignees'].label_from_instance = (
+            lambda obj: f"{obj.get_full_name() or obj.username} ({obj.get_role_display()})"
+        )
+
+
+class WorkScheduleAssignmentUpdateForm(forms.ModelForm):
+    class Meta:
+        model = WorkScheduleAssignment
+        fields = ["status", "progress_note"]
+        widgets = {
+            "status": forms.Select(attrs={"class": "form-select"}),
+            "progress_note": forms.Textarea(attrs={"class": "form-control", "rows": 3}),
+        }
 
 
 # -------------------- DIP Objective / Year Plan Forms --------------------
@@ -275,6 +300,26 @@ class MentorMenteeAssignmentForm(forms.ModelForm):
         }
 
 
+class VolunteerReportingAssignmentForm(forms.ModelForm):
+    class Meta:
+        model = VolunteerReportingAssignment
+        fields = ["volunteer", "programme", "location", "endorser"]
+        widgets = {
+            "volunteer": forms.Select(attrs={"class": "form-select"}),
+            "programme": forms.Select(attrs={"class": "form-select"}),
+            "location": forms.Select(attrs={"class": "form-select"}),
+            "endorser": forms.Select(attrs={"class": "form-select"}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        kwargs.pop("user", None)
+        super().__init__(*args, **kwargs)
+        self.fields["volunteer"].queryset = User.objects.filter(role="volunteer").order_by("first_name", "username")
+        self.fields["programme"].queryset = Programme.objects.filter(is_active=True).order_by("name")
+        self.fields["location"].queryset = Location.objects.filter(is_active=True).order_by("name")
+        self.fields["endorser"].queryset = User.objects.filter(role="endorser").order_by("first_name", "username")
+
+
 class StatusConfigForm(forms.ModelForm):
     class Meta:
         model = StatusConfig
@@ -400,7 +445,7 @@ class ChapterForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["leader"].queryset = User.objects.filter(
-            role__in=["community_leader", "faculty_leader", "endorser"]
+            role__in=["mentor", "endorser"]
         )
         self.fields["leader"].required = False
 
@@ -442,34 +487,46 @@ class NotificationForm(forms.ModelForm):
 class ReflectiveReportForm(forms.ModelForm):
     class Meta:
         model = ReflectiveReport
-        fields = ["programme", "location", "activity_name", "duration", "endorser", "date", "learnings", "feedback", "photo", "status"]
+        fields = [
+            "activity_name",
+            "duration",
+            "date",
+            "learnings",
+            "feedback",
+            "suggestions",
+            "photo",
+        ]
         widgets = {
-            "programme": forms.Select(attrs={"class": "form-select"}),
-            "location": forms.Select(attrs={"class": "form-select"}),
             "activity_name": forms.TextInput(attrs={"class": "form-control"}),
             "duration": forms.NumberInput(attrs={"class": "form-control", "step": "0.25"}),
-            "endorser": forms.Select(attrs={"class": "form-select"}),
             "date": forms.DateInput(attrs={"type": "date", "class": "form-control"}),
             "learnings": forms.Textarea(attrs={"class": "form-control", "rows": 3}),
             "feedback": forms.Textarea(attrs={"class": "form-control", "rows": 3}),
+            "suggestions": forms.Textarea(attrs={"class": "form-control", "rows": 3}),
             "photo": forms.ClearableFileInput(attrs={"class": "form-control"}),
-            "status": forms.Select(attrs={"class": "form-select"}),
         }
+
+    def __init__(self, *args, **kwargs):
+        kwargs.pop("user", None)
+        super().__init__(*args, **kwargs)
 
 
 # -------------------- Work Diary Form --------------------
 class DiaryEntryForm(forms.ModelForm):
     class Meta:
         model = DiaryEntry
-        fields = ["date", "duration", "location", "linked_activity", "narrative_entry", "review_status"]
+        fields = ["date", "duration", "linked_activity", "narrative_entry", "evidence"]
         widgets = {
             "date": forms.DateInput(attrs={"type": "date", "class": "form-control"}),
             "duration": forms.NumberInput(attrs={"class": "form-control", "step": "0.25"}),
-            "location": forms.Select(attrs={"class": "form-select"}),
             "linked_activity": forms.TextInput(attrs={"class": "form-control"}),
             "narrative_entry": forms.Textarea(attrs={"class": "form-control", "rows": 4}),
-            "review_status": forms.Select(attrs={"class": "form-select"}),
+            "evidence": forms.ClearableFileInput(attrs={"class": "form-control"}),
         }
+
+    def __init__(self, *args, **kwargs):
+        kwargs.pop("user", None)
+        super().__init__(*args, **kwargs)
 
 
 # -------------------- Volunteer Transcript Form --------------------
@@ -483,6 +540,18 @@ class VolunteerTranscriptForm(forms.ModelForm):
             "reviewer_notes": forms.Textarea(attrs={"class": "form-control", "rows": 3}),
             "approval_status": forms.Select(attrs={"class": "form-select"}),
             "export_file": forms.ClearableFileInput(attrs={"class": "form-control"}),
+        }
+
+
+# -------------------- Profile Artifact Form --------------------
+class ProfileArtifactForm(forms.ModelForm):
+    class Meta:
+        model = ProfileArtifact
+        fields = ["title", "document", "is_public"]
+        widgets = {
+            "title": forms.TextInput(attrs={"class": "form-control"}),
+            "document": forms.ClearableFileInput(attrs={"class": "form-control"}),
+            "is_public": forms.CheckboxInput(attrs={"class": "form-check-input"}),
         }
 
 

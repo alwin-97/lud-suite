@@ -18,6 +18,7 @@ from django.contrib import admin
 from django.urls import path,include
 from django.conf.urls.static import static
 from django.conf import settings
+from core.views import permission_denied_view
 
 
 
@@ -28,6 +29,8 @@ urlpatterns = [
     path('accounts/', include('allauth.urls')),
     
 ]
+
+handler403 = permission_denied_view
 
 
 if settings.DEBUG:

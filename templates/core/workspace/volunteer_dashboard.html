@@ -1,0 +1,151 @@
+{% extends base_template %}
+
+{% block title %}Volunteer Dashboard{% endblock %}
+
+{% block breadcrumb %}
+<a href="{% url 'volunteer_dashboard' %}" class="text-muted"><i class="fa-solid fa-house fa-sm me-1"></i>Dashboard</a>
+{% endblock %}
+
+{% block page_content %}
+<div class="page-header mb-4">
+    <h1>Volunteer Workspace</h1>
+    <p class="mb-0">Track reporting, transcript progress, and public profile artifacts from one place.</p>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3"><div class="stat-card"><div class="stat-value text-primary">{{ diary_count }}</div><div class="stat-label">Diary Entries</div></div></div>
+    <div class="col-6 col-lg-3"><div class="stat-card"><div class="stat-value" style="color:#0e9384">{{ report_count }}</div><div class="stat-label">Reflective Reports</div></div></div>
+    <div class="col-6 col-lg-3"><div class="stat-card"><div class="stat-value" style="color:#d97706">{{ submitted_diary_count|add:submitted_report_count }}</div><div class="stat-label">Pending Review</div></div></div>
+    <div class="col-6 col-lg-3"><div class="stat-card"><div class="stat-value text-secondary">{{ approved_transcript_count }}</div><div class="stat-label">Approved Transcripts</div></div></div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-6 col-xl-3"><a href="{% url 'work_diary' %}" class="action-card"><i class="fa-solid fa-book-open"></i><div class="action-title">Work Diary</div><div class="action-desc">Log and review your contribution entries</div></a></div>
+    <div class="col-md-6 col-xl-3"><a href="{% url 'reflective_report' %}" class="action-card"><i class="fa-solid fa-file-lines"></i><div class="action-title">Reflective Reports</div><div class="action-desc">Submit structured activity reflections</div></a></div>
+    <div class="col-md-6 col-xl-3"><a href="{% url 'transcript' %}" class="action-card"><i class="fa-solid fa-file-signature"></i><div class="action-title">Transcripts</div><div class="action-desc">Generate and track transcript drafts</div></a></div>
+    <div class="col-md-6 col-xl-3"><a href="{% url 'volunteer_public_profile' public_profile_user.id %}" class="action-card"><i class="fa-solid fa-id-badge"></i><div class="action-title">Public Profile</div><div class="action-desc">Preview your public volunteer profile</div></a></div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-7">
+        <div class="panel mb-3">
+            <div class="panel-header"><h2><i class="fa-solid fa-map-location-dot me-2 opacity-50"></i>Reporting Assignment</h2></div>
+            <div class="panel-body">
+                {% if reporting_assignment %}
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <div class="profile-field">
+                            <span class="profile-field-label">Programme</span>
+                            <div class="profile-field-value">{{ reporting_assignment.programme.name }}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="profile-field">
+                            <span class="profile-field-label">Location</span>
+                            <div class="profile-field-value">{{ reporting_assignment.location.name }}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="profile-field">
+                            <span class="profile-field-label">Endorser</span>
+                            <div class="profile-field-value">{{ reporting_assignment.endorser.get_full_name|default:reporting_assignment.endorser.username }}</div>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="empty-state py-4">
+                    <i class="fa-solid fa-triangle-exclamation d-block"></i>
+                    Admin must assign your reporting programme, location, and endorser before you can submit records.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="panel">
+            <div class="panel-header"><h2><i class="fa-solid fa-clock-rotate-left me-2 opacity-50"></i>Recent Activity</h2></div>
+            <div class="panel-body">
+                <div class="d-flex justify-content-between align-items-center mobile-stack-between mb-3">
+                    <h6 class="fw-semibold mb-0">Recent Diaries</h6>
+                    <a href="{% url 'work_diary_list' %}" class="small text-decoration-none">View all diary entries</a>
+                </div>
+                {% for diary in recent_diaries %}
+                <div class="feed-item">
+                    <div>
+                        <div class="feed-title">{{ diary.linked_activity|default:"Diary Entry" }}</div>
+                        <div class="feed-sub">{{ diary.get_review_status_display }} · {{ diary.narrative_entry|truncatewords:14 }}</div>
+                    </div>
+                    <div class="feed-time">{{ diary.date|date:"M d, Y" }}</div>
+                </div>
+                {% empty %}
+                <div class="empty-state"><i class="fa-solid fa-book-open d-block"></i>No diary entries yet.</div>
+                {% endfor %}
+                <hr>
+                <div class="d-flex justify-content-between align-items-center mobile-stack-between mb-3">
+                    <h6 class="fw-semibold mb-0">Recent Reports</h6>
+                    <a href="{% url 'reflective_report_list' %}" class="small text-decoration-none">View all reports</a>
+                </div>
+                {% for report in recent_reports %}
+                <div class="feed-item">
+                    <div>
+                        <div class="feed-title">{{ report.activity_name }}</div>
+                        <div class="feed-sub">{{ report.get_status_display }}</div>
+                    </div>
+                    <div class="feed-time">{{ report.date|date:"M d, Y" }}</div>
+                </div>
+                {% empty %}
+                <div class="empty-state"><i class="fa-solid fa-file-lines d-block"></i>No reflective reports yet.</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-5">
+        <div class="panel mb-3">
+            <div class="panel-header"><h2><i class="fa-solid fa-image me-2 opacity-50"></i>Profile Artifacts</h2></div>
+            <div class="panel-body admin-form">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="mb-3"><label class="form-label">Title</label>{{ artifact_form.title }}</div>
+                    <div class="mb-3"><label class="form-label">Document</label>{{ artifact_form.document }}</div>
+                    <div class="form-check mb-3">{{ artifact_form.is_public }}<label class="form-check-label ms-2" for="{{ artifact_form.is_public.id_for_label }}">Visible on public profile</label></div>
+                    <button type="submit" class="btn btn-sm btn-primary">Upload Artifact</button>
+                </form>
+            </div>
+        </div>
+        <div class="panel">
+            <div class="panel-header"><h2><i class="fa-solid fa-file-circle-check me-2 opacity-50"></i>Transcript Status</h2></div>
+            <div class="panel-body flush">
+                {% for transcript in recent_transcripts %}
+                <div class="feed-item">
+                    <div>
+                        <div class="feed-title">{{ transcript.template_choice }}</div>
+                        <div class="feed-sub">{{ transcript.get_approval_status_display }}</div>
+                    </div>
+                    <div class="feed-time">{{ transcript.created_at|date:"M d, Y" }}</div>
+                </div>
+                {% empty %}
+                <div class="empty-state"><i class="fa-solid fa-file-signature d-block"></i>No transcript drafts yet.</div>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="panel mt-3">
+            <div class="panel-header"><h2><i class="fa-solid fa-photo-film me-2 opacity-50"></i>Public Profile Visibility</h2></div>
+            <div class="panel-body">
+                <div class="row g-3">
+                    <div class="col-6">
+                        <div class="stat-card h-100">
+                            <div class="stat-value text-secondary">{{ public_artifact_count }}</div>
+                            <div class="stat-label">Public Artifacts</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <a href="{% url 'volunteer_public_profile' public_profile_user.id %}" class="action-card h-100">
+                            <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                            <div class="action-title">Open Public Profile</div>
+                            <div class="action-desc">See what is visible externally</div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

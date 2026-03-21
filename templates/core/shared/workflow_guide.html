@@ -1,4 +1,4 @@
-{% extends 'core/mentor/base_mentor.html' %}
+{% extends base_template %}
 
 {% block title %}Workflow Guide{% endblock title %}
 
@@ -12,99 +12,416 @@
 <div class="mb-4">
     <h4 class="fw-bold mb-1">Workflow Guide</h4>
     <p class="text-muted mb-0">
-        This guide walks through the recommended setup and day-to-day flow for admins, mentors, and mentees.
+        This guide is shown for your current active role: <span class="fw-semibold">{{ user.get_role_display }}</span>.
+        {% if user.role == "admin" %}
+        Admin can view the complete application workflow across all modules.
+        {% else %}
+        It only shows the parts of the application that belong to your current function.
+        {% endif %}
     </p>
 </div>
 
-    <div class="row g-3">
-        <div class="col-lg-6">
-            <div class="card h-100">
-                <div class="card-header">
-                    <span class="fw-semibold"><i class="fa-solid fa-gears me-2"></i>Admin Setup</span>
-                </div>
-                <div class="card-body">
-                    <ol class="mb-0">
-                        <li>Create mentor, mentee, endorser, and reviewer users.</li>
-                        <li>Assign mentors to mentees and endorsers to mentors.</li>
-                        <li>Configure statuses, session types, and rating domains.</li>
-                        <li>Review the dashboard to confirm assignments and counts.</li>
-                    </ol>
-                </div>
+{% if user.role == "admin" %}
+<div class="alert alert-light border mb-4">
+    <div class="fw-semibold mb-2"><i class="fa-solid fa-circle-info me-2"></i>Full Workflow Overview</div>
+    <div class="small text-muted">
+        Reflective reports move through Draft, Submitted, Reviewed, Approved, and Returned. Work diaries move through Draft, Submitted, Reviewed, Approved, and Returned. Volunteer transcripts move through Draft, Pending Review, Approved, and Returned to Draft. Admin manages setup, oversight, transcript visibility, and exports.
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <span class="fw-semibold"><i class="fa-solid fa-gears me-2"></i>Administration Setup</span>
             </div>
-        </div>
-        <div class="col-lg-6">
-            <div class="card h-100">
-                <div class="card-header">
-                    <span class="fw-semibold"><i class="fa-solid fa-sliders me-2"></i>Admin Config Tips</span>
-                </div>
-                <div class="card-body">
-                    <ul class="mb-0">
-                        <li>Statuses: Not Started, In Progress, Completed, On Hold.</li>
-                        <li>Session Types: Summer Camp, Follow Up, Review.</li>
-                        <li>Rating Domains: Leadership, Communication, Technical Skills.</li>
-                        <li>Template Configs: Year 1, Year 2, Year 3, Year 4.</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-6">
-            <div class="card h-100">
-                <div class="card-header">
-                    <span class="fw-semibold"><i class="fa-solid fa-user-tie me-2"></i>Mentor Flow</span>
-                </div>
-                <div class="card-body">
-                    <ol class="mb-0">
-                        <li>Open assigned mentees from the Mentor Dashboard.</li>
-                        <li>Review objectives, year plans, and assessments.</li>
-                        <li>Leave comments and update review status when needed.</li>
-                        <li>Export progress reports for review meetings.</li>
-                    </ol>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-6">
-            <div class="card h-100">
-                <div class="card-header">
-                    <span class="fw-semibold"><i class="fa-solid fa-user-graduate me-2"></i>Mentee Flow</span>
-                </div>
-                <div class="card-body">
-                    <ol class="mb-0">
-                        <li>Update objectives with progress and evidence notes.</li>
-                        <li>Update year plan milestones and remarks.</li>
-                        <li>Check mentor comments and status updates.</li>
-                        <li>Export progress for personal records.</li>
-                    </ol>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-6">
-            <div class="card h-100">
-                <div class="card-header">
-                    <span class="fw-semibold"><i class="fa-solid fa-clipboard-check me-2"></i>Assessment Flow</span>
-                </div>
-                <div class="card-body">
-                    <ol class="mb-0">
-                        <li>Mentors create assessments for each session type.</li>
-                        <li>Select ratings for each configured domain.</li>
-                        <li>Review averages and adjust comments if needed.</li>
-                        <li>Mentees can view assessment history anytime.</li>
-                    </ol>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-6">
-            <div class="card h-100">
-                <div class="card-header">
-                    <span class="fw-semibold"><i class="fa-solid fa-list-check me-2"></i>Activity Log Flow</span>
-                </div>
-                <div class="card-body">
-                    <ol class="mb-0">
-                        <li>Mentors add activities in the YCLP area.</li>
-                        <li>Endorsers review mentor activities and add remarks.</li>
-                        <li>Use exports to capture activity summaries.</li>
-                    </ol>
-                </div>
+            <div class="card-body">
+                <ol class="mb-0">
+                    <li>Create users and assign one or more roles from User Role Manager.</li>
+                    <li>Maintain configuration masters such as schools, locations, chapters, programmes, statuses, session types, and rating domains.</li>
+                    <li>Import mentees, review upload logs, and confirm mentor or endorser assignments.</li>
+                    <li>Use the admin dashboard, exports, notifications, and monitoring tools for platform governance.</li>
+                </ol>
             </div>
         </div>
     </div>
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <span class="fw-semibold"><i class="fa-solid fa-user-gear me-2"></i>Volunteer Reporting</span>
+            </div>
+            <div class="card-body">
+                <ol class="mb-0">
+                    <li>Volunteers create work diaries with date, duration, location, narrative, and optional evidence.</li>
+                    <li>Volunteers submit reflective reports with programme, location, endorser, learnings, feedback, suggestions, and photo evidence.</li>
+                    <li>Draft entries stay editable until resubmitted.</li>
+                    <li>Returned items are revised by volunteers and sent back into review.</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <span class="fw-semibold"><i class="fa-solid fa-list-check me-2"></i>Review and Final Approval</span>
+            </div>
+            <div class="card-body">
+                <ol class="mb-0">
+                    <li>Mentors and endorsers handle the review stage through Review Dashboard and Review Queue.</li>
+                    <li>Only submitted reflective reports, submitted work diaries, and pending transcripts appear in review lists.</li>
+                    <li>Admin performs final approval for reflective reports and work diaries after mentor or endorser review is complete.</li>
+                    <li>Each decision is tracked in the approval log and related notifications are issued automatically.</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <span class="fw-semibold"><i class="fa-solid fa-file-signature me-2"></i>Transcript Process</span>
+            </div>
+            <div class="card-body">
+                <ol class="mb-0">
+                    <li>Volunteers generate transcript drafts from approved reports, approved diaries, activities, profile artifacts, and linked evidence.</li>
+                    <li>Transcript drafts move from Pending Review to Approved once a mentor or endorser completes the review.</li>
+                    <li>Admin can monitor transcript status and download the export file after reviewer approval.</li>
+                    <li>Approved transcripts generate a downloadable export file.</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <span class="fw-semibold"><i class="fa-solid fa-user-tie me-2"></i>Mentee Development</span>
+            </div>
+            <div class="card-body">
+                <ol class="mb-0">
+                    <li>Mentees maintain objectives, year plans, and assessment history.</li>
+                    <li>Mentors review assigned mentees and create assessments with mood, comments, action plans, and domain ratings.</li>
+                    <li>Admin can access the mentee directory and assignment flows for oversight.</li>
+                    <li>Progress reports and exports are used for tracking across the mentoring cycle.</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <span class="fw-semibold"><i class="fa-solid fa-folder-tree me-2"></i>Repository and Profiles</span>
+            </div>
+            <div class="card-body">
+                <ol class="mb-0">
+                    <li>Users upload repository assets with category, tags, file, and role-based visibility.</li>
+                    <li>Assets can be linked to reports, diaries, transcripts, or profile artifacts using record IDs.</li>
+                    <li>Volunteers manage public profile artifacts from their workspace.</li>
+                    <li>Admin and reviewers can inspect linked evidence and volunteer profiles during review.</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <span class="fw-semibold"><i class="fa-solid fa-bell me-2"></i>Notifications and Monitoring</span>
+            </div>
+            <div class="card-body">
+                <ol class="mb-0">
+                    <li>Admin sends role-targeted notifications from Manage Notifications.</li>
+                    <li>The shared Notification Center shows messages relevant to the logged-in user.</li>
+                    <li>The system also creates notifications during review handoff and final approval outcomes.</li>
+                    <li>Admin uses dashboards and exports to monitor usage, assignment coverage, and reporting health.</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+{% elif user.role == "volunteer" %}
+<div class="alert alert-light border mb-4">
+    <div class="fw-semibold mb-2"><i class="fa-solid fa-circle-info me-2"></i>Your Workflow</div>
+    <div class="small text-muted">
+        As a volunteer, your main work is reporting programme activity, managing your profile, keeping supporting evidence, and generating transcript drafts from approved records.
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <span class="fw-semibold"><i class="fa-solid fa-book-open me-2"></i>Work Diary</span>
+            </div>
+            <div class="card-body">
+                <ol class="mb-0">
+                    <li>Create diary entries with date, duration, location, narrative, and optional evidence.</li>
+                    <li>Keep records in Draft while editing.</li>
+                    <li>Submit completed entries for review.</li>
+                    <li>If a diary is returned, update it and submit again.</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <span class="fw-semibold"><i class="fa-solid fa-file-lines me-2"></i>Reflective Reports</span>
+            </div>
+            <div class="card-body">
+                <ol class="mb-0">
+                    <li>Submit reflective reports with programme, location, endorser, learnings, suggestions, and evidence.</li>
+                    <li>Draft reports remain editable until submission.</li>
+                    <li>Reviewed and approved reports become part of your verified activity record.</li>
+                    <li>Returned reports must be corrected and resubmitted.</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <span class="fw-semibold"><i class="fa-solid fa-file-signature me-2"></i>Transcript Drafts</span>
+            </div>
+            <div class="card-body">
+                <ol class="mb-0">
+                    <li>Generate transcript drafts from approved reports, approved diaries, tracked activities, profile artifacts, and linked evidence.</li>
+                    <li>Submit transcript drafts for review once the content is ready.</li>
+                    <li>Track the status as Pending Review, Approved, or returned to Draft for correction.</li>
+                    <li>Download the export file after mentor or endorser approval.</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <span class="fw-semibold"><i class="fa-solid fa-id-badge me-2"></i>Profile and Evidence</span>
+            </div>
+            <div class="card-body">
+                <ol class="mb-0">
+                    <li>Upload profile artifacts and mark public items for your volunteer public profile.</li>
+                    <li>Store supporting files in the repository.</li>
+                    <li>Link repository assets to reports, diaries, transcripts, or profile artifacts where required.</li>
+                    <li>Use the Notification Center to check review outcomes and follow-up actions.</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+{% elif user.role == "mentor" %}
+<div class="alert alert-light border mb-4">
+    <div class="fw-semibold mb-2"><i class="fa-solid fa-circle-info me-2"></i>Your Workflow</div>
+    <div class="small text-muted">
+        As a mentor, you manage assigned mentees, record assessments, and review volunteer submissions that reach your queue.
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <span class="fw-semibold"><i class="fa-solid fa-users me-2"></i>Mentee Management</span>
+            </div>
+            <div class="card-body">
+                <ol class="mb-0">
+                    <li>Open My Mentees to view assigned mentees.</li>
+                    <li>Review objective items, year plans, and assessment history for each mentee.</li>
+                    <li>Create assessments with session type, mood, remarks, action plans, and ratings.</li>
+                    <li>Use these records to track development and follow-up conversations.</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <span class="fw-semibold"><i class="fa-solid fa-list-check me-2"></i>Volunteer Review</span>
+            </div>
+            <div class="card-body">
+                <ol class="mb-0">
+                    <li>Use Review Dashboard and Review Queue for volunteer diaries, reflective reports, and transcript drafts in scope.</li>
+                    <li>Review submitted items and either progress them forward or return them for correction.</li>
+                    <li>Approved transcript drafts are published immediately after your review.</li>
+                    <li>Notifications and approval logs are created as part of each review action.</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <span class="fw-semibold"><i class="fa-solid fa-clipboard-list me-2"></i>Activity Tracking</span>
+            </div>
+            <div class="card-body">
+                <ol class="mb-0">
+                    <li>Use My Activities to monitor mentoring work already recorded in the application.</li>
+                    <li>Keep assignment-linked records current through assessments and related follow-up.</li>
+                    <li>Use DIP / YCLP pages where programme-specific workflow is assigned to you.</li>
+                    <li>Coordinate with admin when assignment or data setup needs correction.</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <span class="fw-semibold"><i class="fa-solid fa-folder-open me-2"></i>Shared Tools</span>
+            </div>
+            <div class="card-body">
+                <ol class="mb-0">
+                    <li>Use the repository to inspect supporting evidence and shared materials.</li>
+                    <li>Open the Notification Center for review-related alerts.</li>
+                    <li>Use the Workflow Guide for role-specific steps while your active role is mentor.</li>
+                    <li>Switch roles from the header when you need to work in another assigned role.</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+{% elif user.role == "endorser" %}
+<div class="alert alert-light border mb-4">
+    <div class="fw-semibold mb-2"><i class="fa-solid fa-circle-info me-2"></i>Your Workflow</div>
+    <div class="small text-muted">
+        As an endorser, you oversee assigned mentors, maintain your schedule, and review volunteer submissions in your scope.
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <span class="fw-semibold"><i class="fa-solid fa-clipboard-list me-2"></i>Assigned Mentors</span>
+            </div>
+            <div class="card-body">
+                <ol class="mb-0">
+                    <li>Use Assigned Mentors to view the mentors mapped under your responsibility.</li>
+                    <li>Review related activity when you need mentor-level visibility.</li>
+                    <li>Maintain your work schedule in the endorser workspace.</li>
+                    <li>Coordinate escalations with admin where operational changes are needed.</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <span class="fw-semibold"><i class="fa-solid fa-list-check me-2"></i>Review Queue</span>
+            </div>
+            <div class="card-body">
+                <ol class="mb-0">
+                    <li>Use Review Dashboard and Review Queue to process volunteer reports, diaries, and transcripts in your scope.</li>
+                    <li>Move complete items forward after review or return them when correction is needed.</li>
+                    <li>Approved transcript drafts are published immediately after your review.</li>
+                    <li>Use notifications and the audit trail to track review decisions.</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <span class="fw-semibold"><i class="fa-solid fa-file-signature me-2"></i>Transcript Review</span>
+            </div>
+            <div class="card-body">
+                <ol class="mb-0">
+                    <li>Review generated transcript drafts against the volunteer’s approved records and linked evidence.</li>
+                    <li>Confirm that the summary is ready for approval and export.</li>
+                    <li>Approve the draft to publish the transcript and make the export available to admin.</li>
+                    <li>Use comments and return actions when the draft needs rework.</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <span class="fw-semibold"><i class="fa-solid fa-folder-open me-2"></i>Shared Tools</span>
+            </div>
+            <div class="card-body">
+                <ol class="mb-0">
+                    <li>Use the repository to inspect shared files and review evidence.</li>
+                    <li>Use the Notification Center for review handoff and status updates.</li>
+                    <li>Keep your profile information updated in the endorser shell.</li>
+                    <li>Switch roles from the header if you have more than one assigned role.</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+{% elif user.role == "mentee" %}
+<div class="alert alert-light border mb-4">
+    <div class="fw-semibold mb-2"><i class="fa-solid fa-circle-info me-2"></i>Your Workflow</div>
+    <div class="small text-muted">
+        As a mentee, your work is focused on planning, keeping your progress records current, and reviewing mentor feedback across your development journey.
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <span class="fw-semibold"><i class="fa-solid fa-bullseye me-2"></i>Objectives</span>
+            </div>
+            <div class="card-body">
+                <ol class="mb-0">
+                    <li>Create and update objective items for your development goals.</li>
+                    <li>Maintain progress details, remarks, and supporting evidence where applicable.</li>
+                    <li>Use objectives as the base for structured mentoring follow-up.</li>
+                    <li>Review mentor feedback attached to your records.</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <span class="fw-semibold"><i class="fa-solid fa-calendar-days me-2"></i>Year Plans</span>
+            </div>
+            <div class="card-body">
+                <ol class="mb-0">
+                    <li>Maintain year-wise plans with dates, progress notes, and evidence.</li>
+                    <li>Keep the records current so mentors can review your progress clearly.</li>
+                    <li>Use the year plan as the timeline view of your developmental journey.</li>
+                    <li>Update items after meetings or agreed action points.</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <span class="fw-semibold"><i class="fa-solid fa-star-half-stroke me-2"></i>Assessments</span>
+            </div>
+            <div class="card-body">
+                <ol class="mb-0">
+                    <li>Review assessment history recorded by your mentor.</li>
+                    <li>Track remarks, mood capture, action plans, and domain ratings over time.</li>
+                    <li>Use the assessment history to understand strengths, concerns, and follow-up areas.</li>
+                    <li>Export progress information when required by the programme.</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <span class="fw-semibold"><i class="fa-solid fa-folder-open me-2"></i>Shared Tools</span>
+            </div>
+            <div class="card-body">
+                <ol class="mb-0">
+                    <li>Use the repository for shared materials and supporting files available to your role.</li>
+                    <li>Open the Notification Center for updates related to your records.</li>
+                    <li>Keep your profile information current.</li>
+                    <li>Use the Workflow Guide as a mentee-specific reference while this role is active.</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="alert alert-light border">
+    <div class="fw-semibold mb-2"><i class="fa-solid fa-circle-info me-2"></i>Role Guide Unavailable</div>
+    <div class="small text-muted">
+        No workflow guide is configured for the current role. Switch to another assigned role or contact admin if this is unexpected.
+    </div>
+</div>
+{% endif %}
 {% endblock page_content %}

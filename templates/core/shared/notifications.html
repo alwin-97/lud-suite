@@ -1,0 +1,33 @@
+{% extends base_template %}
+
+{% block title %}Notifications{% endblock %}
+
+{% block breadcrumb %}
+<a href="{% url home_url_name %}" class="text-muted"><i class="fa-solid fa-house fa-sm me-1"></i>Home</a>
+<span class="mx-2 text-muted">/</span>
+<span>Notifications</span>
+{% endblock %}
+
+{% block page_content %}
+<div class="page-header mb-4">
+    <h1>Notifications</h1>
+    <p class="mb-0">Broadcasts, review updates, and workflow reminders relevant to your role.</p>
+</div>
+
+<div class="panel">
+    <div class="panel-body flush">
+        {% for item in notifications %}
+        <div class="feed-item">
+            <div>
+                <div class="feed-title">{{ item.subject|default:"Notification" }}</div>
+                <div class="feed-sub">{{ item.message }}</div>
+                <span class="badge bg-light text-dark border mt-1">{{ item.target_group|title }}</span>
+            </div>
+            <div class="feed-time">{{ item.created_at|date:"M d, Y H:i" }}</div>
+        </div>
+        {% empty %}
+        <div class="empty-state"><i class="fa-solid fa-bell-slash d-block"></i>No notifications available.</div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

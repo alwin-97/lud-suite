@@ -1,9 +1,9 @@
-{% extends 'core/mentor/base_mentor.html' %}
+{% extends base_template %}
 
 {% block title %}Review Year Plan{% endblock title %}
 
 {% block breadcrumb %}
-<a href="{% url 'dashboard' %}" class="text-muted"><i class="fa-solid fa-house fa-sm me-1"></i>Dashboard</a>
+<a href="{% url home_url_name %}" class="text-muted"><i class="fa-solid fa-house fa-sm me-1"></i>Home</a>
 <span class="mx-2 text-muted">/</span>
 <a href="{% url 'mentor_mentee_list' %}" class="text-muted">Mentees</a>
 <span class="mx-2 text-muted">/</span>

@@ -1,14 +1,23 @@
-{% extends 'core/mentor/base_mentor.html' %}
+{% extends base_template %}
 
 {% block title %}Reflective Reporting{% endblock title %}
 
+{% block breadcrumb %}
+<a href="{% url home_url_name %}" class="text-muted"><i class="fa-solid fa-house fa-sm me-1"></i>Dashboard</a>
+<span class="mx-2 text-muted">/</span>
+<span>Reflective Reports</span>
+{% endblock %}
+
 {% block page_content %}
 <div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="page-header d-flex justify-content-between align-items-center mobile-stack-between mb-4">
         <div>
-            <h4 class="fw-bold mb-1">Reflective Reports (DIP/YCLP)</h4>
-            <p class="text-muted mb-0">Submit structured reflective reports for your program activities.</p>
+            <h1 class="mb-1">Reflective Reports</h1>
+            <p class="mb-0">Submit structured reflective reports for your program activities.</p>
         </div>
+        <a href="{% url 'reflective_report_list' %}" class="btn btn-outline-primary rounded-pill px-4">
+            <i class="fa-solid fa-list me-2"></i>View All Reports
+        </a>
     </div>
 
     <div class="panel mb-4">
@@ -16,35 +25,73 @@
         <div class="panel-body admin-form">
             <form method="post" enctype="multipart/form-data">
                 {% csrf_token %}
+                {% if not reporting_assignment %}
+                <div class="alert alert-warning border mb-4">
+                    <div class="fw-semibold mb-2"><i class="fa-solid fa-triangle-exclamation me-2"></i>Reporting Assignment Required</div>
+                    <div class="small mb-0">
+                        Admin must map your reporting programme, location, and endorser before you can create reflective reports.
+                    </div>
+                </div>
+                {% else %}
+                <div class="alert alert-light border mb-4">
+                    <div class="fw-semibold mb-2"><i class="fa-solid fa-circle-info me-2"></i>Fetched From Account and Admin Mapping</div>
+                    <div class="row g-3 small">
+                        <div class="col-md-3"><strong>Name:</strong><div class="text-muted">{{ reporter_name|default:"-" }}</div></div>
+                        <div class="col-md-3"><strong>Email:</strong><div class="text-muted">{{ reporter_email|default:"-" }}</div></div>
+                        <div class="col-md-3"><strong>Volunteer ID / Register No:</strong><div class="text-muted">{{ reporter_identifier|default:"-" }}</div></div>
+                        <div class="col-md-3"><strong>Role:</strong><div class="text-muted">{{ reporter_role|default:"-" }}</div></div>
+                        <div class="col-md-4"><strong>Programme:</strong><div class="text-muted">{{ reporting_assignment.programme.name }}</div></div>
+                        <div class="col-md-4"><strong>Location:</strong><div class="text-muted">{{ reporting_assignment.location.name }}</div></div>
+                        <div class="col-md-4"><strong>Endorser:</strong><div class="text-muted">{{ reporting_assignment.endorser.get_full_name|default:reporting_assignment.endorser.username }}</div></div>
+                    </div>
+                    <div class="small text-muted mt-3">
+                        Volunteer identity fields come from your account, and programme, location, and endorser come from admin mapping. Save a draft if the report is incomplete, or submit it when ready for review.
+                    </div>
+                </div>
                 <div class="row g-3">
-                    <div class="col-md-3"><label class="form-label">Programme</label>{{ form.programme }}</div>
-                    <div class="col-md-3"><label class="form-label">Location</label>{{ form.location }}</div>
                     <div class="col-md-3"><label class="form-label">Activity Name</label>{{ form.activity_name }}</div>
                     <div class="col-md-3"><label class="form-label">Duration (Hrs)</label>{{ form.duration }}</div>
-                    <div class="col-md-4"><label class="form-label">Endorser</label>{{ form.endorser }}</div>
                     <div class="col-md-4"><label class="form-label">Date</label>{{ form.date }}</div>
-                    <div class="col-md-4"><label class="form-label">Status</label>{{ form.status }}</div>
+                    <div class="col-md-4">
+                        <label class="form-label">Submission Flow</label>
+                        <div class="form-control bg-light">Draft or Submit using the buttons below</div>
+                    </div>
                     <div class="col-md-6"><label class="form-label">Key Learnings</label>{{ form.learnings }}</div>
                     <div class="col-md-6"><label class="form-label">Feedback</label>{{ form.feedback }}</div>
+                    <div class="col-md-12"><label class="form-label">Suggestions</label>{{ form.suggestions }}</div>
                     <div class="col-md-6"><label class="form-label">Photo Evidence</label>{{ form.photo }}</div>
                 </div>
-                <button type="submit" class="btn btn-sm btn-primary mt-3">
-                    <i class="fa-solid fa-paper-plane me-1"></i>Submit Report
-                </button>
+                <div class="mobile-inline-actions mt-3">
+                    <button type="submit" name="submit_action" value="draft" class="btn btn-outline-secondary">
+                        <i class="fa-regular fa-floppy-disk me-1"></i>Save Draft
+                    </button>
+                    <button type="submit" name="submit_action" value="submit" class="btn btn-primary">
+                        <i class="fa-solid fa-paper-plane me-1"></i>Submit Report
+                    </button>
+                </div>
+                {% endif %}
             </form>
         </div>
     </div>
 
-    <h5 class="fw-bold text-primary mb-3">Submitted Reports</h5>
+    <div class="d-flex justify-content-between align-items-center mobile-stack-between mb-3">
+        <h5 class="fw-bold text-primary mb-0">Recent Reports</h5>
+        <a href="{% url 'reflective_report_list' %}" class="small text-decoration-none">See full history</a>
+    </div>
     <div class="list-group shadow-sm">
         {% for report in reports %}
         <div class="list-group-item flex-column align-items-start mb-2 border rounded p-4">
-            <div class="d-flex w-100 justify-content-between mb-2">
+            <div class="d-flex w-100 justify-content-between mobile-stack-between mb-2">
                 <h5 class="mb-1 fw-bold">{{ report.activity_name }}</h5>
                 <small class="text-muted">{{ report.date|date:"F d, Y" }} ({{ report.duration }} hrs)</small>
             </div>
+            <p class="mb-1"><strong>Volunteer ID / Register No:</strong> {{ report.reporter_identifier|default:"-" }}</p>
+            <p class="mb-1"><strong>Class / Role:</strong> {{ report.reporter_class_role|default:"-" }}</p>
             <p class="mb-1"><strong>Learnings:</strong> {{ report.learnings }}</p>
             <p class="mb-2"><strong>Feedback:</strong> {{ report.feedback }}</p>
+            {% if report.suggestions %}
+            <p class="mb-2"><strong>Suggestions:</strong> {{ report.suggestions }}</p>
+            {% endif %}
             <small>Status: <span class="badge bg-info p-2">{{ report.get_status_display }}</span></small>
         </div>
         {% empty %}

@@ -14,6 +14,16 @@
     <div class="page-header mb-0"><h1>User Role Manager</h1></div>
 </div>
 
+<div class="alert alert-light border mb-4">
+    <div class="fw-semibold mb-2"><i class="fa-solid fa-minimize me-2"></i>Role Model</div>
+    <div class="small text-muted">
+        The system now uses {{ role_choices|length }} assignable roles:
+        {% for key, label in role_choices %}
+        <span class="badge bg-light text-dark border me-1">{{ label }}</span>
+        {% endfor %}
+    </div>
+</div>
+
 <div class="panel">
     <div class="panel-header"><h2><i class="fa-solid fa-user-shield me-2 opacity-50"></i>Manage User Roles</h2></div>
     <div class="panel-body flush">
@@ -78,14 +88,12 @@
                         <label class="form-label fw-semibold">Assign Roles</label>
                         <div class="row g-2">
                             {% for key, label in role_choices %}
-                            {% if key != "admin" %}
                             <div class="col-6">
                                 <div class="form-check">
                                     <input class="form-check-input role-check" type="checkbox" name="roles" value="{{ key }}" id="role_{{ u.id }}_{{ key }}" {% if key in u.roles %}checked{% endif %} data-user="{{ u.id }}">
                                     <label class="form-check-label" for="role_{{ u.id }}_{{ key }}">{{ label }}</label>
                                 </div>
                             </div>
-                            {% endif %}
                             {% endfor %}
                         </div>
                     </div>
@@ -93,9 +101,7 @@
                         <label class="form-label fw-semibold">Primary (Active) Role</label>
                         <select name="primary_role" class="form-select" id="primaryRole{{ u.id }}">
                             {% for key, label in role_choices %}
-                            {% if key != "admin" %}
                             <option value="{{ key }}" {% if key == u.role %}selected{% endif %} {% if key not in u.roles %}class="d-none"{% endif %}>{{ label }}</option>
-                            {% endif %}
                             {% endfor %}
                         </select>
                         <div class="form-text small">This role determines the user's default dashboard.</div>

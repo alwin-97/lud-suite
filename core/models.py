@@ -3,25 +3,19 @@ from django.contrib.auth.models import AbstractUser
 from django.conf import settings
 from django.core.validators import MaxValueValidator, MinValueValidator
 
+from core.roles import (
+    NOTIFICATION_TARGET_CHOICES,
+    REVIEWER_ROLES,
+    ROLE_CHOICES,
+    ROLE_KEYS,
+    ROLE_LABELS,
+)
 
 
 # -------------------- Custom User --------------------
 class CustomUser(AbstractUser):
-    ROLE_CHOICES = (
-        ('admin', 'Admin'),
-        ('endorser', 'Endorser'),
-        ('mentor', 'Mentor'),
-        ('mentee', 'Mentee'),
-        ('reviewer', 'Reviewer'),
-        ('volunteer', 'Volunteer'),
-        ('community_leader', 'Community Leader'),
-        ('faculty_leader', 'Faculty Leader'),
-        ('strategic_team', 'Strategic Team'),
-        ('principal', 'Principal'),
-        ('coordinator', 'Coordinator'),
-    )
-
-    ROLE_KEYS = [k for k, _ in ROLE_CHOICES]
+    ROLE_CHOICES = ROLE_CHOICES
+    ROLE_KEYS = ROLE_KEYS
 
     role = models.CharField(max_length=20, choices=ROLE_CHOICES)
     roles = models.JSONField(default=list, blank=True, help_text="All roles assigned to this user")
@@ -40,19 +34,38 @@ class CustomUser(AbstractUser):
     )
 
     def save(self, *args, **kwargs):
-        if self.is_superuser:
-            self.role = 'admin'
-        # Ensure active role is always in the roles list
-        if self.role and self.role not in (self.roles or []):
-            self.roles = list(self.roles or []) + [self.role]
+        update_fields = kwargs.get("update_fields")
+        roles = list(self.roles or [])
+
+        if self.is_superuser and "admin" not in roles:
+            roles.append("admin")
+        if self.role and self.role not in roles:
+            roles.append(self.role)
+
+        if not self.role and self.is_superuser:
+            self.role = "admin"
+            if update_fields is not None:
+                kwargs["update_fields"] = set(update_fields) | {"role"}
+
+        if roles != list(self.roles or []):
+            self.roles = roles
+            if update_fields is not None:
+                kwargs["update_fields"] = set(kwargs["update_fields"]) | {"roles"}
+
         super().save(*args, **kwargs)
 
     def has_role(self, role_name):
         return role_name in (self.roles or [])
 
     def get_roles_display(self):
-        role_map = dict(self.ROLE_CHOICES)
-        return [role_map.get(r, r) for r in (self.roles or [])]
+        return [ROLE_LABELS.get(r, r) for r in (self.roles or [])]
+
+    def get_role_pairs(self):
+        return [(r, ROLE_LABELS.get(r, r)) for r in (self.roles or [])]
+
+    @property
+    def is_reviewer_role(self):
+        return self.role in REVIEWER_ROLES
 
     def __str__(self):
         return f"{self.username} ({self.role})"
@@ -104,18 +117,7 @@ class Assignment(models.Model):
 
 # -------------------- Notification --------------------
 class Notification(models.Model):
-    ROLE_CHOICES = [
-        ('endorser', 'Endorser'),
-        ('mentor', 'Mentor'),
-        ('mentee', 'Mentee'),
-        ('volunteer', 'Volunteer'),
-        ('community_leader', 'Community Leader'),
-        ('faculty_leader', 'Faculty Leader'),
-        ('strategic_team', 'Strategic Team'),
-        ('principal', 'Principal'),
-        ('coordinator', 'Coordinator'),
-        ('all', 'All Users'),
-    ]
+    ROLE_CHOICES = NOTIFICATION_TARGET_CHOICES
     message = models.TextField()
     subject = models.CharField(max_length=200, blank=True)
     target_group = models.CharField(max_length=20, choices=ROLE_CHOICES)
@@ -161,6 +163,50 @@ class WorkSchedule(models.Model):
 
     def __str__(self):
         return f"{self.endorser.username} - {self.role} due {self.due_date}"
+
+    @property
+    def assigned_users(self):
+        return self.mentors.all()
+
+    def assignment_summary(self):
+        assignments = list(self.assignments.all())
+        total = len(assignments)
+        completed = sum(1 for assignment in assignments if assignment.status == WorkScheduleAssignment.Status.COMPLETED)
+        in_progress = sum(1 for assignment in assignments if assignment.status == WorkScheduleAssignment.Status.IN_PROGRESS)
+        return {
+            "total": total,
+            "completed": completed,
+            "in_progress": in_progress,
+        }
+
+
+class WorkScheduleAssignment(models.Model):
+    class Status(models.TextChoices):
+        ASSIGNED = "assigned", "Assigned"
+        IN_PROGRESS = "in_progress", "In Progress"
+        COMPLETED = "completed", "Completed"
+        ON_HOLD = "on_hold", "On Hold"
+
+    work_schedule = models.ForeignKey(
+        WorkSchedule,
+        on_delete=models.CASCADE,
+        related_name="assignments",
+    )
+    assignee = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="work_item_assignments",
+    )
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.ASSIGNED)
+    progress_note = models.TextField(blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["work_schedule__due_date", "assignee__first_name", "assignee__username"]
+        unique_together = [("work_schedule", "assignee")]
+
+    def __str__(self):
+        return f"{self.work_schedule} -> {self.assignee} ({self.get_status_display()})"
 
 
 # -------------------- DIP Mentee Tracker --------------------
@@ -320,6 +366,46 @@ class MentorMenteeAssignment(models.Model):
 
     def __str__(self):
         return f"{self.mentor} -> {self.mentee}"
+
+
+class VolunteerReportingAssignment(models.Model):
+    volunteer = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="reporting_assignment",
+        limit_choices_to={"role": "volunteer"},
+    )
+    programme = models.ForeignKey(
+        Programme,
+        on_delete=models.PROTECT,
+        related_name="volunteer_reporting_assignments",
+    )
+    location = models.ForeignKey(
+        Location,
+        on_delete=models.PROTECT,
+        related_name="volunteer_reporting_assignments",
+    )
+    endorser = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="volunteer_reporting_assignments",
+        limit_choices_to={"role": "endorser"},
+    )
+    assigned_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="volunteer_reporting_assignments_created",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["volunteer__first_name", "volunteer__username"]
+
+    def __str__(self):
+        return f"{self.volunteer} -> {self.programme} / {self.location}"
 
 
 class StatusConfig(models.Model):
@@ -575,6 +661,8 @@ class ApprovalLog(models.Model):
         ('objective', 'Objective'),
         ('year_plan', 'Year Plan'),
         ('reflective_report', 'Reflective Report'),
+        ('work_diary', 'Work Diary'),
+        ('transcript', 'Volunteer Transcript'),
     ]
     record_type = models.CharField(max_length=30, choices=RECORD_TYPE_CHOICES)
     record_id = models.PositiveIntegerField()
@@ -616,6 +704,7 @@ class ReflectiveReport(models.Model):
     STATUS_CHOICES = [
         ('Draft', 'Draft'),
         ('Submitted', 'Submitted'),
+        ('Reviewed', 'Reviewed'),
         ('Approved', 'Approved'),
         ('Returned', 'Returned for Revision'),
     ]
@@ -626,9 +715,14 @@ class ReflectiveReport(models.Model):
     duration = models.DecimalField(max_digits=5, decimal_places=2)
     endorser = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="endorsed_reports")
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="reflective_reports")
+    reporter_name = models.CharField(max_length=150, blank=True)
+    reporter_email = models.EmailField(blank=True)
+    reporter_identifier = models.CharField(max_length=100, blank=True, help_text="Register number or volunteer ID")
+    reporter_class_role = models.CharField(max_length=120, blank=True)
     date = models.DateField()
     learnings = models.TextField(blank=True)
     feedback = models.TextField(blank=True)
+    suggestions = models.TextField(blank=True)
     photo = models.ImageField(upload_to="reflective_reports/", blank=True, null=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Draft')
     created_at = models.DateTimeField(auto_now_add=True)
@@ -644,8 +738,11 @@ class ReflectiveReport(models.Model):
 # -------------------- Work Diary --------------------
 class DiaryEntry(models.Model):
     STATUS_CHOICES = [
-        ('Pending', 'Pending'),
+        ('Draft', 'Draft'),
+        ('Submitted', 'Submitted'),
         ('Reviewed', 'Reviewed'),
+        ('Approved', 'Approved'),
+        ('Returned', 'Returned for Revision'),
     ]
 
     volunteer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, limit_choices_to={"role": "volunteer"}, related_name="diary_entries")
@@ -654,7 +751,8 @@ class DiaryEntry(models.Model):
     location = models.ForeignKey(Location, on_delete=models.SET_NULL, null=True, blank=True, related_name="diary_entries")
     linked_activity = models.CharField(max_length=255, blank=True)
     narrative_entry = models.TextField()
-    review_status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
+    evidence = models.FileField(upload_to="diary_entries/", blank=True, null=True)
+    review_status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Draft')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -669,7 +767,7 @@ class DiaryEntry(models.Model):
 class VolunteerTranscript(models.Model):
     STATUS_CHOICES = [
         ('Draft', 'Draft'),
-        ('Pending Approval', 'Pending Approval'),
+        ('Pending Review', 'Pending Review'),
         ('Approved', 'Approved'),
     ]
 
@@ -720,6 +818,7 @@ class RepositoryAsset(models.Model):
     tags = models.CharField(max_length=255, blank=True)
     uploaded_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name="uploaded_assets")
     role_visibility = models.CharField(max_length=20, choices=ROLE_VISIBILITY_CHOICES, default='all')
+    is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

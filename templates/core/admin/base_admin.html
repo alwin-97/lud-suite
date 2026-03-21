@@ -26,22 +26,37 @@
                 <img src="{% static 'images/lud.png' %}" alt="LUD" style="width:39px;height:30px;border-radius:6px;">
                 <span>Let Us Dream</span>
             </div>
-            <div class="sidebar-label">Main</div>
+            <div class="sidebar-label">Overview</div>
             <nav class="sidebar-nav">
                 <a href="{% url 'admin_dashboard' %}" class="sidebar-link {% if active_page == 'dashboard' %}active{% endif %}">
                     <i class="fa-solid fa-gauge-high"></i><span>Dashboard</span>
                 </a>
+            </nav>
+            <div class="sidebar-label">People</div>
+            <nav class="sidebar-nav">
                 <a href="{% url 'manage_user' %}" class="sidebar-link {% if active_page == 'users' %}active{% endif %}">
                     <i class="fa-solid fa-users"></i><span>Users</span>
                 </a>
                 <a href="{% url 'user_role_manager' %}" class="sidebar-link {% if active_page == 'role_manager' %}active{% endif %}">
                     <i class="fa-solid fa-user-shield"></i><span>User Role Manager</span>
                 </a>
+                <a href="{% url 'mentor_mentee_list' %}" class="sidebar-link {% if active_page == 'mentee_list' %}active{% endif %}">
+                    <i class="fa-solid fa-users-line"></i><span>Mentee Directory</span>
+                </a>
+            </nav>
+            <div class="sidebar-label">Assignments</div>
+            <nav class="sidebar-nav">
                 <a href="{% url 'manage_mentee_assignments' %}" class="sidebar-link {% if active_page == 'mentee_assign' %}active{% endif %}">
                     <i class="fa-solid fa-user-group"></i><span>Mentee Assign</span>
                 </a>
                 <a href="{% url 'manage_assignment' %}" class="sidebar-link {% if active_page == 'endorser_assign' %}active{% endif %}">
                     <i class="fa-solid fa-link"></i><span>Endorser Assign</span>
+                </a>
+                <a href="{% url 'manage_volunteer_reporting_assignments' %}" class="sidebar-link {% if active_page == 'volunteer_reporting_assign' %}active{% endif %}">
+                    <i class="fa-solid fa-map-location-dot"></i><span>Volunteer Reporting Map</span>
+                </a>
+                <a href="{% url 'manage_work_items' %}" class="sidebar-link {% if active_page == 'work_schedule' %}active{% endif %}">
+                    <i class="fa-solid fa-list-check"></i><span>Work Items</span>
                 </a>
             </nav>
             <div class="sidebar-label">Data</div>
@@ -52,17 +67,26 @@
                 <a href="{% url 'mentee_upload_log' %}" class="sidebar-link {% if active_page == 'upload_logs' %}active{% endif %}">
                     <i class="fa-solid fa-clipboard-list"></i><span>Upload Logs</span>
                 </a>
-                <a href="{% url 'mentor_mentee_list' %}" class="sidebar-link {% if active_page == 'mentee_list' %}active{% endif %}">
-                    <i class="fa-solid fa-users-line"></i><span>View Mentees</span>
-                </a>
             </nav>
             <div class="sidebar-label">System</div>
             <nav class="sidebar-nav">
                 <a href="{% url 'admin_config_home' %}" class="sidebar-link {% if active_page == 'config' %}active{% endif %}">
                     <i class="fa-solid fa-sliders"></i><span>Configuration</span>
                 </a>
-                <a href="{% url 'admin_notifications' %}" class="sidebar-link {% if active_page == 'notifications' %}active{% endif %}">
-                    <i class="fa-solid fa-bell"></i><span>Notifications</span>
+                <a href="{% url 'admin_notifications' %}" class="sidebar-link {% if active_page == 'admin_notifications' %}active{% endif %}">
+                    <i class="fa-solid fa-bell"></i><span>Manage Notifications</span>
+                </a>
+            </nav>
+            <div class="sidebar-label">Shared</div>
+            <nav class="sidebar-nav">
+                <a href="{% url 'repository' %}" class="sidebar-link {% if active_page == 'repository' %}active{% endif %}">
+                    <i class="fa-solid fa-folder-open"></i><span>Repository</span>
+                </a>
+                <a href="{% url 'notification' %}" class="sidebar-link {% if active_page == 'notifications' %}active{% endif %}">
+                    <i class="fa-solid fa-inbox"></i><span>Notification Center</span>
+                </a>
+                <a href="{% url 'workflow_guide' %}" class="sidebar-link {% if active_page == 'workflow' %}active{% endif %}">
+                    <i class="fa-solid fa-route"></i><span>Workflow Guide</span>
                 </a>
             </nav>
             <div class="sidebar-spacer"></div>
@@ -87,18 +111,18 @@
                     {% block breadcrumb %}{% endblock %}
                 </div>
                 <div class="topbar-right">
-                    {% if user.roles|length > 1 %}
+                    {% if can_switch_roles %}
                     <div class="dropdown">
                         <button class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" style="font-size:.78rem;">
                             <i class="fa-solid fa-repeat me-1"></i>{{ user.get_role_display }}
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end">
-                            {% for r in user.roles %}
+                            {% for r, label in switchable_role_pairs %}
                             <li>
                                 <form method="post" action="{% url 'switch_role' %}">
                                     {% csrf_token %}
                                     <input type="hidden" name="role" value="{{ r }}">
-                                    <button type="submit" class="dropdown-item{% if r == user.role %} active{% endif %}">{{ r|title }}</button>
+                                    <button type="submit" class="dropdown-item{% if r == user.role %} active{% endif %}">{{ label }}</button>
                                 </form>
                             </li>
                             {% endfor %}

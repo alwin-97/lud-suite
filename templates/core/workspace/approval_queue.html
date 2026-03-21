@@ -1,0 +1,133 @@
+{% extends base_template %}
+
+{% block title %}{% if is_final_approver %}Final Approval Queue{% else %}Review Queue{% endif %}{% endblock %}
+
+{% block breadcrumb %}
+<a href="{% url 'approval_dashboard' %}" class="text-muted"><i class="fa-solid fa-house fa-sm me-1"></i>Dashboard</a>
+<span class="mx-2 text-muted">/</span>
+<span>{% if is_final_approver %}Final Approval Queue{% else %}Review Queue{% endif %}</span>
+{% endblock %}
+
+{% block page_content %}
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+    <div class="page-header mb-0">
+        <h1>{% if is_final_approver %}Final Approval Queue{% else %}Review Queue{% endif %}</h1>
+        <p class="mb-0">
+            {% if is_final_approver %}
+            Finalize reviewed reflective reports and work diaries. Approved transcripts can be viewed and downloaded from the transcript page.
+            {% else %}
+            Review submitted records in your scope.
+            {% endif %}
+        </p>
+    </div>
+    <form method="get" class="mobile-inline-actions">
+        <select name="record" class="form-select">
+            <option value="all" {% if record_filter == "all" %}selected{% endif %}>All</option>
+            <option value="reports" {% if record_filter == "reports" %}selected{% endif %}>Reports</option>
+            <option value="diaries" {% if record_filter == "diaries" %}selected{% endif %}>Diaries</option>
+            <option value="transcripts" {% if record_filter == "transcripts" %}selected{% endif %}>Transcripts</option>
+        </select>
+        <input type="text" name="q" class="form-control" placeholder="Search records" value="{{ search }}">
+        <button type="submit" class="btn btn-outline-primary">Filter</button>
+    </form>
+</div>
+
+{% if reports %}
+<div class="panel mb-4">
+    <div class="panel-header"><h2><i class="fa-solid fa-file-lines me-2 opacity-50"></i>Reflective Reports</h2></div>
+    <div class="panel-body flush">
+        <div class="table-responsive">
+            <table class="table admin-datatable align-middle mb-0">
+                <thead><tr><th>User</th><th>Activity</th><th>Location</th><th>Date</th><th>Status</th><th style="width:320px">Action</th></tr></thead>
+                <tbody>
+                    {% for report in reports %}
+                    <tr>
+                        <td>{{ report.user.get_full_name|default:report.user.username }}</td>
+                        <td>{{ report.activity_name }}</td>
+                        <td>{{ report.location|default:"-" }}</td>
+                        <td>{{ report.date|date:"Y-m-d" }}</td>
+                        <td>{{ report.get_status_display }}</td>
+                        <td>
+                            <form method="post" action="{% url 'review_reflective_report' report.id %}" class="mobile-inline-actions">
+                                {% csrf_token %}
+                                <input type="text" name="comments" class="form-control form-control-sm" placeholder="Comments">
+                                <button type="submit" name="action" value="approve" class="btn btn-sm btn-success">{% if is_final_approver %}Approve{% else %}Review{% endif %}</button>
+                                <button type="submit" name="action" value="return" class="btn btn-sm btn-outline-warning">Return</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if diaries %}
+<div class="panel mb-4">
+    <div class="panel-header"><h2><i class="fa-solid fa-book-open me-2 opacity-50"></i>Work Diaries</h2></div>
+    <div class="panel-body flush">
+        <div class="table-responsive">
+            <table class="table admin-datatable align-middle mb-0">
+                <thead><tr><th>Volunteer</th><th>Activity</th><th>Date</th><th>Narrative</th><th>Status</th><th style="width:320px">Action</th></tr></thead>
+                <tbody>
+                    {% for diary in diaries %}
+                    <tr>
+                        <td>{{ diary.volunteer.get_full_name|default:diary.volunteer.username }}</td>
+                        <td>{{ diary.linked_activity|default:"-" }}</td>
+                        <td>{{ diary.date|date:"Y-m-d" }}</td>
+                        <td>{{ diary.narrative_entry|truncatewords:14 }}</td>
+                        <td>{{ diary.get_review_status_display }}</td>
+                        <td>
+                            <form method="post" action="{% url 'review_work_diary' diary.id %}" class="mobile-inline-actions">
+                                {% csrf_token %}
+                                <input type="text" name="comments" class="form-control form-control-sm" placeholder="Comments">
+                                <button type="submit" name="action" value="approve" class="btn btn-sm btn-success">{% if is_final_approver %}Approve{% else %}Review{% endif %}</button>
+                                <button type="submit" name="action" value="return" class="btn btn-sm btn-outline-warning">Return</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if transcripts %}
+<div class="panel">
+    <div class="panel-header"><h2><i class="fa-solid fa-file-signature me-2 opacity-50"></i>Volunteer Transcripts</h2></div>
+    <div class="panel-body flush">
+        <div class="table-responsive">
+            <table class="table admin-datatable align-middle mb-0">
+                <thead><tr><th>Volunteer</th><th>Template</th><th>Status</th><th>Draft Summary</th><th style="width:320px">Action</th></tr></thead>
+                <tbody>
+                    {% for transcript in transcripts %}
+                    <tr>
+                        <td><a href="{% url 'volunteer_internal_profile' transcript.volunteer.id %}">{{ transcript.volunteer.get_full_name|default:transcript.volunteer.username }}</a></td>
+                        <td>{{ transcript.template_choice }}</td>
+                        <td>{{ transcript.get_approval_status_display }}</td>
+                        <td>{{ transcript.generated_summary|truncatewords:25 }}</td>
+                        <td>
+                            <form method="post" action="{% url 'review_transcript' transcript.id %}" class="mobile-inline-actions">
+                                {% csrf_token %}
+                                <input type="text" name="comments" class="form-control form-control-sm" placeholder="Review notes">
+                                <button type="submit" name="action" value="approve" class="btn btn-sm btn-success">Approve</button>
+                                <button type="submit" name="action" value="return" class="btn btn-sm btn-outline-warning">Return</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if not reports and not diaries and not transcripts %}
+<div class="empty-state"><i class="fa-solid fa-inbox d-block"></i>No records match the current filter.</div>
+{% endif %}
+{% endblock %}

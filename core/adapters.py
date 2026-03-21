@@ -1,6 +1,9 @@
 from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
 from django.contrib.auth import get_user_model
 from allauth.account.adapter import DefaultAccountAdapter
+from django.urls import reverse
+
+from core.roles import role_home_url_name
 
 User = get_user_model()
 class SocialAccountAdapter(DefaultSocialAccountAdapter):
@@ -28,11 +31,4 @@ class SocialAccountAdapter(DefaultSocialAccountAdapter):
 class AccountAdapter(DefaultAccountAdapter):
     def get_login_redirect_url(self, request):
         user = request.user
-        if user.role == "admin":
-            return "/admin-dashboard/"
-        elif user.role == "mentor":
-            return "/dashboard/"
-        elif user.role == "endorser":
-            return "/endorser-dashboard/"
-        else:
-            return "/"  # fallback
+        return reverse(role_home_url_name(getattr(user, "role", ""), is_superuser=getattr(user, "is_superuser", False)))

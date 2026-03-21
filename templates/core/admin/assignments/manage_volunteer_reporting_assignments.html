@@ -1,0 +1,78 @@
+{% extends 'core/admin/base_admin.html' %}
+
+{% block title %}Volunteer Reporting Assignments{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb"><ol class="breadcrumb mb-0">
+    <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}"><i class="fa-solid fa-house fa-sm me-1"></i>Dashboard</a></li>
+    <li class="breadcrumb-item active">Volunteer Reporting Assignments</li>
+</ol></nav>
+{% endblock %}
+
+{% block page_content %}
+<div class="page-header">
+    <h1>Volunteer Reporting Assignments</h1>
+    <p>Map each volunteer to the programme, location, and endorser used for reflective reporting.</p>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-4">
+        <div class="panel h-100">
+            <div class="panel-header"><h2><i class="fa-solid fa-map-location-dot me-2 opacity-50"></i>Assign Reporting Scope</h2></div>
+            <div class="panel-body admin-form">
+                <form method="post">
+                    {% csrf_token %}
+                    {% for field in form %}
+                    <div class="mb-3">
+                        <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                        {{ field }}
+                        {% for error in field.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                    </div>
+                    {% endfor %}
+                    <button type="submit" class="btn btn-sm btn-primary w-100">
+                        <i class="fa-solid fa-check me-1"></i>Save Reporting Assignment
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <div class="panel h-100">
+            <div class="panel-header"><h2><i class="fa-solid fa-list me-2 opacity-50"></i>Current Volunteer Mapping</h2></div>
+            <div class="panel-body flush">
+                {% if assignments %}
+                <div class="table-responsive">
+                    <table class="table admin-datatable align-middle table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th style="width:50px">#</th>
+                                <th>Volunteer</th>
+                                <th>Programme</th>
+                                <th>Location</th>
+                                <th>Endorser</th>
+                                <th>Updated</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for assignment in assignments %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td class="fw-semibold">{{ assignment.volunteer.get_full_name|default:assignment.volunteer.username }}</td>
+                                <td>{{ assignment.programme.name }}</td>
+                                <td>{{ assignment.location.name }}</td>
+                                <td>{{ assignment.endorser.get_full_name|default:assignment.endorser.username }}</td>
+                                <td class="small text-muted">{{ assignment.updated_at|date:"M d, Y H:i" }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="empty-state"><i class="fa-solid fa-map-location-dot d-block"></i>No volunteer reporting assignments yet.</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

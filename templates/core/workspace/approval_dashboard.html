@@ -1,0 +1,67 @@
+{% extends base_template %}
+
+{% block title %}{% if is_final_approver %}Final Approval Dashboard{% else %}Review Dashboard{% endif %}{% endblock %}
+
+{% block breadcrumb %}
+<a href="{% url 'approval_dashboard' %}" class="text-muted"><i class="fa-solid fa-house fa-sm me-1"></i>Dashboard</a>
+{% endblock %}
+
+{% block page_content %}
+<div class="page-header mb-4">
+    <h1>{% if is_final_approver %}Final Approval Dashboard{% else %}Review Dashboard{% endif %}</h1>
+    <p class="mb-0">
+        {% if is_final_approver %}
+        Finalize reviewed reflective reports and work diaries. Transcript approvals are handled by mentors and endorsers, while admin can view and export approved transcript files.
+        {% else %}
+        Review submitted reflective reports, work diaries, and volunteer transcripts in your scope.
+        {% endif %}
+    </p>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="{% if is_final_approver %}col-md-6{% else %}col-md-4{% endif %}"><div class="stat-card"><div class="stat-value text-primary">{{ pending_reports }}</div><div class="stat-label">Pending Reports</div></div></div>
+    <div class="{% if is_final_approver %}col-md-6{% else %}col-md-4{% endif %}"><div class="stat-card"><div class="stat-value" style="color:#d97706">{{ pending_diaries }}</div><div class="stat-label">Pending Diaries</div></div></div>
+    {% if not is_final_approver %}
+    <div class="col-md-4"><div class="stat-card"><div class="stat-value" style="color:#0e9384">{{ pending_transcripts }}</div><div class="stat-label">Pending Transcripts</div></div></div>
+    {% endif %}
+</div>
+
+<div class="mb-4">
+    <a href="{% url 'approval_queue' %}" class="btn btn-primary"><i class="fa-solid fa-list-check me-2"></i>{% if is_final_approver %}Open Final Approval Queue{% else %}Open Review Queue{% endif %}</a>
+</div>
+
+<div class="row g-3">
+    <div class="{% if is_final_approver %}col-lg-6{% else %}col-lg-4{% endif %}">
+        <div class="panel">
+            <div class="panel-header"><h2>Reflective Reports</h2></div>
+            <div class="panel-body flush">
+                {% for report in recent_reports %}
+                <div class="feed-item"><div><div class="feed-title">{{ report.activity_name }}</div><div class="feed-sub">{{ report.user.get_full_name|default:report.user.username }}</div></div><div class="feed-time">{{ report.date|date:"M d" }}</div></div>
+                {% empty %}<div class="empty-state"><i class="fa-solid fa-file-lines d-block"></i>No pending reports.</div>{% endfor %}
+            </div>
+        </div>
+    </div>
+    <div class="{% if is_final_approver %}col-lg-6{% else %}col-lg-4{% endif %}">
+        <div class="panel">
+            <div class="panel-header"><h2>Work Diaries</h2></div>
+            <div class="panel-body flush">
+                {% for diary in recent_diaries %}
+                <div class="feed-item"><div><div class="feed-title">{{ diary.linked_activity|default:"Diary Entry" }}</div><div class="feed-sub">{{ diary.volunteer.get_full_name|default:diary.volunteer.username }}</div></div><div class="feed-time">{{ diary.date|date:"M d" }}</div></div>
+                {% empty %}<div class="empty-state"><i class="fa-solid fa-book-open d-block"></i>No pending diaries.</div>{% endfor %}
+            </div>
+        </div>
+    </div>
+    {% if not is_final_approver %}
+    <div class="col-lg-4">
+        <div class="panel">
+            <div class="panel-header"><h2>Transcripts</h2></div>
+            <div class="panel-body flush">
+                {% for transcript in recent_transcripts %}
+                <div class="feed-item"><div><div class="feed-title">{{ transcript.template_choice }}</div><div class="feed-sub">{{ transcript.volunteer.get_full_name|default:transcript.volunteer.username }}</div></div><div class="feed-time">{{ transcript.created_at|date:"M d" }}</div></div>
+                {% empty %}<div class="empty-state"><i class="fa-solid fa-file-signature d-block"></i>No pending transcripts.</div>{% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

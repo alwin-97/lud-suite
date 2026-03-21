@@ -26,19 +26,40 @@
                 <img src="{% static 'images/lud.png' %}" alt="LUD" style="width:39px;height:30px;border-radius:6px;">
                 <span>Let Us Dream</span>
             </div>
-            <div class="sidebar-label">Main</div>
+            <div class="sidebar-label">Overview</div>
             <nav class="sidebar-nav">
                 <a href="{% url 'mentee_dashboard' %}" class="sidebar-link {% if active_page == 'dashboard' %}active{% endif %}">
                     <i class="fa-solid fa-gauge-high"></i><span>Dashboard</span>
                 </a>
+                <a href="{% url 'assigned_work_items' %}" class="sidebar-link {% if active_page == 'work_items' %}active{% endif %}">
+                    <i class="fa-solid fa-list-ul"></i><span>My Work Items</span>
+                </a>
+            </nav>
+            <div class="sidebar-label">Planning</div>
+            <nav class="sidebar-nav">
                 <a href="{% url 'objective_list' %}" class="sidebar-link {% if active_page == 'objectives' %}active{% endif %}">
                     <i class="fa-solid fa-bullseye"></i><span>Objectives</span>
                 </a>
                 <a href="{% url 'year_plan_list' %}" class="sidebar-link {% if active_page == 'year_plans' %}active{% endif %}">
                     <i class="fa-solid fa-calendar-days"></i><span>Year Plans</span>
                 </a>
+            </nav>
+            <div class="sidebar-label">Progress</div>
+            <nav class="sidebar-nav">
                 <a href="{% url 'mentee_assessment_list' %}" class="sidebar-link {% if active_page == 'assessments' %}active{% endif %}">
                     <i class="fa-solid fa-star-half-stroke"></i><span>Assessments</span>
+                </a>
+            </nav>
+            <div class="sidebar-label">Shared</div>
+            <nav class="sidebar-nav">
+                <a href="{% url 'repository' %}" class="sidebar-link {% if active_page == 'repository' %}active{% endif %}">
+                    <i class="fa-solid fa-folder-open"></i><span>Repository</span>
+                </a>
+                <a href="{% url 'notification' %}" class="sidebar-link {% if active_page == 'notifications' %}active{% endif %}">
+                    <i class="fa-solid fa-inbox"></i><span>Notification Center</span>
+                </a>
+                <a href="{% url 'workflow_guide' %}" class="sidebar-link {% if active_page == 'workflow' %}active{% endif %}">
+                    <i class="fa-solid fa-route"></i><span>Workflow Guide</span>
                 </a>
             </nav>
             <div class="sidebar-spacer"></div>
@@ -63,18 +84,18 @@
                     {% block breadcrumb %}{% endblock %}
                 </div>
                 <div class="topbar-right">
-                    {% if user.roles|length > 1 %}
+                    {% if can_switch_roles %}
                     <div class="dropdown">
                         <button class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" style="font-size:.78rem;">
                             <i class="fa-solid fa-repeat me-1"></i>{{ user.get_role_display }}
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end">
-                            {% for r in user.roles %}
+                            {% for r, label in switchable_role_pairs %}
                             <li>
                                 <form method="post" action="{% url 'switch_role' %}">
                                     {% csrf_token %}
                                     <input type="hidden" name="role" value="{{ r }}">
-                                    <button type="submit" class="dropdown-item{% if r == user.role %} active{% endif %}">{{ r|title }}</button>
+                                    <button type="submit" class="dropdown-item{% if r == user.role %} active{% endif %}">{{ label }}</button>
                                 </form>
                             </li>
                             {% endfor %}

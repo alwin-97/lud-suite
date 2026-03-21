@@ -25,6 +25,16 @@
     </div>
 </div>
 
+<div class="alert alert-light border mb-4">
+    <div class="fw-semibold mb-2"><i class="fa-solid fa-layer-group me-2"></i>Current Role Footprint</div>
+    <div class="small text-muted">
+        The application now uses {{ role_choices|length }} main roles:
+        {% for key, label in role_choices %}
+        <span class="badge bg-light text-dark border me-1">{{ label }}</span>
+        {% endfor %}
+    </div>
+</div>
+
 <!-- Users Table -->
 <div class="panel">
     <div class="panel-header"><h2><i class="fa-solid fa-users me-2 opacity-50"></i>System Users</h2></div>
@@ -89,31 +99,21 @@
                         <div class="col-md-6">
                             <label class="form-label">Primary Role</label>
                             <select name="role" class="form-select" required>
-                                <option value="endorser">Endorser</option>
-                                <option value="mentor">Mentor</option>
-                                <option value="mentee">Mentee</option>
-                                <option value="reviewer">Reviewer</option>
-                                <option value="volunteer">Volunteer</option>
-                                <option value="community_leader">Community Leader</option>
-                                <option value="faculty_leader">Faculty Leader</option>
-                                <option value="strategic_team">Strategic Team</option>
-                                <option value="principal">Principal</option>
-                                <option value="coordinator">Coordinator</option>
+                                {% for key, label in role_choices %}
+                                {% if key != "admin" %}
+                                <option value="{{ key }}">{{ label }}</option>
+                                {% endif %}
+                                {% endfor %}
                             </select>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Additional Roles</label>
                             <select name="roles" class="form-select" multiple size="4">
-                                <option value="endorser">Endorser</option>
-                                <option value="mentor">Mentor</option>
-                                <option value="mentee">Mentee</option>
-                                <option value="reviewer">Reviewer</option>
-                                <option value="volunteer">Volunteer</option>
-                                <option value="community_leader">Community Leader</option>
-                                <option value="faculty_leader">Faculty Leader</option>
-                                <option value="strategic_team">Strategic Team</option>
-                                <option value="principal">Principal</option>
-                                <option value="coordinator">Coordinator</option>
+                                {% for key, label in role_choices %}
+                                {% if key != "admin" %}
+                                <option value="{{ key }}">{{ label }}</option>
+                                {% endif %}
+                                {% endfor %}
                             </select>
                             <div class="form-text small">Hold Ctrl/Cmd to select multiple.</div>
                         </div>
@@ -149,31 +149,21 @@
                         <div class="col-md-6">
                             <label class="form-label">Primary Role</label>
                             <select name="role" class="form-select" required>
-                                <option value="endorser" {% if user.role == "endorser" %}selected{% endif %}>Endorser</option>
-                                <option value="mentor" {% if user.role == "mentor" %}selected{% endif %}>Mentor</option>
-                                <option value="mentee" {% if user.role == "mentee" %}selected{% endif %}>Mentee</option>
-                                <option value="reviewer" {% if user.role == "reviewer" %}selected{% endif %}>Reviewer</option>
-                                <option value="volunteer" {% if user.role == "volunteer" %}selected{% endif %}>Volunteer</option>
-                                <option value="community_leader" {% if user.role == "community_leader" %}selected{% endif %}>Community Leader</option>
-                                <option value="faculty_leader" {% if user.role == "faculty_leader" %}selected{% endif %}>Faculty Leader</option>
-                                <option value="strategic_team" {% if user.role == "strategic_team" %}selected{% endif %}>Strategic Team</option>
-                                <option value="principal" {% if user.role == "principal" %}selected{% endif %}>Principal</option>
-                                <option value="coordinator" {% if user.role == "coordinator" %}selected{% endif %}>Coordinator</option>
+                                {% for key, label in role_choices %}
+                                {% if key != "admin" %}
+                                <option value="{{ key }}" {% if user.role == key %}selected{% endif %}>{{ label }}</option>
+                                {% endif %}
+                                {% endfor %}
                             </select>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">All Roles</label>
                             <select name="roles" class="form-select" multiple size="4">
-                                <option value="endorser" {% if "endorser" in user.roles %}selected{% endif %}>Endorser</option>
-                                <option value="mentor" {% if "mentor" in user.roles %}selected{% endif %}>Mentor</option>
-                                <option value="mentee" {% if "mentee" in user.roles %}selected{% endif %}>Mentee</option>
-                                <option value="reviewer" {% if "reviewer" in user.roles %}selected{% endif %}>Reviewer</option>
-                                <option value="volunteer" {% if "volunteer" in user.roles %}selected{% endif %}>Volunteer</option>
-                                <option value="community_leader" {% if "community_leader" in user.roles %}selected{% endif %}>Community Leader</option>
-                                <option value="faculty_leader" {% if "faculty_leader" in user.roles %}selected{% endif %}>Faculty Leader</option>
-                                <option value="strategic_team" {% if "strategic_team" in user.roles %}selected{% endif %}>Strategic Team</option>
-                                <option value="principal" {% if "principal" in user.roles %}selected{% endif %}>Principal</option>
-                                <option value="coordinator" {% if "coordinator" in user.roles %}selected{% endif %}>Coordinator</option>
+                                {% for key, label in role_choices %}
+                                {% if key != "admin" %}
+                                <option value="{{ key }}" {% if key in user.roles %}selected{% endif %}>{{ label }}</option>
+                                {% endif %}
+                                {% endfor %}
                             </select>
                             <div class="form-text small">Hold Ctrl/Cmd to select multiple.</div>
                         </div>

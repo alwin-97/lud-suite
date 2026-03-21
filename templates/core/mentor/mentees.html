@@ -1,9 +1,9 @@
-{% extends 'core/mentor/base_mentor.html' %}
+{% extends base_template %}
 
 {% block title %}Mentees{% endblock title %}
 
 {% block breadcrumb %}
-<a href="{% url 'dashboard' %}" class="text-muted"><i class="fa-solid fa-house fa-sm me-1"></i>Dashboard</a>
+<a href="{% url home_url_name %}" class="text-muted"><i class="fa-solid fa-house fa-sm me-1"></i>Home</a>
 <span class="mx-2 text-muted">/</span>
 <span>Mentees</span>
 {% endblock %}
@@ -11,8 +11,8 @@
 {% block page_content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-        <h4 class="fw-bold mb-1">My Mentees</h4>
-        <p class="text-muted mb-0">View and manage your assigned mentees.</p>
+        <h4 class="fw-bold mb-1">{% if user.role == 'admin' %}Mentee Directory{% else %}My Mentees{% endif %}</h4>
+        <p class="text-muted mb-0">{% if user.role == 'admin' %}Review mentee records across the application.{% else %}View and manage your assigned mentees.{% endif %}</p>
     </div>
     <span class="badge bg-light text-secondary rounded-pill px-3 py-2 border">
         Total: {{ mentees|length }}
@@ -21,7 +21,7 @@
 
     <div class="panel">
         <div class="panel-header">
-            <h2><i class="fa-solid fa-users me-2 opacity-50"></i>Assigned Cohort</h2>
+            <h2><i class="fa-solid fa-users me-2 opacity-50"></i>{% if user.role == 'admin' %}All Mentees{% else %}Assigned Cohort{% endif %}</h2>
             <span class="badge bg-light text-secondary rounded-pill px-3 border">
                 Total: {{ mentees|length }}
             </span>
@@ -94,7 +94,7 @@
                     <i class="fa-solid fa-user-slash fa-3x text-muted opacity-50"></i>
                 </div>
                 <h5 class="text-muted">No mentees found.</h5>
-                <p class="text-muted small">You haven't been assigned any mentees yet.</p>
+                <p class="text-muted small">{% if user.role == 'admin' %}No mentees are available yet.{% else %}You haven't been assigned any mentees yet.{% endif %}</p>
             </div>
             {% endif %}
         </div>

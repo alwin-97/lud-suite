@@ -6,20 +6,44 @@
 {% block breadcrumb %}
 <a href="{% url 'dashboard' %}" class="text-muted"><i class="fa-solid fa-house fa-sm me-1"></i>Dashboard</a>
 <span class="mx-2 text-muted">/</span>
-<span>DIP YCLP</span>
+<span>DIP / YCLP</span>
 {% endblock %}
 
 {% block page_content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h4 class="fw-bold mb-1">Reflexive Report</h4>
-        <p class="text-muted mb-0">Track and manage your DIP - YCLP activities.</p>
-    </div>
+<div class="page-header mb-4">
+    <h1>DIP / YCLP Activity Hub</h1>
+    <p class="mb-0">Track activity volume, recent progress, and category distribution from your logged programme work.</p>
 </div>
 
-  <div class="row g-4">
-    <!-- LEFT CONTENT -->
-    <div class="col-lg-8">
+<div class="row g-3 mb-4">
+  <div class="col-6 col-xl-3">
+    <div class="stat-card">
+      <div class="stat-value text-primary" id="analyticsTotalEntries">{{ analytics.total_entries }}</div>
+      <div class="stat-label">Total Entries</div>
+    </div>
+  </div>
+  <div class="col-6 col-xl-3">
+    <div class="stat-card">
+      <div class="stat-value" style="color:#0e9384" id="analyticsTotalHours">{{ analytics.total_hours }}</div>
+      <div class="stat-label">Total Hours</div>
+    </div>
+  </div>
+  <div class="col-6 col-xl-3">
+    <div class="stat-card">
+      <div class="stat-value" style="color:#d97706" id="analyticsThisMonth">{{ analytics.hours_this_month }}</div>
+      <div class="stat-label">Hours This Month</div>
+    </div>
+  </div>
+  <div class="col-6 col-xl-3">
+    <div class="stat-card">
+      <div class="stat-value text-dark" id="analyticsAverageHours">{{ analytics.average_hours }}</div>
+      <div class="stat-label">Average Hours / Entry</div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-7">
       <!-- Action Card -->
       <div class="card border-0 shadow-sm mb-4">
         <div class="card-body p-4 d-flex align-items-center justify-content-between">
@@ -64,7 +88,7 @@
             </div>
             {% endfor %}
             {% else %}
-            <div class="text-center py-5">
+            <div class="text-center py-5 empty-activity-state">
               <div class="mb-3">
                 <i class="fa-solid fa-clipboard-list fa-3x text-muted opacity-50"></i>
               </div>
@@ -76,27 +100,49 @@
       </div>
     </div>
 
-    <!-- RIGHT CONTENT (CHART) -->
-    <div class="col-lg-4">
-      <div class="card border-0 shadow-sm h-100">
+    <div class="col-lg-5">
+      <div class="card border-0 shadow-sm mb-4">
         <div class="card-header bg-white border-bottom-0 pt-4 px-4">
-          <h5 class="fw-bold mb-0">Analytics</h5>
+          <h5 class="fw-bold mb-0">Activity Breakdown</h5>
         </div>
-        <div class="card-body text-center p-4">
-          <div class="alert alert-info border-0 d-flex align-items-center mb-3">
-            <i class="fa-solid fa-chart-pie me-3 fs-4"></i>
-            <div class="text-start">
-              <strong>Activity Breakdown</strong>
-              <div class="small">Visualize your progress.</div>
+        <div class="card-body p-4">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+              <div class="fw-semibold" id="analyticsActivityTypes">{{ analytics.activity_type_count }}</div>
+              <div class="small text-muted">Tracked activity types</div>
+            </div>
+            <div class="text-end small text-muted">
+              <div>Latest activity</div>
+              <div class="fw-semibold text-dark" id="analyticsLatestActivity">{{ analytics.latest_activity_name|default:"No activity yet" }}</div>
+              <div id="analyticsLatestDate">{{ analytics.latest_activity_date }}</div>
             </div>
           </div>
-          <!-- Keeping the image as originally requested/present -->
-          <img src="{% static 'images/highchart.png' %}" class="img-fluid rounded shadow-sm border"
-            alt="Activity Chart">
+          <div id="activityBreakdownEmpty" class="empty-state{% if analytics.activity_breakdown.labels %} d-none{% endif %}">
+            <i class="fa-solid fa-chart-pie d-block"></i>No activity data available yet.
+          </div>
+          <div class="chart-shell{% if not analytics.activity_breakdown.labels %} d-none{% endif %}" id="activityBreakdownShell">
+            <canvas id="activityBreakdownChart" height="220"></canvas>
+          </div>
+        </div>
+      </div>
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-header bg-white border-bottom-0 pt-4 px-4">
+          <h5 class="fw-bold mb-0">Six-Month Trend</h5>
+        </div>
+        <div class="card-body p-4">
+          <p class="text-muted small mb-3">Hours logged across the last six months.</p>
+          <div id="monthlyTrendEmpty" class="empty-state{% if analytics.total_entries %} d-none{% endif %}">
+            <i class="fa-solid fa-chart-column d-block"></i>No recent activity trend available yet.
+          </div>
+          <div class="chart-shell{% if not analytics.total_entries %} d-none{% endif %}" id="monthlyTrendShell">
+            <canvas id="monthlyTrendChart" height="220"></canvas>
+          </div>
         </div>
       </div>
     </div>
-  </div>
+</div>
+
+{{ analytics|json_script:"dip-analytics-data" }}
 
 
   <!-- MODAL -->
@@ -182,6 +228,9 @@
 <!-- JS -->
 {% block extra_js %}
 <script>
+  let activityBreakdownChart = null;
+  let monthlyTrendChart = null;
+
   function toggleOtherActivity() {
     let activity = document.getElementById("id_activity").value;
     document.getElementById("other-activity-container").style.display =
@@ -222,6 +271,7 @@
   }
 
   function updateActivityList(a) {
+    $("#activityList .empty-activity-state").remove();
     let html = `
       <div class="list-group-item py-3 px-4 border-bottom-0 animation-fade-in">
          <div class="d-flex w-100 justify-content-between align-items-center mb-1">
@@ -234,10 +284,103 @@
       </div>
     `;
     $("#activityList").prepend(html);
+    $("#activityList .list-group-item").slice(6).remove();
+  }
+
+  function updateSummaryCards(analytics) {
+    $("#analyticsTotalEntries").text(analytics.total_entries);
+    $("#analyticsTotalHours").text(analytics.total_hours);
+    $("#analyticsThisMonth").text(analytics.hours_this_month);
+    $("#analyticsAverageHours").text(analytics.average_hours);
+    $("#analyticsActivityTypes").text(analytics.activity_type_count);
+    $("#analyticsLatestActivity").text(analytics.latest_activity_name || "No activity yet");
+    $("#analyticsLatestDate").text(analytics.latest_activity_date || "No activity yet");
+  }
+
+  function renderAnalyticsCharts(analytics) {
+    const hasBreakdown = analytics.activity_breakdown.labels.length > 0;
+    const hasTrend = analytics.total_entries > 0;
+
+    $("#activityBreakdownEmpty").toggleClass("d-none", hasBreakdown);
+    $("#activityBreakdownShell").toggleClass("d-none", !hasBreakdown);
+    $("#monthlyTrendEmpty").toggleClass("d-none", hasTrend);
+    $("#monthlyTrendShell").toggleClass("d-none", !hasTrend);
+
+    if (activityBreakdownChart) {
+      activityBreakdownChart.destroy();
+      activityBreakdownChart = null;
+    }
+    if (monthlyTrendChart) {
+      monthlyTrendChart.destroy();
+      monthlyTrendChart = null;
+    }
+
+    if (hasBreakdown) {
+      activityBreakdownChart = new Chart(document.getElementById("activityBreakdownChart"), {
+        type: "doughnut",
+        data: {
+          labels: analytics.activity_breakdown.labels,
+          datasets: [{
+            data: analytics.activity_breakdown.counts,
+            backgroundColor: ["#0e9384", "#1d4ed8", "#d97706", "#dc2626", "#6b7280"],
+            borderWidth: 0,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: "bottom",
+              labels: { boxWidth: 12, usePointStyle: true }
+            }
+          }
+        }
+      });
+    }
+
+    if (hasTrend) {
+      monthlyTrendChart = new Chart(document.getElementById("monthlyTrendChart"), {
+        type: "bar",
+        data: {
+          labels: analytics.monthly_trend.labels,
+          datasets: [{
+            label: "Hours",
+            data: analytics.monthly_trend.hours,
+            backgroundColor: "#0e9384",
+            borderRadius: 8,
+            maxBarThickness: 34,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: { precision: 0 }
+            }
+          },
+          plugins: {
+            legend: { display: false }
+          }
+        }
+      });
+    }
+  }
+
+  function renderAnalytics(analytics) {
+    updateSummaryCards(analytics);
+    renderAnalyticsCharts(analytics);
   }
 
   // Ensure AJAX ALWAYS handles submission
   $("#activityForm").attr("onsubmit", "submitActivityAJAX(); return false;");
+
+  document.addEventListener("DOMContentLoaded", function () {
+    const analytics = JSON.parse(document.getElementById("dip-analytics-data").textContent);
+    renderAnalytics(analytics);
+  });
 
   // AJAX FUNCTION
   function submitActivityAJAX() {
@@ -278,6 +421,7 @@
 
           // Update activity list
           updateActivityList(res.new_activity);
+          renderAnalytics(res.analytics);
         }
 
         else if (res.status === "error") {
@@ -303,6 +447,7 @@
 <style>
   .animation-fade-in { animation: fadeIn 0.5s; }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+  .chart-shell { position: relative; min-height: 220px; }
 </style>
 {% endblock extra_css %}
 {% endblock page_content %}

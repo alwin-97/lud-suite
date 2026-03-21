@@ -7,7 +7,8 @@ from django.utils import timezone
 from core.decorators import role_required
 from core.forms import MenteeAssessmentForm, ObjectiveItemMentorForm, YearPlanItemMentorForm
 from core.models import Activity, AssessmentRating, Mentee, MenteeAssessment, ObjectiveItem, YearPlanItem
-from core.views.common import active_assignments_qs, domains_for_year, mentor_can_access_mentee
+from core.roles import DIRECT_MENTOR_REVIEW_ROLES, MENTEE_OVERSIGHT_ROLES
+from core.views.common import active_assignments_qs, domains_for_year, mentor_can_access_mentee, role_layout_context
 
 
 MENTOR_DASHBOARD_TEMPLATE = "core/mentor/dashboard.html"
@@ -22,6 +23,10 @@ MENTOR_ACTIVITIES_TEMPLATE = "core/mentor/activities.html"
 MENTOR_PROFILE_TEMPLATE = "core/mentor/profile.html"
 
 
+def _mentee_active_page(user):
+    return "mentee_list" if getattr(user, "role", "") == "admin" else "mentees"
+
+
 @role_required(allowed_roles=["mentor"])
 def dashboard_view(request):
     assignments = active_assignments_qs(request.user).select_related("mentee")
@@ -30,27 +35,31 @@ def dashboard_view(request):
 
 
 @login_required
-@role_required(allowed_roles=["mentor", "reviewer", "admin"])
+@role_required(allowed_roles=MENTEE_OVERSIGHT_ROLES)
 def mentor_mentee_list_view(request):
     if request.user.role == "mentor":
         mentees = Mentee.objects.filter(mentor_assignments__in=active_assignments_qs(request.user)).distinct()
     else:
         mentees = Mentee.objects.all()
-    return render(request, MENTOR_MENTEES_TEMPLATE, {"mentees": mentees, "active_page": "mentees"})
+    context = {"mentees": mentees, "active_page": _mentee_active_page(request.user)}
+    context.update(role_layout_context(request.user))
+    return render(request, MENTOR_MENTEES_TEMPLATE, context)
 
 
 @login_required
-@role_required(allowed_roles=["mentor", "reviewer", "admin"])
+@role_required(allowed_roles=MENTEE_OVERSIGHT_ROLES)
 def mentor_objective_list_view(request, mentee_id):
     mentee = get_object_or_404(Mentee, id=mentee_id)
     if request.user.role == "mentor" and not mentor_can_access_mentee(request.user, mentee):
         raise PermissionDenied("You are not allowed to access this mentee.")
     objectives = ObjectiveItem.objects.filter(mentee=mentee).select_related("status")
-    return render(request, MENTOR_OBJECTIVE_LIST_TEMPLATE, {"mentee": mentee, "objectives": objectives, "active_page": "mentees"})
+    context = {"mentee": mentee, "objectives": objectives, "active_page": _mentee_active_page(request.user)}
+    context.update(role_layout_context(request.user))
+    return render(request, MENTOR_OBJECTIVE_LIST_TEMPLATE, context)
 
 
 @login_required
-@role_required(allowed_roles=["mentor", "admin"])
+@role_required(allowed_roles=DIRECT_MENTOR_REVIEW_ROLES)
 def mentor_objective_update_view(request, objective_id):
     objective = get_object_or_404(ObjectiveItem, id=objective_id)
     if request.user.role == "mentor" and not mentor_can_access_mentee(request.user, objective.mentee):
@@ -67,21 +76,25 @@ def mentor_objective_update_view(request, objective_id):
             return redirect("mentor_objective_list", mentee_id=objective.mentee_id)
     else:
         form = ObjectiveItemMentorForm(instance=objective)
-    return render(request, MENTOR_OBJECTIVE_FORM_TEMPLATE, {"form": form, "objective": objective, "active_page": "mentees"})
+    context = {"form": form, "objective": objective, "active_page": _mentee_active_page(request.user)}
+    context.update(role_layout_context(request.user))
+    return render(request, MENTOR_OBJECTIVE_FORM_TEMPLATE, context)
 
 
 @login_required
-@role_required(allowed_roles=["mentor", "reviewer", "admin"])
+@role_required(allowed_roles=MENTEE_OVERSIGHT_ROLES)
 def mentor_year_plan_list_view(request, mentee_id):
     mentee = get_object_or_404(Mentee, id=mentee_id)
     if request.user.role == "mentor" and not mentor_can_access_mentee(request.user, mentee):
         raise PermissionDenied("You are not allowed to access this mentee.")
     year_plans = YearPlanItem.objects.filter(mentee=mentee).select_related("status")
-    return render(request, MENTOR_YEAR_PLAN_LIST_TEMPLATE, {"mentee": mentee, "year_plans": year_plans, "active_page": "mentees"})
+    context = {"mentee": mentee, "year_plans": year_plans, "active_page": _mentee_active_page(request.user)}
+    context.update(role_layout_context(request.user))
+    return render(request, MENTOR_YEAR_PLAN_LIST_TEMPLATE, context)
 
 
 @login_required
-@role_required(allowed_roles=["mentor", "admin"])
+@role_required(allowed_roles=DIRECT_MENTOR_REVIEW_ROLES)
 def mentor_year_plan_update_view(request, year_plan_id):
     year_plan = get_object_or_404(YearPlanItem, id=year_plan_id)
     if request.user.role == "mentor" and not mentor_can_access_mentee(request.user, year_plan.mentee):
@@ -96,25 +109,25 @@ def mentor_year_plan_update_view(request, year_plan_id):
             return redirect("mentor_year_plan_list", mentee_id=year_plan.mentee_id)
     else:
         form = YearPlanItemMentorForm(instance=year_plan)
-    return render(request, MENTOR_YEAR_PLAN_FORM_TEMPLATE, {"form": form, "year_plan": year_plan, "active_page": "mentees"})
+    context = {"form": form, "year_plan": year_plan, "active_page": _mentee_active_page(request.user)}
+    context.update(role_layout_context(request.user))
+    return render(request, MENTOR_YEAR_PLAN_FORM_TEMPLATE, context)
 
 
 @login_required
-@role_required(allowed_roles=["mentor", "reviewer", "admin"])
+@role_required(allowed_roles=MENTEE_OVERSIGHT_ROLES)
 def mentor_assessment_list_view(request, mentee_id):
     mentee = get_object_or_404(Mentee, id=mentee_id)
     if request.user.role == "mentor" and not mentor_can_access_mentee(request.user, mentee):
         raise PermissionDenied("You are not allowed to access this mentee.")
     assessments = MenteeAssessment.objects.filter(mentee=mentee).select_related("session_type")
-    return render(
-        request,
-        MENTOR_ASSESSMENT_LIST_TEMPLATE,
-        {"mentee": mentee, "assessments": assessments, "active_page": "mentees"},
-    )
+    context = {"mentee": mentee, "assessments": assessments, "active_page": _mentee_active_page(request.user)}
+    context.update(role_layout_context(request.user))
+    return render(request, MENTOR_ASSESSMENT_LIST_TEMPLATE, context)
 
 
 @login_required
-@role_required(allowed_roles=["mentor", "admin"])
+@role_required(allowed_roles=DIRECT_MENTOR_REVIEW_ROLES)
 def mentor_assessment_create_view(request, mentee_id):
     mentee = get_object_or_404(Mentee, id=mentee_id)
     if request.user.role == "mentor" and not mentor_can_access_mentee(request.user, mentee):
@@ -164,17 +177,15 @@ def mentor_assessment_create_view(request, mentee_id):
         for domain in domains
     ]
 
-    return render(
-        request,
-        MENTOR_ASSESSMENT_FORM_TEMPLATE,
-        {
-            "mentee": mentee,
-            "form": form,
-            "domain_rows": domain_rows,
-            "rating_errors": rating_errors,
-            "active_page": "mentees",
-        },
-    )
+    context = {
+        "mentee": mentee,
+        "form": form,
+        "domain_rows": domain_rows,
+        "rating_errors": rating_errors,
+        "active_page": _mentee_active_page(request.user),
+    }
+    context.update(role_layout_context(request.user))
+    return render(request, MENTOR_ASSESSMENT_FORM_TEMPLATE, context)
 
 
 @login_required
@@ -188,4 +199,4 @@ def my_activities_view(request):
 def mentor_profile(request):
     if request.user.role != "mentor":
         return redirect("role-redirect")
-    return render(request, MENTOR_PROFILE_TEMPLATE, {"mentor": request.user, "active_page": "profile"})
+    return redirect("profile")

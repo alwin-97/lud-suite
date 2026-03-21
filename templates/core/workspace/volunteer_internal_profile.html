@@ -1,0 +1,66 @@
+{% extends base_template %}
+
+{% block title %}Volunteer Internal Profile{% endblock %}
+
+{% block breadcrumb %}
+<a href="{% url home_url_name %}" class="text-muted"><i class="fa-solid fa-house fa-sm me-1"></i>Home</a>
+<span class="mx-2 text-muted">/</span>
+<span>Volunteer Internal Profile</span>
+{% endblock %}
+
+{% block page_content %}
+<div class="page-header mb-4">
+    <h1>{{ volunteer_profile.get_full_name|default:volunteer_profile.username }}</h1>
+    <p class="mb-0">Internal leadership view of volunteer contributions, transcripts, and uploaded artifacts.</p>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-lg-4">
+        <div class="panel">
+            <div class="panel-header"><h2>Details</h2></div>
+            <div class="panel-body">
+                <p><strong>Email:</strong> {{ volunteer_profile.email }}</p>
+                <p><strong>Phone:</strong> {{ volunteer_profile.phone|default:"-" }}</p>
+                <p><strong>Institution:</strong> {{ volunteer_profile.institution|default:"-" }}</p>
+                <p class="mb-0"><strong>Designation:</strong> {{ volunteer_profile.designation|default:"-" }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-8">
+        <div class="panel">
+            <div class="panel-header"><h2>Transcript History</h2></div>
+            <div class="panel-body flush">
+                {% for transcript in transcripts %}
+                <div class="feed-item"><div><div class="feed-title">{{ transcript.template_choice }}</div><div class="feed-sub">{{ transcript.get_approval_status_display }}</div></div><div class="feed-time">{{ transcript.created_at|date:"M d, Y" }}</div></div>
+                {% empty %}<div class="empty-state"><i class="fa-solid fa-file-signature d-block"></i>No transcripts found.</div>{% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-6">
+        <div class="panel">
+            <div class="panel-header"><h2>Artifacts</h2></div>
+            <div class="panel-body flush">
+                {% for artifact in artifacts %}
+                <div class="feed-item"><div><div class="feed-title">{{ artifact.title }}</div><div class="feed-sub">{% if artifact.is_public %}Public{% else %}Internal{% endif %}</div></div><div class="feed-time">{{ artifact.created_at|date:"M d, Y" }}</div></div>
+                {% empty %}<div class="empty-state"><i class="fa-solid fa-photo-film d-block"></i>No artifacts found.</div>{% endfor %}
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="panel">
+            <div class="panel-header"><h2>Recent Records</h2></div>
+            <div class="panel-body flush">
+                {% for report in reports %}
+                <div class="feed-item"><div><div class="feed-title">{{ report.activity_name }}</div><div class="feed-sub">{{ report.get_status_display }}</div></div><div class="feed-time">{{ report.date|date:"M d, Y" }}</div></div>
+                {% empty %}{% endfor %}
+                {% for diary in diaries %}
+                <div class="feed-item"><div><div class="feed-title">{{ diary.linked_activity|default:"Diary Entry" }}</div><div class="feed-sub">{{ diary.get_review_status_display }}</div></div><div class="feed-time">{{ diary.date|date:"M d, Y" }}</div></div>
+                {% empty %}<div class="empty-state"><i class="fa-solid fa-clock-rotate-left d-block"></i>No recent report or diary records.</div>{% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

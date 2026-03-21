@@ -9,8 +9,9 @@
 {% endblock %}
 
 {% block page_content %}
-<div class="mb-4">
-    <h4 class="fw-bold mb-0">Mentors Assigned to You</h4>
+<div class="page-header mb-4">
+    <h1>Assigned Mentors</h1>
+    <p class="mb-0">Review the mentors mapped to your workspace and open their activity logs for oversight.</p>
 </div>
 <div class="panel">
     <div class="panel-header"><h2><i class="fa-solid fa-users me-2 opacity-50"></i>Assigned Mentors</h2></div>
@@ -29,8 +30,19 @@
                             {% for mentor in assigned_mentors %}
                             <tr>
                                 <td class="text-center">{{ forloop.counter }}</td>
-                                <td class="text-center">{{ mentor.first_name }} {{ mentor.last_name }}</td>
-                                <td class="text-center">{{ mentor.email }}</td>
+                                <td>
+                                    <div class="d-flex align-items-center justify-content-center justify-content-md-start">
+                                        <div class="bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center me-3"
+                                            style="width: 40px; height: 40px;">
+                                            <span class="fw-bold">{{ mentor.get_full_name|default:mentor.username|first|upper }}</span>
+                                        </div>
+                                        <div class="text-start">
+                                            <div class="fw-semibold text-dark">{{ mentor.first_name }} {{ mentor.last_name }}</div>
+                                            <div class="small text-muted">{{ mentor.designation|default:"Mentor" }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>{{ mentor.email }}</td>
                                 <td class="text-center">
                                     <div class="d-flex justify-content-center gap-2">
                                         <a href="#" class="btn btn-info btn-sm" data-bs-toggle="modal"
@@ -84,13 +96,13 @@
                             <div class="col-md-8">
                                 <h6 class="fw-bold text-primary">Personal Details</h6>
                                 <hr>
-                                {% if user.gender %}
+                                {% if mentor.gender %}
                                 <p><strong>Gender:</strong> {{ mentor.gender }}</p>
                                 {% endif %}
-                                {% if user.date_of_birth %}
+                                {% if mentor.date_of_birth %}
                                 <p><strong>Date of Birth:</strong> {{ mentor.date_of_birth }}</p>
                                 {% endif %}
-                                {% if user.religion %}
+                                {% if mentor.religion %}
                                 <p><strong>Religion:</strong> {{ mentor.religion }}</p>
                                 {% endif %}
 
@@ -98,16 +110,16 @@
                                 <hr>
                                 <p><strong>Phone:</strong> {{ mentor.phone }}</p>
                                 <p><strong>Email:</strong> {{ mentor.email }}</p>
-                                {% if user.permanent_address %}
+                                {% if mentor.permanent_address %}
                                 <p><strong>Address:</strong> {{ mentor.permanent_address }}</p>
                                 {% endif %}
 
                                 <h6 class="fw-bold text-primary mt-3">Qualification</h6>
                                 <hr>
-                                {% if user.institution %}
+                                {% if mentor.institution %}
                                 <p><strong>Institution:</strong> {{ mentor.institution }}</p>
                                 {% endif %}
-                                {% if user.designation %}
+                                {% if mentor.designation %}
                                 <p><strong>Designation:</strong> {{ mentor.designation }}</p>
                                 {% endif %}
                             </div>

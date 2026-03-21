@@ -1,45 +1,95 @@
-{% extends 'core/mentor/base_mentor.html' %}
+{% extends base_template %}
 
 {% block title %}Work Diary{% endblock title %}
 
+{% block breadcrumb %}
+<a href="{% url home_url_name %}" class="text-muted"><i class="fa-solid fa-house fa-sm me-1"></i>Dashboard</a>
+<span class="mx-2 text-muted">/</span>
+<span>Work Diary</span>
+{% endblock %}
+
 {% block page_content %}
 <div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="page-header d-flex justify-content-between align-items-center mobile-stack-between mb-4">
         <div>
-            <h4 class="fw-bold mb-1">Work Diary</h4>
-            <p class="text-muted mb-0">Log your volunteer activities and contributions.</p>
+            <h1 class="mb-1">Work Diary</h1>
+            <p class="mb-0">Log your volunteer activities and contributions.</p>
         </div>
+        <a href="{% url 'work_diary_list' %}" class="btn btn-outline-primary rounded-pill px-4">
+            <i class="fa-solid fa-list me-2"></i>View All Entries
+        </a>
     </div>
 
     <div class="panel mb-4">
         <div class="panel-header"><h2><i class="fa-solid fa-pen-to-square me-2 opacity-50"></i>Add New Entry</h2></div>
         <div class="panel-body admin-form">
-            <form method="post">
+            <form method="post" enctype="multipart/form-data">
                 {% csrf_token %}
+                {% if not reporting_assignment %}
+                <div class="alert alert-warning border mb-4">
+                    <div class="fw-semibold mb-2"><i class="fa-solid fa-triangle-exclamation me-2"></i>Reporting Assignment Required</div>
+                    <div class="small mb-0">
+                        Admin must map your reporting location before you can create work diary entries.
+                    </div>
+                </div>
+                {% else %}
+                <div class="alert alert-light border mb-4">
+                    <div class="fw-semibold mb-2"><i class="fa-solid fa-circle-info me-2"></i>Fetched From Admin Mapping</div>
+                    <div class="row g-3 small">
+                        <div class="col-md-4"><strong>Programme:</strong><div class="text-muted">{{ reporting_assignment.programme.name }}</div></div>
+                        <div class="col-md-4"><strong>Location:</strong><div class="text-muted">{{ reporting_assignment.location.name }}</div></div>
+                        <div class="col-md-4"><strong>Endorser:</strong><div class="text-muted">{{ reporting_assignment.endorser.get_full_name|default:reporting_assignment.endorser.username }}</div></div>
+                    </div>
+                    <div class="small text-muted mt-3">
+                        Location is taken from your admin-managed reporting assignment. Save a draft if the entry is incomplete, or submit it when ready for review.
+                    </div>
+                </div>
                 <div class="row g-3">
                     <div class="col-md-3"><label class="form-label">Date</label>{{ form.date }}</div>
                     <div class="col-md-3"><label class="form-label">Duration (Hrs)</label>{{ form.duration }}</div>
-                    <div class="col-md-3"><label class="form-label">Location</label>{{ form.location }}</div>
                     <div class="col-md-3"><label class="form-label">Linked Activity</label>{{ form.linked_activity }}</div>
-                    <div class="col-md-6"><label class="form-label">Narrative Entry</label>{{ form.narrative_entry }}</div>
-                    <div class="col-md-6"><label class="form-label">Review Status</label>{{ form.review_status }}</div>
+                    <div class="col-md-3">
+                        <label class="form-label">Submission Flow</label>
+                        <div class="form-control bg-light">Draft or Submit using the buttons below</div>
+                    </div>
+                    <div class="col-md-9"><label class="form-label">Narrative Entry</label>{{ form.narrative_entry }}</div>
+                    <div class="col-md-4"><label class="form-label">Evidence</label>{{ form.evidence }}</div>
                 </div>
-                <button type="submit" class="btn btn-sm btn-primary mt-3">
-                    <i class="fa-solid fa-paper-plane me-1"></i>Submit Entry
-                </button>
+                <div class="mobile-inline-actions mt-3">
+                    <button type="submit" name="submit_action" value="draft" class="btn btn-outline-secondary">
+                        <i class="fa-regular fa-floppy-disk me-1"></i>Save Draft
+                    </button>
+                    <button type="submit" name="submit_action" value="submit" class="btn btn-primary">
+                        <i class="fa-solid fa-paper-plane me-1"></i>Submit Entry
+                    </button>
+                </div>
+                {% endif %}
             </form>
         </div>
     </div>
 
-    <h5 class="fw-bold text-primary mb-3">Previous Entries</h5>
+    <div class="d-flex justify-content-between align-items-center mobile-stack-between mb-3">
+        <h5 class="fw-bold text-primary mb-0">Recent Entries</h5>
+        <a href="{% url 'work_diary_list' %}" class="small text-decoration-none">See full history</a>
+    </div>
     <div class="list-group shadow-sm">
         {% for entry in entries %}
         <div class="list-group-item list-group-item-action flex-column align-items-start mb-2 border rounded p-4">
-            <div class="d-flex w-100 justify-content-between mb-2">
+            <div class="d-flex w-100 justify-content-between mobile-stack-between mb-2">
                 <h5 class="mb-1 fw-bold">{{ entry.linked_activity }}</h5>
                 <small class="text-muted">{{ entry.date|date:"F d, Y" }} ({{ entry.duration }} hrs)</small>
             </div>
+            {% if entry.location %}
+            <p class="mb-1"><strong>Location:</strong> {{ entry.location }}</p>
+            {% endif %}
             <p class="mb-2">{{ entry.narrative_entry }}</p>
+            {% if entry.evidence %}
+            <p class="mb-2">
+                <a href="{{ entry.evidence.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                    <i class="fa-solid fa-paperclip me-1"></i>View Evidence
+                </a>
+            </p>
+            {% endif %}
             <small>Status: <span class="badge bg-secondary p-2">{{ entry.get_review_status_display }}</span></small>
         </div>
         {% empty %}

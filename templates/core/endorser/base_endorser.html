@@ -26,21 +26,48 @@
                 <img src="{% static 'images/lud.png' %}" alt="LUD" style="width:39px;height:30px;border-radius:6px;">
                 <span>Let Us Dream</span>
             </div>
-            <div class="sidebar-label">Main</div>
+            <div class="sidebar-label">Overview</div>
             <nav class="sidebar-nav">
                 <a href="{% url 'endorser_dashboard' %}" class="sidebar-link {% if active_page == 'dashboard' %}active{% endif %}">
                     <i class="fa-solid fa-gauge-high"></i><span>Dashboard</span>
                 </a>
-                <a href="{% url 'activity_log' %}" class="sidebar-link {% if active_page == 'activity_log' %}active{% endif %}">
-                    <i class="fa-solid fa-clipboard-list"></i><span>Mentors Assigned</span>
+                <a href="{% url 'assigned_work_items' %}" class="sidebar-link {% if active_page == 'work_items' %}active{% endif %}">
+                    <i class="fa-solid fa-list-ul"></i><span>My Work Items</span>
                 </a>
-                <a href="{% url 'endorser_work_schedule' %}" class="sidebar-link {% if active_page == 'schedule' %}active{% endif %}">
-                    <i class="fa-solid fa-calendar-check"></i><span>Work Schedule</span>
+            </nav>
+            <div class="sidebar-label">Mentors</div>
+            <nav class="sidebar-nav">
+                <a href="{% url 'activity_log' %}" class="sidebar-link {% if active_page == 'activity_log' %}active{% endif %}">
+                    <i class="fa-solid fa-clipboard-list"></i><span>Assigned Mentors</span>
+                </a>
+                <a href="{% url 'manage_work_items' %}" class="sidebar-link {% if active_page == 'work_schedule' %}active{% endif %}">
+                    <i class="fa-solid fa-calendar-check"></i><span>Manage Work Items</span>
+                </a>
+            </nav>
+            <div class="sidebar-label">Review</div>
+            <nav class="sidebar-nav">
+                <a href="{% url 'approval_dashboard' %}" class="sidebar-link {% if active_page == 'review_dashboard' %}active{% endif %}">
+                    <i class="fa-solid fa-list-check"></i><span>Review Dashboard</span>
+                </a>
+                <a href="{% url 'approval_queue' %}" class="sidebar-link {% if active_page == 'approval_queue' %}active{% endif %}">
+                    <i class="fa-solid fa-clipboard-check"></i><span>Review Queue</span>
+                </a>
+            </nav>
+            <div class="sidebar-label">Shared</div>
+            <nav class="sidebar-nav">
+                <a href="{% url 'repository' %}" class="sidebar-link {% if active_page == 'repository' %}active{% endif %}">
+                    <i class="fa-solid fa-folder-open"></i><span>Repository</span>
+                </a>
+                <a href="{% url 'notification' %}" class="sidebar-link {% if active_page == 'notifications' %}active{% endif %}">
+                    <i class="fa-solid fa-inbox"></i><span>Notification Center</span>
+                </a>
+                <a href="{% url 'workflow_guide' %}" class="sidebar-link {% if active_page == 'workflow' %}active{% endif %}">
+                    <i class="fa-solid fa-route"></i><span>Workflow Guide</span>
                 </a>
             </nav>
             <div class="sidebar-spacer"></div>
             <nav class="sidebar-nav sidebar-bottom">
-                <a href="{% url 'endorser_profile' %}" class="sidebar-link {% if active_page == 'profile' %}active{% endif %}">
+                <a href="{% url 'profile' %}" class="sidebar-link {% if active_page == 'profile' %}active{% endif %}">
                     <i class="fa-solid fa-circle-user"></i><span>Profile</span>
                 </a>
                 <a href="{% url 'account_logout' %}" class="sidebar-link sidebar-logout">
@@ -60,18 +87,18 @@
                     {% block breadcrumb %}{% endblock %}
                 </div>
                 <div class="topbar-right">
-                    {% if user.roles|length > 1 %}
+                    {% if can_switch_roles %}
                     <div class="dropdown">
                         <button class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" style="font-size:.78rem;">
                             <i class="fa-solid fa-repeat me-1"></i>{{ user.get_role_display }}
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end">
-                            {% for r in user.roles %}
+                            {% for r, label in switchable_role_pairs %}
                             <li>
                                 <form method="post" action="{% url 'switch_role' %}">
                                     {% csrf_token %}
                                     <input type="hidden" name="role" value="{{ r }}">
-                                    <button type="submit" class="dropdown-item{% if r == user.role %} active{% endif %}">{{ r|title }}</button>
+                                    <button type="submit" class="dropdown-item{% if r == user.role %} active{% endif %}">{{ label }}</button>
                                 </form>
                             </li>
                             {% endfor %}

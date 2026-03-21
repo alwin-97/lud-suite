@@ -7,81 +7,126 @@
 {% endblock %}
 
 {% block page_content %}
-<div class="mb-4">
-    <h4 class="fw-bold mb-1">Welcome Back, {{ user.first_name }}!</h4>
-    <p class="text-muted mb-0">Manage your endorsements, review schedules, and track activity logs.</p>
+<div class="page-header mb-4">
+    <h1>Endorser Dashboard</h1>
+    <p class="mb-0">Review assigned mentors, monitor activity oversight, and manage volunteer review work from one workspace.</p>
 </div>
 
-<div class="row g-4 justify-content-center">
-        <!-- Work Schedule -->
-        <div class="col-lg-3 col-md-6">
-            <a href="{% url 'endorser_work_schedule' %}" class="text-decoration-none group-hover-card">
-                <div class="card border-0 shadow-sm h-100 py-4 transition-transform hover-lift">
-                    <div class="card-body text-center">
-                        <div class="icon-box bg-primary-subtle text-primary rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center"
-                            style="width: 64px; height: 64px;">
-                            <i class="fa-solid fa-calendar-days fa-2xl"></i>
-                        </div>
-                        <h5 class="fw-bold text-dark mb-1">Work Schedule</h5>
-                        <p class="text-muted small mb-0">Manage tasks & deadlines</p>
-                    </div>
-                </div>
-            </a>
+<div class="row g-3 mb-4">
+    <div class="col-6 col-xl-3">
+        <div class="stat-card">
+            <div class="stat-value text-primary">{{ assigned_mentor_count }}</div>
+            <div class="stat-label">Assigned Mentors</div>
         </div>
-
-        <!-- Activity Log -->
-        <div class="col-lg-3 col-md-6">
-            <a href="{% url 'activity_log' %}" class="text-decoration-none group-hover-card">
-                <div class="card border-0 shadow-sm h-100 py-4 transition-transform hover-lift">
-                    <div class="card-body text-center">
-                        <div class="icon-box bg-success-subtle text-success rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center"
-                            style="width: 64px; height: 64px;">
-                            <i class="fa-solid fa-clipboard-list fa-2xl"></i>
-                        </div>
-                        <h5 class="fw-bold text-dark mb-1">Activity Log</h5>
-                        <p class="text-muted small mb-0">Review mentor activities</p>
-                    </div>
-                </div>
-            </a>
+    </div>
+    <div class="col-6 col-xl-3">
+        <div class="stat-card">
+            <div class="stat-value" style="color:#0e9384">{{ mentor_activity_count }}</div>
+            <div class="stat-label">Tracked Activities</div>
         </div>
-
-        <!-- Public Profile -->
-        <div class="col-lg-3 col-md-6">
-            <a href="{% url 'endorser_profile' %}" class="text-decoration-none group-hover-card">
-                <div class="card border-0 shadow-sm h-100 py-4 transition-transform hover-lift">
-                    <div class="card-body text-center">
-                        <div class="icon-box bg-info-subtle text-info rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center"
-                            style="width: 64px; height: 64px;">
-                            <i class="fa-solid fa-user fa-2xl"></i>
-                        </div>
-                        <h5 class="fw-bold text-dark mb-1">My Profile</h5>
-                        <p class="text-muted small mb-0">View & edit personal info</p>
-                    </div>
-                </div>
-            </a>
+    </div>
+    <div class="col-6 col-xl-3">
+        <div class="stat-card">
+            <div class="stat-value" style="color:#d97706">{{ remarked_activity_count }}</div>
+            <div class="stat-label">Remarked Items</div>
         </div>
+    </div>
+    <div class="col-6 col-xl-3">
+        <div class="stat-card">
+            <div class="stat-value text-dark">{{ notification_count }}</div>
+            <div class="stat-label">Visible Notices</div>
+        </div>
+    </div>
+</div>
 
-        <!-- Notifications -->
-        <div class="col-lg-3 col-md-6">
-            <a href="{% url 'manage_assignment' %}" class="text-decoration-none group-hover-card">
-                <div class="card border-0 shadow-sm h-100 py-4 transition-transform hover-lift">
-                    <div class="card-body text-center">
-                        <div class="icon-box bg-warning-subtle text-warning rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center"
-                            style="width: 64px; height: 64px;">
-                            <i class="fa-solid fa-bell fa-2xl"></i>
-                        </div>
-                        <h5 class="fw-bold text-dark mb-1">Notifications</h5>
-                        <p class="text-muted small mb-0">Assignments & Alerts</p>
-                    </div>
+<div class="row g-4">
+    <div class="col-xl-8">
+        <div class="panel">
+            <div class="panel-header">
+                <h2><i class="fa-solid fa-users me-2 opacity-50"></i>Assigned Mentors</h2>
+                <a href="{% url 'activity_log' %}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                    <i class="fa-solid fa-clipboard-list me-1"></i>View All
+                </a>
+            </div>
+            <div class="panel-body flush">
+                {% if assigned_mentors %}
+                <div class="table-responsive">
+                    <table class="table admin-datatable align-middle table-hover mb-0">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="ps-4 py-3" style="width:50px">#</th>
+                                <th class="py-3">Mentor</th>
+                                <th class="py-3">Email</th>
+                                <th class="text-end pe-4 py-3">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for mentor in assigned_mentors %}
+                            <tr>
+                                <td class="ps-4">{{ forloop.counter }}</td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center me-3"
+                                            style="width: 40px; height: 40px;">
+                                            <span class="fw-bold">{{ mentor.get_full_name|default:mentor.username|first|upper }}</span>
+                                        </div>
+                                        <div>
+                                            <div class="fw-semibold text-dark">{{ mentor.get_full_name|default:mentor.username }}</div>
+                                            <div class="small text-muted">{{ mentor.designation|default:"Mentor" }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>{{ mentor.email }}</td>
+                                <td class="text-end pe-4">
+                                    <a href="{% url 'mentor_activity' mentor.id %}" class="btn btn-outline-primary btn-sm rounded-pill px-3">
+                                        <i class="fa-solid fa-clipboard-list me-1"></i>Activity
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
-            </a>
+                {% else %}
+                <div class="text-center py-5">
+                    <div class="mb-3">
+                        <i class="fa-solid fa-user-slash fa-3x text-muted opacity-50"></i>
+                    </div>
+                    <h5 class="text-muted">No mentors assigned yet.</h5>
+                    <p class="text-muted small">Assigned mentors will appear here once admin maps them to your endorser profile.</p>
+                </div>
+                {% endif %}
+            </div>
         </div>
     </div>
 
-{% block extra_css %}
-<style>
-    .hover-lift { transition: transform 0.2s ease, box-shadow 0.2s ease; }
-    .hover-lift:hover { transform: translateY(-5px); box-shadow: 0 .5rem 1rem rgba(0,0,0,.15) !important; }
-</style>
-{% endblock extra_css %}
+    <div class="col-xl-4">
+        <div class="panel mb-4">
+            <div class="panel-header"><h2>Workspace Actions</h2></div>
+            <div class="panel-body">
+                <div class="d-grid gap-2">
+                    <a href="{% url 'manage_work_items' %}" class="btn btn-primary">
+                        <i class="fa-solid fa-calendar-check me-2"></i>Manage Work Items
+                    </a>
+                    <a href="{% url 'approval_dashboard' %}" class="btn btn-outline-primary">
+                        <i class="fa-solid fa-list-check me-2"></i>Open Review Dashboard
+                    </a>
+                    <a href="{% url 'notification' %}" class="btn btn-outline-secondary">
+                        <i class="fa-solid fa-bell me-2"></i>Notification Center
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-header"><h2>Oversight Summary</h2></div>
+            <div class="panel-body">
+                <p class="text-muted mb-3">Your endorser workspace follows the same panel and list structure as the mentor workspace where the functions overlap.</p>
+                <div class="small text-muted">Schedules created: <strong class="text-dark">{{ schedule_count }}</strong></div>
+                <div class="small text-muted">Mentors under review: <strong class="text-dark">{{ assigned_mentor_count }}</strong></div>
+                <div class="small text-muted">Activity entries reviewed: <strong class="text-dark">{{ remarked_activity_count }}</strong></div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock page_content %}

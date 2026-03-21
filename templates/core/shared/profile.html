@@ -1,102 +1,141 @@
-{% extends 'core/mentor/base_mentor.html' %}
+{% extends base_template %}
 
 {% block title %}My Profile{% endblock title %}
 
 {% block breadcrumb %}
-<a href="{% url 'dashboard' %}" class="text-muted"><i class="fa-solid fa-house fa-sm me-1"></i>Dashboard</a>
+<a href="{% url home_url_name %}" class="text-muted"><i class="fa-solid fa-house fa-sm me-1"></i>Home</a>
 <span class="mx-2 text-muted">/</span>
 <span>Profile</span>
 {% endblock %}
 
 {% block page_content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h4 class="fw-bold mb-1">My Profile</h4>
-        <p class="text-muted mb-0">View your personal information.</p>
-    </div>
-    <a href="{% url 'profile_edit' %}" class="btn btn-primary rounded-pill px-4">
-        <i class="fa-solid fa-pen-to-square me-2"></i>Edit Profile
-    </a>
-</div>
+<div class="profile-shell">
+    <section class="profile-hero">
+        <div class="profile-hero-content">
+            <div>
+                <p class="text-uppercase fw-semibold small mb-2" style="letter-spacing:.14em;">Let Us Dream Workspace</p>
+                <h1 class="profile-hero-title">My Profile</h1>
+                <p class="profile-hero-text">
+                    Keep your account details current so your workspace, reporting records, and role-based visibility stay accurate across the application.
+                </p>
+                <div class="profile-badges">
+                    <span class="profile-badge"><i class="fa-solid fa-user-tag"></i>{{ user.get_role_display }}</span>
+                    <span class="profile-badge"><i class="fa-solid fa-envelope"></i>{{ user.email }}</span>
+                    <span class="profile-badge"><i class="fa-solid fa-circle-check"></i>Workspace Ready</span>
+                </div>
+            </div>
+            <div class="profile-hero-actions">
+                <a href="{% url 'profile_edit' %}" class="btn btn-light rounded-pill px-4 fw-semibold">
+                    <i class="fa-solid fa-pen-to-square me-2"></i>Edit Profile
+                </a>
+            </div>
+        </div>
+    </section>
 
     <div class="row g-4">
-        <!-- Left Sidebar: Profile Photo -->
-        <div class="col-md-4 col-lg-3">
-            <div class="card border-0 shadow-sm text-center p-4 h-100">
-                <div class="card-body">
-                    <div class="position-relative d-inline-block mb-3">
-                        <div class="ratio ratio-1x1 mx-auto" style="width: 150px;">
-                            <img src="{% if user.profile_pic %}{{ user.profile_pic.url }}{% else %}https://cdn-icons-png.flaticon.com/512/3135/3135715.png{% endif %}"
-                                alt="Profile Photo"
-                                class="rounded-circle border border-4 border-light shadow-sm object-fit-cover">
-                        </div>
+        <div class="col-lg-4 col-xl-3">
+            <div class="profile-panel profile-sidecard">
+                <div class="profile-avatar-frame">
+                    <img
+                        src="{% if user.profile_pic %}{{ user.profile_pic.url }}{% else %}https://cdn-icons-png.flaticon.com/512/3135/3135715.png{% endif %}"
+                        alt="Profile Photo"
+                        class="profile-avatar">
+                </div>
+                <h4 class="fw-bold mb-1 profile-name">{{ user.get_full_name|default:user.username }}</h4>
+                <p class="text-muted mb-0 profile-email">{{ user.email }}</p>
+                <div class="profile-role-pill">{{ user.get_role_display }}</div>
+
+                <div class="profile-side-meta">
+                    <div class="profile-side-meta-item">
+                        <span class="profile-side-meta-label">Phone</span>
+                        <div class="profile-side-meta-value">{{ user.phone|default:"Not updated" }}</div>
                     </div>
-                    <h5 class="fw-bold mb-1">{{ user.get_full_name }}</h5>
-                    <p class="text-muted small mb-2">{{ user.email }}</p>
-                    <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-2">
-                        {{ user.role|title }}
-                    </span>
+                    <div class="profile-side-meta-item">
+                        <span class="profile-side-meta-label">Institution</span>
+                        <div class="profile-side-meta-value">{{ user.institution|default:"Not updated" }}</div>
+                    </div>
+                    <div class="profile-side-meta-item">
+                        <span class="profile-side-meta-label">Designation</span>
+                        <div class="profile-side-meta-value">{{ user.designation|default:"Not updated" }}</div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Right Content: Details -->
-        <div class="col-md-8 col-lg-9">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body p-4">
-                    <!-- Personal Details -->
-                    <h5 class="fw-bold text-primary mb-3">Personal Details</h5>
-                    <div class="row g-3 mb-4">
-                        <div class="col-md-6">
-                            <label class="small text-muted text-uppercase fw-bold d-block">Gender</label>
-                            <span class="fs-5">{{ user.gender|default:"-" }}</span>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="small text-muted text-uppercase fw-bold d-block">Date of Birth</label>
-                            <span class="fs-5">{{ user.date_of_birth|date:"F d, Y"|default:"-" }}</span>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="small text-muted text-uppercase fw-bold d-block">Religion</label>
-                            <span class="fs-5">{{ user.religion|default:"-" }}</span>
-                        </div>
-                    </div>
-
-                    <hr class="text-muted opacity-25 my-4">
-
-                    <!-- Contact Details -->
-                    <h5 class="fw-bold text-primary mb-3">Contact Details</h5>
-                    <div class="row g-3 mb-4">
-                        <div class="col-md-6">
-                            <label class="small text-muted text-uppercase fw-bold d-block">Phone Number</label>
-                            <span class="fs-5">{{ user.phone|default:"-" }}</span>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="small text-muted text-uppercase fw-bold d-block">Email</label>
-                            <span class="fs-5">{{ user.email }}</span>
-                        </div>
-                        <div class="col-12">
-                            <label class="small text-muted text-uppercase fw-bold d-block">Permanent Address</label>
-                            <p class="fs-5 mb-0">{{ user.permanent_address|default:"-" }}</p>
+        <div class="col-lg-8 col-xl-9">
+            <div class="profile-panel profile-maincard">
+                <div class="row g-4">
+                    <div class="col-xl-6">
+                        <div class="profile-section-card">
+                            <div class="profile-section-header">
+                                <span class="profile-section-icon"><i class="fa-solid fa-user"></i></span>
+                                <h2 class="profile-section-title">Personal Details</h2>
+                            </div>
+                            <div class="profile-grid two-col">
+                                <div class="profile-field">
+                                    <span class="profile-field-label">Full Name</span>
+                                    <div class="profile-field-value">{{ user.get_full_name|default:"-" }}</div>
+                                </div>
+                                <div class="profile-field">
+                                    <span class="profile-field-label">Gender</span>
+                                    <div class="profile-field-value">{{ user.gender|default:"-" }}</div>
+                                </div>
+                                <div class="profile-field">
+                                    <span class="profile-field-label">Date of Birth</span>
+                                    <div class="profile-field-value">{{ user.date_of_birth|date:"F d, Y"|default:"-" }}</div>
+                                </div>
+                                <div class="profile-field">
+                                    <span class="profile-field-label">Religion</span>
+                                    <div class="profile-field-value">{{ user.religion|default:"-" }}</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <hr class="text-muted opacity-25 my-4">
-
-                    <!-- Qualification -->
-                    <h5 class="fw-bold text-primary mb-3">Qualification</h5>
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="small text-muted text-uppercase fw-bold d-block">Institution</label>
-                            <span class="fs-5">{{ user.institution|default:"-" }}</span>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="small text-muted text-uppercase fw-bold d-block">Designation</label>
-                            <span class="fs-5">{{ user.designation|default:"-" }}</span>
+                    <div class="col-xl-6">
+                        <div class="profile-section-card">
+                            <div class="profile-section-header">
+                                <span class="profile-section-icon"><i class="fa-solid fa-address-book"></i></span>
+                                <h2 class="profile-section-title">Contact Details</h2>
+                            </div>
+                            <div class="profile-grid">
+                                <div class="profile-field">
+                                    <span class="profile-field-label">Email</span>
+                                    <div class="profile-field-value">{{ user.email|default:"-" }}</div>
+                                </div>
+                                <div class="profile-field">
+                                    <span class="profile-field-label">Phone Number</span>
+                                    <div class="profile-field-value">{{ user.phone|default:"-" }}</div>
+                                </div>
+                                <div class="profile-field">
+                                    <span class="profile-field-label">Permanent Address</span>
+                                    <div class="profile-field-value">{{ user.permanent_address|default:"-" }}</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
+                    <div class="col-12">
+                        <div class="profile-section-card">
+                            <div class="profile-section-header">
+                                <span class="profile-section-icon"><i class="fa-solid fa-graduation-cap"></i></span>
+                                <h2 class="profile-section-title">Professional and Academic Details</h2>
+                            </div>
+                            <div class="profile-grid two-col">
+                                <div class="profile-field">
+                                    <span class="profile-field-label">Institution</span>
+                                    <div class="profile-field-value">{{ user.institution|default:"-" }}</div>
+                                </div>
+                                <div class="profile-field">
+                                    <span class="profile-field-label">Designation</span>
+                                    <div class="profile-field-value">{{ user.designation|default:"-" }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+</div>
 {% endblock page_content %}

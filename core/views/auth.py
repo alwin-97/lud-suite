@@ -5,9 +5,14 @@ from django.shortcuts import redirect, render
 from django.views.decorators.http import require_POST
 
 from core.models import CustomUser
+from core.roles import role_home_url_name
 
 
 LOGIN_TEMPLATE = "core/auth/login.html"
+
+
+def redirect_for_user(user):
+    return redirect(role_home_url_name(getattr(user, "role", ""), is_superuser=getattr(user, "is_superuser", False)))
 
 
 def login_view(request):
@@ -37,19 +42,13 @@ def login_view(request):
 
 @login_required
 def role_redirect_view(request):
-    user = request.user
+    return redirect_for_user(request.user)
 
-    if user.is_superuser or user.role == "admin":
-        return redirect("admin_dashboard")
-    if user.role == "mentor":
-        return redirect("dashboard")
-    if user.role == "mentee":
-        return redirect("mentee_dashboard")
-    if user.role == "endorser":
-        return redirect("endorser_dashboard")
-    if user.role == "reviewer":
-        return redirect("mentor_mentee_list")
-    return redirect("profile")
+
+def permission_denied_view(request, exception=None):
+    if request.user.is_authenticated:
+        return redirect_for_user(request.user)
+    return render(request, "403.html", status=403)
 
 
 @login_required
@@ -58,6 +57,11 @@ def switch_role_view(request):
     new_role = request.POST.get("role", "").strip()
     user = request.user
     valid_roles = user.roles or []
+    assigned_roles = set(valid_roles + ([user.role] if user.role else []))
+
+    if "admin" not in assigned_roles or len(assigned_roles) <= 1:
+        messages.error(request, "Role switching is available only for admins with multiple assigned roles.")
+        return redirect("role-redirect")
 
     if new_role not in valid_roles:
         messages.error(request, "You do not have that role.")

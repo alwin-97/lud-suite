@@ -26,6 +26,7 @@ from core.forms import (
     SessionTypeForm,
     StatusConfigForm,
     TemplateConfigForm,
+    VolunteerReportingAssignmentForm,
 )
 from core.models import (
     AcademicCycle,
@@ -48,9 +49,13 @@ from core.models import (
     SessionType,
     StatusConfig,
     TemplateConfig,
-    ReflectiveReport,
     DiaryEntry,
+    ReflectiveReport,
+    RepositoryAsset,
+    VolunteerTranscript,
+    VolunteerReportingAssignment,
 )
+from core.roles import ROLE_CHOICES, ROLE_KEYS
 from core.views.common import User
 
 
@@ -64,6 +69,7 @@ ADMIN_USERS_ROLE_MANAGER_TEMPLATE = "core/admin/users/role_manager.html"
 ADMIN_USERS_DETAIL_TEMPLATE = "core/admin/users/detail.html"
 ADMIN_ASSIGNMENTS_MENTOR_TEMPLATE = "core/admin/assignments/manage_endorser_mentors.html"
 ADMIN_ASSIGNMENTS_MENTEE_TEMPLATE = "core/admin/assignments/manage_mentee_assignments.html"
+ADMIN_ASSIGNMENTS_VOLUNTEER_REPORTING_TEMPLATE = "core/admin/assignments/manage_volunteer_reporting_assignments.html"
 ADMIN_NOTIFICATIONS_TEMPLATE = "core/admin/notifications/manage.html"
 ADMIN_MENTEE_UPLOAD_TEMPLATE = "core/admin/mentee_upload/upload.html"
 ADMIN_MENTEE_UPLOAD_LOG_TEMPLATE = "core/admin/mentee_upload/log.html"
@@ -109,6 +115,9 @@ def edit_user_view(request, user_id):
     if not (first_name and last_name and email and phone and role):
         messages.error(request, "All fields are required.")
         return redirect("manage_user")
+    if role not in ROLE_KEYS:
+        messages.error(request, "Invalid role selected.")
+        return redirect("manage_user")
 
     if User.objects.filter(email=email).exclude(id=user.id).exists():
         messages.error(request, "User with this email already exists.")
@@ -120,7 +129,7 @@ def edit_user_view(request, user_id):
     user.username = email
     user.phone = phone
     user.role = role
-    roles = request.POST.getlist("roles")
+    roles = [item for item in request.POST.getlist("roles") if item in ROLE_KEYS]
     if roles:
         if role not in roles:
             roles.insert(0, role)
@@ -159,6 +168,7 @@ def admin_dashboard_view(request):
     total_mentors = CustomUser.objects.filter(role="mentor").count()
     total_endorsers = CustomUser.objects.filter(role="endorser").count()
     total_mentees = Mentee.objects.filter(is_active=True).count()
+    total_assignments = MentorMenteeAssignment.objects.count()
     total_schools = School.objects.count()
     total_chapters = Chapter.objects.filter(is_active=True).count()
     total_locations = Location.objects.filter(is_active=True).count()
@@ -166,6 +176,11 @@ def admin_dashboard_view(request):
     active_cycle = AcademicCycle.objects.filter(is_active=True).first()
     total_assessments = MenteeAssessment.objects.count()
     total_users = CustomUser.objects.exclude(role="admin").count()
+    total_volunteers = CustomUser.objects.filter(role="volunteer").count()
+    volunteer_reporting_assignments = VolunteerReportingAssignment.objects.count()
+    approved_reports = ReflectiveReport.objects.filter(status="Approved").count()
+    approved_transcripts = VolunteerTranscript.objects.filter(approval_status="Approved").count()
+    repository_assets = RepositoryAsset.objects.count()
     assigned_endorsers = CustomUser.objects.filter(role="endorser", mentors__isnull=False).distinct().count()
     assigned_mentors = CustomUser.objects.filter(role="mentor", assigned_endorsers__isnull=False).distinct().count()
     recent_notifications = Notification.objects.order_by("-created_at")[:5]
@@ -174,6 +189,7 @@ def admin_dashboard_view(request):
         "total_mentors": total_mentors,
         "total_endorsers": total_endorsers,
         "total_mentees": total_mentees,
+        "total_assignments": total_assignments,
         "total_schools": total_schools,
         "total_chapters": total_chapters,
         "total_locations": total_locations,
@@ -181,6 +197,12 @@ def admin_dashboard_view(request):
         "active_cycle": active_cycle,
         "total_assessments": total_assessments,
         "total_users": total_users,
+        "total_volunteers": total_volunteers,
+        "volunteer_reporting_assignments": volunteer_reporting_assignments,
+        "unmapped_volunteers": max(total_volunteers - volunteer_reporting_assignments, 0),
+        "approved_reports": approved_reports,
+        "approved_transcripts": approved_transcripts,
+        "repository_assets": repository_assets,
         "assigned_endorsers": assigned_endorsers,
         "unassigned_endorsers": total_endorsers - assigned_endorsers,
         "assigned_mentors": assigned_mentors,
@@ -290,15 +312,55 @@ def manage_mentee_assignments_view(request):
 
 
 @role_required(allowed_roles=["admin"])
+def manage_volunteer_reporting_assignments_view(request):
+    assignments = VolunteerReportingAssignment.objects.select_related(
+        "volunteer", "programme", "location", "endorser", "assigned_by"
+    ).order_by("volunteer__first_name", "volunteer__username")
+
+    if request.method == "POST":
+        form = VolunteerReportingAssignmentForm(request.POST)
+        if form.is_valid():
+            volunteer = form.cleaned_data["volunteer"]
+            defaults = {
+                "programme": form.cleaned_data["programme"],
+                "location": form.cleaned_data["location"],
+                "endorser": form.cleaned_data["endorser"],
+                "assigned_by": request.user,
+            }
+            VolunteerReportingAssignment.objects.update_or_create(
+                volunteer=volunteer,
+                defaults=defaults,
+            )
+            messages.success(request, "Volunteer reporting assignment saved.")
+            return redirect("manage_volunteer_reporting_assignments")
+    else:
+        form = VolunteerReportingAssignmentForm()
+
+    return render(
+        request,
+        ADMIN_ASSIGNMENTS_VOLUNTEER_REPORTING_TEMPLATE,
+        {"assignments": assignments, "form": form, "active_page": "volunteer_reporting_assign"},
+    )
+
+
+@role_required(allowed_roles=["admin"])
 def manage_user_view(request):
     users = User.objects.exclude(role="admin").order_by("id")
-    return render(request, ADMIN_USERS_MANAGE_TEMPLATE, {"users": users, "active_page": "users"})
+    return render(
+        request,
+        ADMIN_USERS_MANAGE_TEMPLATE,
+        {
+            "users": users,
+            "role_choices": ROLE_CHOICES,
+            "active_page": "users",
+        },
+    )
 
 
 @role_required(allowed_roles=["admin"])
 def user_role_manager_view(request):
-    users = CustomUser.objects.exclude(role="admin").order_by("first_name", "last_name")
-    role_choices = CustomUser.ROLE_CHOICES
+    users = CustomUser.objects.order_by("first_name", "last_name")
+    role_choices = ROLE_CHOICES
     return render(request, ADMIN_USERS_ROLE_MANAGER_TEMPLATE, {
         "users": users,
         "role_choices": role_choices,
@@ -348,12 +410,16 @@ def add_user_view(request):
     if not all([first_name, last_name, email, phone, role]):
         messages.error(request, "All fields are required.")
         return redirect("manage_user")
+    if role not in ROLE_KEYS:
+        messages.error(request, "Invalid role selected.")
+        return redirect("manage_user")
 
     if User.objects.filter(email=email).exists():
         messages.error(request, "User with this email already exists.")
         return redirect("manage_user")
 
     # Ensure the primary role is in the roles list
+    roles = [item for item in roles if item in ROLE_KEYS]
     if roles:
         if role not in roles:
             roles.insert(0, role)
@@ -603,7 +669,7 @@ def admin_notification_view(request):
             return redirect("admin_notifications")
     else:
         form = NotificationForm()
-    return render(request, ADMIN_NOTIFICATIONS_TEMPLATE, {"notifications": notifications, "form": form, "active_page": "notifications"})
+    return render(request, ADMIN_NOTIFICATIONS_TEMPLATE, {"notifications": notifications, "form": form, "active_page": "admin_notifications"})
 
 
 @role_required(allowed_roles=["admin"])

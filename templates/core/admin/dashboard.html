@@ -22,6 +22,18 @@
     <div class="col-6 col-md-4 col-xl-2"><div class="stat-card"><div class="stat-value text-dark">{{ total_assessments }}</div><div class="stat-label">Assessments</div></div></div>
 </div>
 
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3"><div class="stat-card"><div class="stat-value" style="color:#0e9384">{{ total_volunteers }}</div><div class="stat-label">Volunteers</div></div></div>
+    <div class="col-6 col-md-3"><div class="stat-card"><div class="stat-value" style="color:#0b5d52">{{ total_assignments }}</div><div class="stat-label">Mentor Assignments</div></div></div>
+    <div class="col-6 col-md-3"><div class="stat-card"><div class="stat-value" style="color:#2563eb">{{ volunteer_reporting_assignments }}</div><div class="stat-label">Reporting Maps</div></div></div>
+    <div class="col-6 col-md-3"><div class="stat-card"><div class="stat-value" style="color:#dc2626">{{ unmapped_volunteers }}</div><div class="stat-label">Unmapped Volunteers</div></div></div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-6"><div class="stat-card"><div class="stat-value" style="color:#7c3aed">{{ approved_reports }}</div><div class="stat-label">Approved Reports</div></div></div>
+    <div class="col-6 col-md-6"><div class="stat-card"><div class="stat-value" style="color:#9333ea">{{ approved_transcripts }}</div><div class="stat-label">Approved Transcripts</div></div></div>
+</div>
+
 {% if active_cycle %}
 <div class="alert alert-info py-2 px-3 mb-4" style="font-size:.85rem; border-radius:10px;">
     <i class="fa-solid fa-calendar-check me-1"></i>
@@ -38,10 +50,17 @@
     <div class="col-6 col-md-4 col-lg-3"><a href="{% url 'bulk_upload_mentees' %}" class="action-card"><i class="fa-solid fa-file-import"></i><div class="action-title">Import Mentees</div><div class="action-desc">Bulk CSV / Excel upload</div></a></div>
     <div class="col-6 col-md-4 col-lg-3"><a href="{% url 'admin_notifications' %}" class="action-card"><i class="fa-solid fa-bell"></i><div class="action-title">Notifications</div><div class="action-desc">Send announcements</div></a></div>
     <div class="col-6 col-md-4 col-lg-3"><a href="{% url 'manage_assignment' %}" class="action-card"><i class="fa-solid fa-link"></i><div class="action-title">Endorser Assign</div><div class="action-desc">Mentor-endorser mapping</div></a></div>
+    <div class="col-6 col-md-4 col-lg-3"><a href="{% url 'manage_volunteer_reporting_assignments' %}" class="action-card"><i class="fa-solid fa-map-location-dot"></i><div class="action-title">Volunteer Reporting Map</div><div class="action-desc">Assign programme, location, endorser</div></a></div>
+    <div class="col-6 col-md-4 col-lg-3"><a href="{% url 'manage_work_items' %}" class="action-card"><i class="fa-solid fa-list-check"></i><div class="action-title">Work Items</div><div class="action-desc">Assign and track user tasks</div></a></div>
     <div class="col-6 col-md-4 col-lg-3"><a href="{% url 'mentor_mentee_list' %}" class="action-card"><i class="fa-solid fa-users-line"></i><div class="action-title">View Mentees</div><div class="action-desc">Browse mentee profiles</div></a></div>
     <div class="col-6 col-md-4 col-lg-3"><a href="{% url 'mentee_upload_log' %}" class="action-card"><i class="fa-solid fa-clipboard-list"></i><div class="action-title">Upload Logs</div><div class="action-desc">Import history & errors</div></a></div>
     <div class="col-6 col-md-4 col-lg-3"><a href="{% url 'export_reflective_reports' %}" class="action-card" target="_blank"><i class="fa-solid fa-file-excel"></i><div class="action-title">Export Reports</div><div class="action-desc">Download reflective reports</div></a></div>
     <div class="col-6 col-md-4 col-lg-3"><a href="{% url 'export_work_diaries' %}" class="action-card" target="_blank"><i class="fa-solid fa-file-excel"></i><div class="action-title">Export Diaries</div><div class="action-desc">Download volunteer diaries</div></a></div>
+</div>
+
+<div class="alert alert-light border mb-4" style="font-size:.85rem; border-radius:10px;">
+    <i class="fa-solid fa-layer-group me-1"></i>
+    <strong>Admin scope:</strong> repository oversight covers {{ repository_assets }} asset{{ repository_assets|pluralize }}, and {{ volunteer_reporting_assignments }} volunteer reporting map{{ volunteer_reporting_assignments|pluralize }} are currently configured.
 </div>
 
 <!-- Charts -->
