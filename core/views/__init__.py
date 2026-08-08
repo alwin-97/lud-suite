@@ -1,10 +1,46 @@
-from core.views.admin import admin_dashboard_view
+from core.views.admin import (
+    admin_dashboard_view,
+    chapter_create_view,
+    chapter_delete_view,
+    chapter_edit_view,
+    chapter_list_view,
+    cohort_create_view,
+    cohort_delete_view,
+    cohort_edit_view,
+    cohort_list_view,
+    configuration_home_view,
+    location_create_view,
+    location_delete_view,
+    location_edit_view,
+    location_list_view,
+    platform_user_create_view,
+    platform_user_edit_view,
+    platform_user_list_view,
+)
 from core.views.auth import login_view, logout_view, role_redirect_view
+from core.views.workspace import workspace_home_view
 
 
 __all__ = [
     "admin_dashboard_view",
+    "chapter_create_view",
+    "chapter_delete_view",
+    "chapter_edit_view",
+    "chapter_list_view",
+    "cohort_create_view",
+    "cohort_delete_view",
+    "cohort_edit_view",
+    "cohort_list_view",
+    "configuration_home_view",
+    "location_create_view",
+    "location_delete_view",
+    "location_edit_view",
+    "location_list_view",
     "login_view",
     "logout_view",
+    "platform_user_create_view",
+    "platform_user_edit_view",
+    "platform_user_list_view",
     "role_redirect_view",
+    "workspace_home_view",
 ]

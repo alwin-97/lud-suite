@@ -5,7 +5,7 @@ from django.core.exceptions import PermissionDenied
 
 
 class SocialAccountAdapter(DefaultSocialAccountAdapter):
-    """Allow Google sign-in only for an existing administrator account."""
+    """Allow Google sign-in only for users provisioned by an administrator."""
 
     def is_open_for_signup(self, request, sociallogin):
         return False
@@ -22,16 +22,16 @@ class SocialAccountAdapter(DefaultSocialAccountAdapter):
             if email:
                 user = get_user_model().objects.filter(email__iexact=email).first()
 
-        if user is None or not user.is_platform_admin:
+        if user is None or not user.is_authorized_user:
             raise PermissionDenied(
-                "This Google account is not authorized for administrator access."
+                "This Google account has not been provisioned for platform access."
             )
 
         if not sociallogin.is_existing:
             sociallogin.connect(request, user)
 
     def get_connect_redirect_url(self, request, socialaccount):
-        return "/dashboard/"
+        return "/role-redirect/"
 
 
 class AccountAdapter(DefaultAccountAdapter):
@@ -39,6 +39,6 @@ class AccountAdapter(DefaultAccountAdapter):
         return False
 
     def get_login_redirect_url(self, request):
-        if request.user.is_platform_admin:
-            return "/dashboard/"
-        raise PermissionDenied("Administrator access is required.")
+        if request.user.is_authorized_user:
+            return "/role-redirect/"
+        raise PermissionDenied("This account is not authorized for platform access.")

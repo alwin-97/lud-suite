@@ -1,0 +1,28 @@
+{% extends "core/admin/base_admin.html" %}
+
+{% block title %}Configuration{% endblock %}
+
+{% block page_content %}
+<section class="page-heading page-heading--split">
+    <div>
+        <p class="eyebrow">Application configuration</p>
+        <h1>Programme structure</h1>
+        <p>Create locations first, then chapters and their three-year cohorts.</p>
+    </div>
+</section>
+
+<div class="configuration-grid">
+    <a href="{% url 'location_list' %}" class="configuration-card">
+        <span class="configuration-count">{{ location_count }}</span>
+        <div><strong>Locations</strong><p>Reusable places where chapters operate.</p></div>
+    </a>
+    <a href="{% url 'chapter_list' %}" class="configuration-card">
+        <span class="configuration-count">{{ chapter_count }}</span>
+        <div><strong>Chapters</strong><p>Local programme units connected to locations.</p></div>
+    </a>
+    <a href="{% url 'cohort_list' %}" class="configuration-card">
+        <span class="configuration-count">{{ cohort_count }}</span>
+        <div><strong>Cohorts</strong><p>Three-year participant groups within chapters.</p></div>
+    </a>
+</div>
+{% endblock %}

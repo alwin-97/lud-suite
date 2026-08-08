@@ -1,0 +1,30 @@
+{% extends "core/admin/base_admin.html" %}
+
+{% block title %}Chapters{% endblock %}
+
+{% block page_content %}
+<section class="page-heading page-heading--split">
+    <div><p class="eyebrow">Configuration</p><h1>Chapters</h1><p>Manage chapters and their locations.</p></div>
+    <a href="{% url 'chapter_create' %}" class="button button--primary">Add chapter</a>
+</section>
+
+<div class="table-card">
+    <table>
+        <thead><tr><th>Name</th><th>Location</th><th>Cohorts</th><th>Status</th><th class="actions-column">Actions</th></tr></thead>
+        <tbody>
+            {% for chapter in chapters %}
+                <tr>
+                    <td><strong>{{ chapter.name }}</strong></td><td>{{ chapter.location.name }}</td><td>{{ chapter.cohort_count }}</td>
+                    <td><span class="status-badge {% if chapter.is_active %}status-badge--active{% endif %}">{% if chapter.is_active %}Active{% else %}Inactive{% endif %}</span></td>
+                    <td class="table-actions">
+                        <a href="{% url 'chapter_edit' chapter.id %}" class="text-link">Edit</a>
+                        <form method="post" action="{% url 'chapter_delete' chapter.id %}" onsubmit="return confirm('Delete this chapter?');">{% csrf_token %}<button class="text-button text-button--danger">Delete</button></form>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="5" class="empty-cell">No chapters yet.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends "core/admin/base_admin.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block page_content %}
+<section class="page-heading">
+    <div><p class="eyebrow">Access management</p><h1>{{ title }}</h1><p>The email must match the Google account this person will use.</p></div>
+</section>
+
+<div class="form-card form-card--wide">
+    <form method="post" class="admin-form">
+        {% csrf_token %}
+        {% if form.non_field_errors %}<div class="form-errors">{{ form.non_field_errors }}</div>{% endif %}
+        <div class="form-grid">
+            {% for field in form %}
+                <div class="form-field {% if field.name == 'assignments' %}form-field--full assignment-field{% elif field.field.widget.input_type == 'checkbox' %}form-field--checkbox{% endif %}">
+                    {{ field.label_tag }}
+                    {{ field }}
+                    {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
+                    {% for error in field.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+                </div>
+            {% endfor %}
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="button button--primary">Save user</button>
+            <a href="{% url 'platform_user_list' %}" class="button button--secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

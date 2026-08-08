@@ -12,8 +12,8 @@ from core.models import CustomUser
 LOGIN_TEMPLATE = "core/auth/login.html"
 
 
-def _is_admin(user):
-    return user.is_authenticated and user.is_platform_admin
+def _destination_for(user):
+    return "admin_dashboard" if user.is_platform_admin else "workspace_home"
 
 
 def _password_login_redirect():
@@ -21,8 +21,8 @@ def _password_login_redirect():
 
 
 def login_view(request):
-    if _is_admin(request.user):
-        return redirect("admin_dashboard")
+    if request.user.is_authenticated and request.user.is_authorized_user:
+        return redirect(_destination_for(request.user))
 
     if request.user.is_authenticated:
         logout(request)
@@ -49,8 +49,9 @@ def login_view(request):
             messages.error(request, "Invalid email or password.")
             return _password_login_redirect()
 
+        # Password authentication is retained only as an administrative fallback.
         if not user.is_platform_admin:
-            messages.error(request, "This platform is restricted to administrators.")
+            messages.error(request, "Platform users must sign in with Google.")
             return _password_login_redirect()
 
         login(request, user)
@@ -68,11 +69,11 @@ def login_view(request):
 
 @login_required
 def role_redirect_view(request):
-    if request.user.is_platform_admin:
-        return redirect("admin_dashboard")
+    if request.user.is_authorized_user:
+        return redirect(_destination_for(request.user))
 
     logout(request)
-    messages.error(request, "This platform is restricted to administrators.")
+    messages.error(request, "Your account has not been provisioned for access.")
     return redirect("login")
 
 

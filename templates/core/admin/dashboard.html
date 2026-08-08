@@ -3,30 +3,39 @@
 {% block title %}Dashboard{% endblock %}
 
 {% block page_content %}
-<section class="welcome-card">
-    <div class="welcome-icon" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-            <path d="M4 13h6V4H4v9Zm0 7h6v-4H4v4Zm10 0h6v-9h-6v9Zm0-16v4h6V4h-6Z"/>
-        </svg>
-    </div>
+<section class="page-heading">
     <div>
         <p class="eyebrow">Admin dashboard</p>
         <h1>Welcome{% if user.first_name %}, {{ user.first_name }}{% endif %}.</h1>
-        <p>
-            The previous application modules have been cleared. This authenticated
-            dashboard is ready for the next set of product requirements.
-        </p>
+        <p>Configure the chapter network, cohorts, and authorized platform users.</p>
     </div>
 </section>
 
-<section class="workspace-card">
-    <p class="workspace-label">Platform status</p>
-    <div class="status-row">
-        <span class="status-dot" aria-hidden="true"></span>
+<section class="stat-grid" aria-label="Platform totals">
+    <article class="stat-card"><strong>{{ location_count }}</strong><span>Active locations</span></article>
+    <article class="stat-card"><strong>{{ chapter_count }}</strong><span>Active chapters</span></article>
+    <article class="stat-card"><strong>{{ cohort_count }}</strong><span>Active cohorts</span></article>
+    <article class="stat-card"><strong>{{ user_count }}</strong><span>Provisioned users</span></article>
+</section>
+
+<section class="section-block">
+    <div class="section-heading">
         <div>
-            <strong>Foundation ready</strong>
-            <p>Authentication and administrator access are active.</p>
+            <p class="eyebrow">Get started</p>
+            <h2>Administration</h2>
         </div>
+    </div>
+    <div class="action-grid">
+        <a href="{% url 'configuration_home' %}" class="action-card">
+            <span class="action-number">01</span>
+            <strong>Application configuration</strong>
+            <p>Manage reusable locations, chapters, and three-year cohorts.</p>
+        </a>
+        <a href="{% url 'platform_user_list' %}" class="action-card">
+            <span class="action-number">02</span>
+            <strong>User access</strong>
+            <p>Provision Google accounts and assign one or more cohort roles.</p>
+        </a>
     </div>
 </section>
 {% endblock %}

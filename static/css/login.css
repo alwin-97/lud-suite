@@ -149,6 +149,7 @@ body.login-page {
 
 .primary-button,
 .google-button {
+    width: 100%;
     min-height: 48px;
     display: inline-flex;
     align-items: center;

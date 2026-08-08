@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load static socialaccount %}
 
-{% block title %}Admin sign in{% endblock %}
+{% block title %}Sign in{% endblock %}
 {% block body_class %}login-page{% endblock %}
 
 {% block links %}
@@ -16,14 +16,14 @@
             <span>Let Us Dream</span>
         </div>
         <div>
-            <p class="eyebrow">Administration</p>
-            <h1 id="welcome-title">A clean start for the new platform.</h1>
+            <p class="eyebrow">Application portal</p>
+            <h1 id="welcome-title">One community. Shared progress.</h1>
             <p class="intro-copy">
-                Sign in to access the administrator dashboard. New platform features
-                will be added here as the product takes shape.
+                Sign in to access your Let Us Dream workspace. Administrators can
+                configure chapters, cohorts, and user access from their dashboard.
             </p>
         </div>
-        <p class="intro-footnote">Authorized administrators only</p>
+        <p class="intro-footnote">Authorized users only</p>
     </section>
 
     <section class="login-panel" aria-labelledby="sign-in-title">
@@ -32,7 +32,7 @@
             <h2 id="sign-in-title">Sign in to your account</h2>
             <p class="login-copy">
                 {% if google_login_enabled %}
-                    Continue with your authorized Google account.
+                    Continue with the Google account registered by your administrator.
                 {% else %}
                     Use your administrator credentials to continue.
                 {% endif %}
@@ -62,8 +62,7 @@
 
             <details class="credential-fallback" {% if not google_login_enabled or request.GET.method == "password" %}open{% endif %}>
                 <summary>
-                    <span>Email and password</span>
-                    {% if google_login_enabled %}<small>Optional sign-in method</small>{% endif %}
+                    <span>Signin with Username &amp; Password</span>
                 </summary>
 
                 <form method="post" class="login-form">
@@ -78,7 +77,6 @@
                 </form>
             </details>
 
-            <p class="access-note">Accounts are provisioned by the platform administrator.</p>
         </div>
     </section>
 </main>

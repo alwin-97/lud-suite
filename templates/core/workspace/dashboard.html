@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}My workspace{% endblock %}
+{% block links %}<link rel="stylesheet" href="{% static 'css/admin.css' %}">{% endblock %}
+
+{% block content %}
+<main class="member-shell">
+    <section class="member-card">
+        <img src="{% static 'images/lud.png' %}" alt="Let Us Dream" class="member-logo">
+        <p class="eyebrow">My workspace</p>
+        <h1>Welcome{% if user.first_name %}, {{ user.first_name }}{% endif %}.</h1>
+        <p>Your Google account is authorized. Role-specific tools will be added in the next application increments.</p>
+
+        <div class="membership-list">
+            {% for membership in memberships %}
+                <div class="membership-row">
+                    <div><strong>{{ membership.get_role_display }}</strong><span>{{ membership.cohort.chapter.name }} · {{ membership.cohort.name }}</span></div>
+                    <small>{{ membership.cohort.chapter.location.name }}</small>
+                </div>
+            {% endfor %}
+        </div>
+
+        <form method="post" action="{% url 'logout' %}">{% csrf_token %}<button type="submit" class="button button--secondary">Sign out</button></form>
+    </section>
+</main>
+{% endblock %}
