@@ -3,6 +3,7 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
+from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 from core.models import CustomUser
@@ -13,6 +14,10 @@ LOGIN_TEMPLATE = "core/auth/login.html"
 
 def _is_admin(user):
     return user.is_authenticated and user.is_platform_admin
+
+
+def _password_login_redirect():
+    return redirect(f"{reverse('login')}?method=password")
 
 
 def login_view(request):
@@ -28,7 +33,7 @@ def login_view(request):
 
         if not email or not password:
             messages.error(request, "Email and password are required.")
-            return redirect("login")
+            return _password_login_redirect()
 
         user = authenticate(request, username=email, password=password)
         if user is None:
@@ -42,11 +47,11 @@ def login_view(request):
 
         if user is None:
             messages.error(request, "Invalid email or password.")
-            return redirect("login")
+            return _password_login_redirect()
 
         if not user.is_platform_admin:
             messages.error(request, "This platform is restricted to administrators.")
-            return redirect("login")
+            return _password_login_redirect()
 
         login(request, user)
         return redirect("admin_dashboard")

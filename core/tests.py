@@ -29,6 +29,11 @@ class AdminAuthenticationTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Sign in to your account")
         self.assertContains(response, "Continue with Google")
+        self.assertContains(response, "Recommended sign-in")
+        self.assertContains(response, "Optional sign-in method")
+
+        html = response.content.decode()
+        self.assertLess(html.index("Continue with Google"), html.index("login-form"))
 
     def test_login_page_works_before_google_is_configured(self):
         self.google_app.delete()
@@ -37,6 +42,7 @@ class AdminAuthenticationTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertNotContains(response, "Continue with Google")
+        self.assertContains(response, "Google sign-in has not been configured yet")
 
     def test_admin_can_sign_in_with_email(self):
         response = self.client.post(
@@ -55,6 +61,7 @@ class AdminAuthenticationTests(TestCase):
         )
 
         self.assertContains(response, "Invalid email or password.")
+        self.assertEqual(response.request["QUERY_STRING"], "method=password")
         self.assertNotIn("_auth_user_id", self.client.session)
 
     def test_dashboard_requires_authentication(self):

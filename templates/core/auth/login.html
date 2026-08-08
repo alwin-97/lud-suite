@@ -30,7 +30,13 @@
         <div class="login-card">
             <p class="eyebrow">Welcome back</p>
             <h2 id="sign-in-title">Sign in to your account</h2>
-            <p class="login-copy">Use your administrator credentials to continue.</p>
+            <p class="login-copy">
+                {% if google_login_enabled %}
+                    Continue with your authorized Google account.
+                {% else %}
+                    Use your administrator credentials to continue.
+                {% endif %}
+            </p>
 
             {% if messages %}
                 <div class="messages" aria-live="polite">
@@ -40,25 +46,37 @@
                 </div>
             {% endif %}
 
-            <form method="post" class="login-form">
-                {% csrf_token %}
-                <label for="email">Email address</label>
-                <input id="email" name="email" type="email" autocomplete="email" required autofocus>
-
-                <label for="password">Password</label>
-                <input id="password" name="password" type="password" autocomplete="current-password" required>
-
-                <button type="submit" class="primary-button">Sign in</button>
-            </form>
-
             {% if google_login_enabled %}
-                <div class="divider"><span>or</span></div>
-
-                <a href="{% provider_login_url 'google' %}" class="google-button">
+                <p class="preferred-label">Recommended sign-in</p>
+                <a href="{% provider_login_url 'google' %}" class="google-button google-button--primary">
                     <img src="{% static 'images/icons/g-logo.png' %}" alt="">
                     <span>Continue with Google</span>
                 </a>
+                <p class="google-help">Use the Google account approved for this platform.</p>
+            {% else %}
+                <div class="provider-notice">
+                    Google sign-in has not been configured yet. Use the administrator
+                    credentials below.
+                </div>
             {% endif %}
+
+            <details class="credential-fallback" {% if not google_login_enabled or request.GET.method == "password" %}open{% endif %}>
+                <summary>
+                    <span>Email and password</span>
+                    {% if google_login_enabled %}<small>Optional sign-in method</small>{% endif %}
+                </summary>
+
+                <form method="post" class="login-form">
+                    {% csrf_token %}
+                    <label for="email">Email address</label>
+                    <input id="email" name="email" type="email" autocomplete="email" required>
+
+                    <label for="password">Password</label>
+                    <input id="password" name="password" type="password" autocomplete="current-password" required>
+
+                    <button type="submit" class="primary-button">Sign in with password</button>
+                </form>
+            </details>
 
             <p class="access-note">Accounts are provisioned by the platform administrator.</p>
         </div>
