@@ -1,7 +1,7 @@
+from allauth.socialaccount.models import SocialApp
+from django.contrib.sites.models import Site
 from django.test import TestCase
 from django.urls import reverse
-from django.contrib.sites.models import Site
-from allauth.socialaccount.models import SocialApp
 
 from core.models import CustomUser
 

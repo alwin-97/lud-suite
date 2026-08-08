@@ -1,9 +1,9 @@
+from allauth.socialaccount.adapter import get_adapter as get_social_adapter
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 from django.views.decorators.http import require_POST
-from allauth.socialaccount.adapter import get_adapter as get_social_adapter
 
 from core.models import CustomUser
 

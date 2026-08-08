@@ -35,6 +35,10 @@ python manage.py runserver
 The platform login is available at `/`, the authenticated dashboard at
 `/dashboard/`, and Django administration at `/django-admin/`.
 
+For deployed environments, set `DJANGO_SECRET_KEY`, `DJANGO_DEBUG=false`, and
+`DJANGO_ALLOWED_HOSTS` (a comma-separated host list). The defaults are intended
+for local development only.
+
 ## Google authentication
 
 Google sign-in remains available through `django-allauth`. Configure the Google
