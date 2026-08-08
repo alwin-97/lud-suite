@@ -1,38 +1,44 @@
+from allauth.account.adapter import DefaultAccountAdapter
 from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
 from django.contrib.auth import get_user_model
-from allauth.account.adapter import DefaultAccountAdapter
+from django.core.exceptions import PermissionDenied
 
-User = get_user_model()
+
 class SocialAccountAdapter(DefaultSocialAccountAdapter):
-    def get_connect_redirect_url(self, request, socialaccount):
-        # Always send them to role_redirect_view instead of connections page
-        return "/role-redirect/"
+    """Allow Google sign-in only for an existing administrator account."""
+
+    def is_open_for_signup(self, request, sociallogin):
+        return False
 
     def pre_social_login(self, request, sociallogin):
-        """Link Google account to existing user based on email"""
-        if sociallogin.is_existing:
-            return  # already linked
+        user = sociallogin.user if sociallogin.is_existing else None
 
-        email = sociallogin.account.extra_data.get("email")
-        if not email:
-            return
+        if user is None:
+            email = (
+                sociallogin.account.extra_data.get("email")
+                or sociallogin.user.email
+                or ""
+            ).strip()
+            if email:
+                user = get_user_model().objects.filter(email__iexact=email).first()
 
-        try:
-            user = User.objects.get(email=email)  # lookup by email
-            sociallogin.connect(request, user)   # connect Google login to this user
-        except User.DoesNotExist:
-    # Reject login if user not in DB
-            from django.core.exceptions import PermissionDenied
-            raise PermissionDenied("This email is not authorized. Please contact admin.")
+        if user is None or not user.is_platform_admin:
+            raise PermissionDenied(
+                "This Google account is not authorized for administrator access."
+            )
+
+        if not sociallogin.is_existing:
+            sociallogin.connect(request, user)
+
+    def get_connect_redirect_url(self, request, socialaccount):
+        return "/dashboard/"
+
 
 class AccountAdapter(DefaultAccountAdapter):
+    def is_open_for_signup(self, request):
+        return False
+
     def get_login_redirect_url(self, request):
-        user = request.user
-        if user.role == "admin":
-            return "/admin-dashboard/"
-        elif user.role == "mentor":
+        if request.user.is_platform_admin:
             return "/dashboard/"
-        elif user.role == "endorser":
-            return "/endorser-dashboard/"
-        else:
-            return "/"  # fallback
+        raise PermissionDenied("Administrator access is required.")

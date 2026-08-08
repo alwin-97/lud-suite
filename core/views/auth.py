@@ -1,8 +1,9 @@
 from django.contrib import messages
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 from django.views.decorators.http import require_POST
+from allauth.socialaccount.adapter import get_adapter as get_social_adapter
 
 from core.models import CustomUser
 
@@ -10,59 +11,68 @@ from core.models import CustomUser
 LOGIN_TEMPLATE = "core/auth/login.html"
 
 
-def login_view(request):
-    if request.method == "POST":
-        email = request.POST.get("email")
-        password = request.POST.get("password")
+def _is_admin(user):
+    return user.is_authenticated and user.is_platform_admin
 
-        if not password:
-            messages.error(request, "Password is required.")
+
+def login_view(request):
+    if _is_admin(request.user):
+        return redirect("admin_dashboard")
+
+    if request.user.is_authenticated:
+        logout(request)
+
+    if request.method == "POST":
+        email = request.POST.get("email", "").strip()
+        password = request.POST.get("password", "")
+
+        if not email or not password:
+            messages.error(request, "Email and password are required.")
             return redirect("login")
 
         user = authenticate(request, username=email, password=password)
-        if not user:
-            try:
-                user_obj = CustomUser.objects.get(email=email)
-                user = authenticate(request, username=user_obj.username, password=password)
-            except CustomUser.DoesNotExist:
-                user = None
-        if not user:
+        if user is None:
+            existing_user = CustomUser.objects.filter(email__iexact=email).first()
+            if existing_user:
+                user = authenticate(
+                    request,
+                    username=existing_user.username,
+                    password=password,
+                )
+
+        if user is None:
             messages.error(request, "Invalid email or password.")
             return redirect("login")
 
+        if not user.is_platform_admin:
+            messages.error(request, "This platform is restricted to administrators.")
+            return redirect("login")
+
         login(request, user)
-        return redirect("role-redirect")
-    return render(request, LOGIN_TEMPLATE)
+        return redirect("admin_dashboard")
+
+    google_login_enabled = bool(
+        get_social_adapter(request).list_apps(request, provider="google")
+    )
+    return render(
+        request,
+        LOGIN_TEMPLATE,
+        {"google_login_enabled": google_login_enabled},
+    )
 
 
 @login_required
 def role_redirect_view(request):
-    user = request.user
-
-    if user.is_superuser or user.role == "admin":
+    if request.user.is_platform_admin:
         return redirect("admin_dashboard")
-    if user.role == "mentor":
-        return redirect("dashboard")
-    if user.role == "mentee":
-        return redirect("mentee_dashboard")
-    if user.role == "endorser":
-        return redirect("endorser_dashboard")
-    if user.role == "reviewer":
-        return redirect("mentor_mentee_list")
-    return redirect("profile")
+
+    logout(request)
+    messages.error(request, "This platform is restricted to administrators.")
+    return redirect("login")
 
 
-@login_required
 @require_POST
-def switch_role_view(request):
-    new_role = request.POST.get("role", "").strip()
-    user = request.user
-    valid_roles = user.roles or []
-
-    if new_role not in valid_roles:
-        messages.error(request, "You do not have that role.")
-        return redirect("role-redirect")
-
-    user.role = new_role
-    user.save(update_fields=["role"])
-    return redirect("role-redirect")
+def logout_view(request):
+    logout(request)
+    messages.success(request, "You have been signed out.")
+    return redirect("login")

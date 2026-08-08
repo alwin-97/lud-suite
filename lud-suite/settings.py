@@ -97,12 +97,9 @@ AUTHENTICATION_BACKENDS = [
 
 SITE_ID = 1
 
-# Login / Logout
-# Login / Logout
 LOGIN_URL = '/'
-LOGIN_REDIRECT_URL = "role-redirect"
+LOGIN_REDIRECT_URL = "admin_dashboard"
 LOGOUT_REDIRECT_URL = '/'
-# Skip the "Account Connections" page and auto-login
 SOCIALACCOUNT_LOGIN_ON_GET = True
 ACCOUNT_LOGOUT_ON_GET = True
 ACCOUNT_EMAIL_VERIFICATION = "none"
@@ -116,9 +113,7 @@ ACCOUNT_SIGNUP_FORM_CLASS = None
 ACCOUNT_ADAPTER = "core.adapters.AccountAdapter"
 SOCIALACCOUNT_ADAPTER = "core.adapters.SocialAccountAdapter"
 
-# Auto-create user account after first Google login (disabled if blocking signup in adapter)
-SOCIALACCOUNT_AUTO_SIGNUP = True
+SOCIALACCOUNT_AUTO_SIGNUP = False
 
-# Redirect if someone tries to access signup page
 ACCOUNT_SIGNUP_REDIRECT_URL = '/'
 MESSAGE_STORAGE = 'django.contrib.messages.storage.session.SessionStorage'
