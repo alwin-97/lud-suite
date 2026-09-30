@@ -1,0 +1,13 @@
+{# variant="action" (dashboard, badge = step number) or "configuration" (badge = count). #}
+{% if variant == "configuration" %}
+    <a href="{{ href }}" class="configuration-card">
+        <span class="configuration-count">{{ badge }}</span>
+        <div><strong>{{ title }}</strong><p>{{ text }}</p></div>
+    </a>
+{% else %}
+    <a href="{{ href }}" class="action-card">
+        {% if badge %}<span class="action-number">{{ badge }}</span>{% endif %}
+        <strong>{{ title }}</strong>
+        <p>{{ text }}</p>
+    </a>
+{% endif %}

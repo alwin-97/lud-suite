@@ -1,0 +1,18 @@
+{% partialdef avatar %}<span class="account-avatar{% if large %} account-avatar--large{% endif %}">{{ user.get_full_name|default:user.username|slice:":1"|upper }}</span>{% endpartialdef %}
+<div class="account-menu">
+    <button type="button" class="account-button" id="accountButton" aria-haspopup="true" aria-expanded="false" aria-controls="accountPopover" aria-label="Account: {{ user.get_full_name|default:user.username }}">
+        {% partial avatar %}
+    </button>
+    <div class="account-popover" id="accountPopover" hidden>
+        {% with large=True %}{% partial avatar %}{% endwith %}
+        <strong>{{ user.get_full_name|default:user.username }}</strong>
+        <span class="muted">{{ user.email }}</span>
+        <form method="post" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <button type="submit" class="button button--secondary">
+                <i class="fi fi-rr-sign-out-alt" aria-hidden="true"></i>
+                Sign out
+            </button>
+        </form>
+    </div>
+</div>

@@ -1,0 +1,663 @@
+/* Components: one section per component in templates/components/. */
+
+.flash-messages {
+    display: grid;
+    gap: 0.5rem;
+    margin: 0;
+    padding: 1rem clamp(1rem, 3vw, 2rem) 0;
+}
+
+.flash {
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    color: var(--green-dark);
+    background: var(--green-faint);
+    font-size: 0.88rem;
+}
+
+.flash--error {
+    color: var(--danger);
+    background: var(--danger-soft);
+}
+
+/* Page heading */
+.page-heading {
+    margin-bottom: 1.5rem;
+}
+
+.page-heading--split {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 1.5rem;
+}
+
+.page-heading h1 {
+    margin: 0;
+    font-size: clamp(1.5rem, 2.4vw, 1.9rem);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+}
+
+.page-heading > div > p:last-child {
+    max-width: 42rem;
+    margin: 0.4rem 0 0;
+    color: var(--muted);
+    font-size: 0.92rem;
+    line-height: 1.5;
+}
+
+/* Dashboard cards: flat, outlined, no shadow */
+.stat-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.stat-card {
+    display: grid;
+    gap: 0.25rem;
+    padding: 1.1rem 1.25rem;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--surface);
+}
+
+.stat-card strong {
+    color: var(--green);
+    font-size: 1.8rem;
+    font-weight: 600;
+}
+
+.stat-card span {
+    color: var(--muted);
+    font-size: 0.84rem;
+}
+
+.section-block {
+    margin-top: 2rem;
+}
+
+.section-heading {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    margin-bottom: 0.85rem;
+}
+
+.section-heading h2 {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 600;
+}
+
+.action-grid,
+.configuration-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.action-card,
+.configuration-card {
+    display: flex;
+    gap: 1rem;
+    padding: 1.25rem;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    color: var(--ink);
+    background: var(--surface);
+    text-decoration: none;
+    transition: background-color 140ms ease, border-color 140ms ease;
+}
+
+.action-card {
+    min-height: 150px;
+    flex-direction: column;
+}
+
+.action-card:hover,
+.configuration-card:hover {
+    border-color: var(--line-strong);
+    background: var(--green-faint);
+}
+
+.action-number {
+    color: var(--blue);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+}
+
+.action-card strong,
+.configuration-card strong {
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.action-card p,
+.configuration-card p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.86rem;
+    line-height: 1.5;
+}
+
+.configuration-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.configuration-card {
+    align-items: center;
+}
+
+.configuration-count {
+    width: 48px;
+    height: 48px;
+    display: grid;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 50%;
+    color: var(--green-dark);
+    background: var(--green-soft);
+    font-size: 1.15rem;
+    font-weight: 600;
+}
+
+.configuration-card div {
+    display: grid;
+    gap: 0.3rem;
+}
+
+/* Tables *//* === table-filters === */
+.page-heading-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.65rem;
+    flex-shrink: 0;
+}
+
+.table-filters {
+    position: relative;
+    z-index: 10;
+}
+
+.table-filters[hidden] {
+    display: none;
+}
+
+.table-filters summary {
+    list-style: none;
+}
+
+.table-filters summary::-webkit-details-marker {
+    display: none;
+}
+
+.table-filters[open] summary {
+    background: var(--green-faint);
+}
+
+.table-filter-panel {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 0.5rem);
+    width: 300px;
+    max-width: calc(100vw - 112px);
+    max-height: 65vh;
+    overflow-y: auto;
+    padding: 1rem;
+    border: 1px solid var(--line-strong);
+    border-radius: 12px;
+    background: var(--surface);
+}
+
+.table-filter-help,
+.table-filter-result {
+    margin: 0 0 0.75rem;
+    color: var(--muted);
+    font-size: 0.8rem;
+    line-height: 1.5;
+}
+
+.table-filter-result {
+    margin: 0.75rem 0 0;
+}
+
+.table-filter-groups fieldset {
+    min-width: 0;
+    margin: 0 0 1rem;
+    padding: 0;
+    border: 0;
+}
+
+.table-filter-groups legend {
+    margin-bottom: 0.4rem;
+    font-weight: 600;
+    font-size: 0.88rem;
+}
+
+.table-filter-options {
+    max-height: 160px;
+    overflow-y: auto;
+}
+
+.table-filter-options label {
+    display: flex;
+    align-items: start;
+    gap: 0.5rem;
+    padding: 0.4rem 0;
+    font-size: 0.86rem;
+    overflow-wrap: anywhere;
+    cursor: pointer;
+}
+
+.table-filter-options input {
+    flex-shrink: 0;
+    margin-top: 0.2rem;
+    accent-color: var(--green);
+}
+
+.table-filter-panel button:disabled {
+    color: var(--muted);
+    cursor: default;
+}
+
+.table-card,
+.form-card {
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--surface);
+}
+
+.table-card {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th,
+td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--line);
+    text-align: left;
+    vertical-align: middle;
+}
+
+th {
+    color: var(--muted);
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+
+td {
+    font-size: 0.88rem;
+}
+
+tbody tr {
+    transition: background-color 100ms ease;
+}
+
+tbody tr:hover {
+    background: var(--row-hover);
+}
+
+tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+td strong {
+    font-weight: 600;
+}
+
+.actions-column {
+    width: 1%;
+}
+
+.table-actions {
+    white-space: nowrap;
+}
+
+.table-actions > a,
+.table-actions > form {
+    display: inline-block;
+    margin: 0 0 0 0.8rem;
+    vertical-align: middle;
+}
+
+.table-actions > :first-child {
+    margin-left: 0;
+}
+
+.cell-note {
+    display: block;
+    margin-top: 0.15rem;
+    color: var(--muted);
+    font-size: 0.76rem;
+}
+
+.empty-cell {
+    padding: 3rem;
+    color: var(--muted);
+    text-align: center;
+}
+
+/* DataTables */
+div.dt-container div.dt-layout-row {
+    margin: 0;
+    padding: 0.6rem 1rem;
+}
+
+div.dt-container div.dt-layout-row.dt-layout-table {
+    padding: 0;
+    overflow-x: auto;
+}
+
+.dt-container .dt-layout-row:first-child {
+    border-bottom: 1px solid var(--line);
+}
+
+.dt-container .dt-layout-row:last-child {
+    border-top: 1px solid var(--line);
+}
+
+div.dt-container .dt-search input,
+div.dt-container .dt-length select {
+    height: 38px;
+    padding: 0 0.9rem;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    color: var(--ink);
+    font: inherit;
+    font-size: 0.86rem;
+    background: var(--blue-soft);
+}
+
+div.dt-container .dt-length select {
+    padding-right: 0.5rem;
+    border-color: var(--line);
+    background: var(--surface);
+}
+
+div.dt-container .dt-search input {
+    min-width: min(20rem, 100%);
+    margin-left: 0;
+}
+
+div.dt-container .dt-search input:focus,
+div.dt-container .dt-length select:focus {
+    outline: none;
+    border-color: var(--line-strong);
+    background: var(--surface);
+}
+
+.dt-container .dt-length label,
+.dt-container .dt-info {
+    color: var(--muted);
+    font-size: 0.82rem;
+}
+
+.dt-container .dt-length select {
+    margin-right: 0.4rem;
+}
+
+table.dataTable {
+    margin: 0 !important;
+}
+
+table.dataTable > thead > tr > th,
+table.dataTable > tbody > tr > td {
+    padding: 0.75rem 1rem;
+}
+
+table.dataTable > thead > tr > th {
+    border-bottom: 1px solid var(--line);
+}
+
+table.dataTable > tbody > tr:hover > * {
+    box-shadow: none;
+}
+
+table.dataTable th.dt-type-numeric,
+table.dataTable th.dt-type-date,
+table.dataTable td.dt-type-numeric,
+table.dataTable td.dt-type-date {
+    text-align: left;
+}
+
+table.dataTable th.dt-type-numeric div.dt-column-header,
+table.dataTable th.dt-type-date div.dt-column-header {
+    flex-direction: row;
+}
+
+table.dataTable.no-footer,
+div.dt-container.dt-empty-footer tbody > tr:last-child > * {
+    border-bottom: 0;
+}
+
+table.dataTable td.dt-empty {
+    padding: 3rem;
+    color: var(--muted);
+    text-align: center;
+}
+
+.dt-container .dt-paging .dt-paging-button {
+    min-width: 34px;
+    height: 34px;
+    margin-left: 0.15rem;
+    padding: 0 0.5rem !important;
+    border: 0 !important;
+    border-radius: 999px;
+    color: var(--muted) !important;
+    font-size: 0.84rem;
+    background: none !important;
+}
+
+.dt-container .dt-paging .dt-paging-button:hover:not(.disabled) {
+    color: var(--ink) !important;
+    background: var(--hover) !important;
+}
+
+.dt-container .dt-paging .dt-paging-button.current,
+.dt-container .dt-paging .dt-paging-button.current:hover {
+    color: var(--green-dark) !important;
+    background: var(--green-soft) !important;
+    font-weight: 700;
+}
+
+.dt-container .dt-paging .dt-paging-button.disabled {
+    opacity: 0.4;
+}
+
+/* Badges */
+.status-badge,
+.role-chip {
+    display: inline-flex;
+    padding: 0.2rem 0.55rem;
+    border-radius: 6px;
+    color: var(--muted);
+    background: var(--neutral-soft);
+    font-size: 0.74rem;
+    font-weight: 600;
+}
+
+.status-badge--active {
+    color: var(--green-dark);
+    background: var(--green-soft);
+}
+
+.role-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+}
+
+.role-chip {
+    color: var(--blue);
+    background: var(--blue-soft);
+}
+
+/* Forms */
+.form-card {
+    max-width: 660px;
+    padding: clamp(1.25rem, 4vw, 1.75rem);
+}
+
+.form-card--wide {
+    max-width: 900px;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.admin-form,
+.form-field {
+    display: grid;
+    gap: 0.4rem;
+}
+
+.admin-form {
+    gap: 1rem;
+}
+
+.form-field label {
+    font-size: 0.84rem;
+    font-weight: 600;
+}
+
+.form-control {
+    width: 100%;
+    min-height: 44px;
+    padding: 0.65rem 0.85rem;
+    border: 1px solid var(--line-strong);
+    border-radius: 8px;
+    color: var(--ink);
+    font: inherit;
+    outline: none;
+    background: var(--surface);
+}
+
+.form-control:focus {
+    border-color: var(--green);
+    box-shadow: inset 0 0 0 1px var(--green);
+}
+
+.form-field small {
+    color: var(--muted);
+    font-size: 0.76rem;
+    line-height: 1.45;
+}
+
+.form-field--checkbox {
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    justify-content: start;
+}
+
+.form-field--checkbox label {
+    grid-column: 2;
+}
+
+.form-field--checkbox input {
+    grid-column: 1;
+    grid-row: 1;
+}
+
+.form-field--checkbox small,
+.form-field--checkbox .field-error {
+    grid-column: 2;
+}
+
+.checkbox-input {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--green);
+}
+
+.form-field--full {
+    grid-column: 1 / -1;
+}
+
+.assignment-field {
+    margin-top: 0.5rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--line);
+}
+
+.assignment-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.assignment-grid label {
+    min-height: 100%;
+    display: flex;
+    align-items: start;
+    gap: 0.55rem;
+    padding: 0.7rem 0.75rem;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    font-size: 0.8rem;
+    line-height: 1.4;
+    cursor: pointer;
+}
+
+.assignment-grid label:hover {
+    background: var(--green-faint);
+}
+
+.assignment-grid input {
+    margin-top: 0.1rem;
+    accent-color: var(--green);
+}
+
+.field-error,
+.form-errors {
+    color: var(--danger);
+    font-size: 0.8rem;
+}
+
+.form-errors ul {
+    margin: 0;
+}
+
+.form-actions {
+    display: flex;
+    gap: 0.7rem;
+    margin-top: 0.5rem;
+}
+
+@media (max-width: 640px) {
+    .page-heading-actions {
+            width: 100%;
+        }
+
+    .table-filter-panel {
+            left: 0;
+            right: auto;
+        }
+
+    .page-heading--split {
+            align-items: stretch;
+            flex-direction: column;
+        }
+
+    .stat-grid,
+        .action-grid,
+        .configuration-grid,
+        .form-grid,
+        .assignment-grid {
+            grid-template-columns: 1fr;
+        }
+}

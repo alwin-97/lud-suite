@@ -1,0 +1,102 @@
+/* Base: reset, typography, icons, buttons and inline links shared by every page. */
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    min-height: 100vh;
+    margin: 0;
+    color: var(--ink);
+    font-family: "Outfit", sans-serif;
+    background: var(--background);
+}
+
+.fi {
+    display: inline-flex;
+    line-height: 1;
+}
+
+.eyebrow {
+    margin: 0 0 0.35rem;
+    color: var(--blue);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+/* Buttons */
+.button {
+    min-height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.55rem 1.4rem;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    font: inherit;
+    font-size: 0.88rem;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 140ms ease, border-color 140ms ease;
+}
+
+.button .fi {
+    flex-shrink: 0;
+    font-size: 16px;
+}
+
+.button--primary {
+    color: var(--on-brand);
+    background: var(--green);
+}
+
+.button--primary:hover {
+    background: var(--green-dark);
+}
+
+.button--secondary {
+    border-color: var(--line-strong);
+    color: var(--green-dark);
+    background: var(--surface);
+}
+
+.button--secondary:hover {
+    background: var(--green-faint);
+}
+
+.text-link,
+.text-button {
+    padding: 0;
+    border: 0;
+    color: var(--blue);
+    font: inherit;
+    font-size: 0.84rem;
+    font-weight: 600;
+    background: none;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.text-link:hover,
+.text-button:hover {
+    text-decoration: underline;
+}
+
+.text-link .fi,
+.text-button .fi {
+    margin-right: 0.25rem;
+    font-size: 14px;
+    vertical-align: middle;
+}
+
+.text-button--danger {
+    color: var(--danger);
+}
+
+.muted {
+    color: var(--muted);
+}

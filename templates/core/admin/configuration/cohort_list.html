@@ -1,31 +1,30 @@
-{% extends "core/admin/base_admin.html" %}
+{% extends "layouts/admin.html" %}
+{% load ui %}
 
 {% block title %}Cohorts{% endblock %}
+{% block vendor_styles %}{% include "components/vendor/datatables.html#styles" %}{% endblock %}
+{% block vendor_scripts %}{% include "components/vendor/datatables.html#scripts" %}{% endblock %}
 
 {% block page_content %}
-<section class="page-heading page-heading--split">
-    <div><p class="eyebrow">Configuration</p><h1>Cohorts</h1><p>Every cohort automatically runs for three years from its start date.</p></div>
-    <a href="{% url 'cohort_create' %}" class="button button--primary">Add cohort</a>
-</section>
+{% page_header eyebrow="Configuration" title="Cohorts" description="Every cohort automatically runs for three years from its start date." %}
+    {% include "components/table_filters.html" with table_id="cohorts-table" fields="Location,Chapter,Status" only %}
+    <a href="{% url 'cohort_create' %}" class="button button--primary"><i class="fi fi-rr-plus" aria-hidden="true"></i> Add cohort</a>
+{% endpage_header %}
 
-<div class="table-card">
-    <table class="data-table" data-empty-message="No cohorts yet.">
-        <thead><tr><th>Name</th><th>Chapter</th><th>Duration</th><th>Users</th><th>Status</th><th class="actions-column">Actions</th></tr></thead>
-        <tbody>
-            {% for cohort in cohorts %}
-                <tr>
-                    <td><strong>{{ cohort.name }}</strong></td>
-                    <td>{{ cohort.chapter.name }}<small class="cell-note">{{ cohort.chapter.location.name }}</small></td>
-                    <td data-order="{{ cohort.start_date|date:'Y-m-d' }}">{{ cohort.start_date|date:"d M Y" }}<small class="cell-note">to {{ cohort.end_date|date:"d M Y" }}</small></td>
-                    <td>{{ cohort.user_count }}</td>
-                    <td><span class="status-badge {% if cohort.is_active %}status-badge--active{% endif %}">{% if cohort.is_active %}Active{% else %}Inactive{% endif %}</span></td>
-                    <td class="table-actions">
-                        <a href="{% url 'cohort_edit' cohort.id %}" class="text-link">Edit</a>
-                        <form method="post" action="{% url 'cohort_delete' cohort.id %}" onsubmit="return confirm('Delete this cohort and all of its role assignments?');">{% csrf_token %}<button class="text-button text-button--danger">Delete</button></form>
-                    </td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
+{% data_table id="cohorts-table" empty="No cohorts yet." %}
+    <thead><tr><th>Name</th><th>Chapter</th><th>Duration</th><th>Users</th><th>Status</th><th class="actions-column">Actions</th></tr></thead>
+    <tbody>
+        {% for cohort in cohorts %}
+            <tr data-filter-status="{% if cohort.is_active %}Active{% else %}Inactive{% endif %}" data-filter-location="{{ cohort.chapter.location.name }}" data-filter-chapter="{{ cohort.chapter }}">
+                <td><strong>{{ cohort.name }}</strong></td>
+                <td>{% include "components/cell_stack.html" with primary=cohort.chapter.name note=cohort.chapter.location.name only %}</td>
+                <td data-order="{{ cohort.start_date|date:'Y-m-d' }}">{% with start=cohort.start_date|date:"d M Y" end=cohort.end_date|date:"d M Y" %}{% include "components/cell_stack.html" with primary=start note="to "|add:end only %}{% endwith %}</td>
+                <td>{{ cohort.user_count }}</td>
+                <td>{% status_badge cohort.is_active %}</td>
+                {% url 'cohort_edit' cohort.pk as edit_url %}{% url 'cohort_delete' cohort.pk as delete_url %}
+                {% row_actions edit_url delete_url confirm="Delete this cohort and all of its role assignments?" %}
+            </tr>
+        {% endfor %}
+    </tbody>
+{% enddata_table %}
 {% endblock %}

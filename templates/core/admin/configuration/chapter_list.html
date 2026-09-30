@@ -1,28 +1,29 @@
-{% extends "core/admin/base_admin.html" %}
+{% extends "layouts/admin.html" %}
+{% load ui %}
 
 {% block title %}Chapters{% endblock %}
+{% block vendor_styles %}{% include "components/vendor/datatables.html#styles" %}{% endblock %}
+{% block vendor_scripts %}{% include "components/vendor/datatables.html#scripts" %}{% endblock %}
 
 {% block page_content %}
-<section class="page-heading page-heading--split">
-    <div><p class="eyebrow">Configuration</p><h1>Chapters</h1><p>Manage chapters and their locations.</p></div>
-    <a href="{% url 'chapter_create' %}" class="button button--primary">Add chapter</a>
-</section>
+{% page_header eyebrow="Configuration" title="Chapters" description="Manage chapters and their locations." %}
+    {% include "components/table_filters.html" with table_id="chapters-table" fields="Location,Status" only %}
+    <a href="{% url 'chapter_create' %}" class="button button--primary"><i class="fi fi-rr-plus" aria-hidden="true"></i> Add chapter</a>
+{% endpage_header %}
 
-<div class="table-card">
-    <table class="data-table" data-empty-message="No chapters yet.">
-        <thead><tr><th>Name</th><th>Location</th><th>Cohorts</th><th>Status</th><th class="actions-column">Actions</th></tr></thead>
-        <tbody>
-            {% for chapter in chapters %}
-                <tr>
-                    <td><strong>{{ chapter.name }}</strong></td><td>{{ chapter.location.name }}</td><td>{{ chapter.cohort_count }}</td>
-                    <td><span class="status-badge {% if chapter.is_active %}status-badge--active{% endif %}">{% if chapter.is_active %}Active{% else %}Inactive{% endif %}</span></td>
-                    <td class="table-actions">
-                        <a href="{% url 'chapter_edit' chapter.id %}" class="text-link">Edit</a>
-                        <form method="post" action="{% url 'chapter_delete' chapter.id %}" onsubmit="return confirm('Delete this chapter?');">{% csrf_token %}<button class="text-button text-button--danger">Delete</button></form>
-                    </td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
+{% data_table id="chapters-table" empty="No chapters yet." %}
+    <thead><tr><th>Name</th><th>Location</th><th>Cohorts</th><th>Status</th><th class="actions-column">Actions</th></tr></thead>
+    <tbody>
+        {% for chapter in chapters %}
+            <tr data-filter-status="{% if chapter.is_active %}Active{% else %}Inactive{% endif %}" data-filter-location="{{ chapter.location.name }}">
+                <td><strong>{{ chapter.name }}</strong></td>
+                <td>{{ chapter.location.name }}</td>
+                <td>{{ chapter.cohort_count }}</td>
+                <td>{% status_badge chapter.is_active %}</td>
+                {% url 'chapter_edit' chapter.pk as edit_url %}{% url 'chapter_delete' chapter.pk as delete_url %}
+                {% row_actions edit_url delete_url confirm="Delete this chapter?" %}
+            </tr>
+        {% endfor %}
+    </tbody>
+{% enddata_table %}
 {% endblock %}

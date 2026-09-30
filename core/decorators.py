@@ -1,16 +1,14 @@
 from functools import wraps
 
-from django.contrib.auth.views import redirect_to_login
-from django.core.exceptions import PermissionDenied
+from core.permissions import check_access
 
 
 def admin_required(view_func):
     @wraps(view_func)
     def wrapped_view(request, *args, **kwargs):
-        if not request.user.is_authenticated:
-            return redirect_to_login(request.get_full_path())
-        if not request.user.is_platform_admin:
-            raise PermissionDenied
+        denied = check_access(request, admin_only=True)
+        if denied is not None:
+            return denied
         return view_func(request, *args, **kwargs)
 
     return wrapped_view

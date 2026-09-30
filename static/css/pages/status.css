@@ -1,0 +1,78 @@
+/* Centered status pages: 403 / 404 / 500 and sign-in errors (layouts/centered.html). */
+
+.status-shell {
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    padding: 1.5rem;
+}
+
+.status-card {
+    width: min(100%, 480px);
+    padding: clamp(2rem, 6vw, 3rem) clamp(1.5rem, 5vw, 2.5rem);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background: var(--surface);
+    text-align: center;
+}
+
+.status-icon {
+    display: grid;
+    place-items: center;
+    width: 72px;
+    height: 72px;
+    margin: 0 auto 1.5rem;
+    border-radius: 50%;
+    color: var(--green);
+    background: var(--green-soft);
+}
+
+.status-icon .fi {
+    font-size: 1.75rem;
+}
+
+.status-icon--danger {
+    color: var(--danger);
+    background: var(--danger-soft);
+}
+
+.status-code {
+    margin-bottom: 0.25rem;
+    color: var(--green-dark);
+    font-size: clamp(2.25rem, 9vw, 4.5rem);
+    font-weight: 700;
+    line-height: 1.05;
+}
+
+.status-title {
+    margin: 0 0 0.75rem;
+    color: var(--green);
+    font-size: 1.35rem;
+    font-weight: 600;
+}
+
+.status-body {
+    margin-bottom: 2rem;
+    color: var(--muted);
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+.status-body p {
+    margin: 0;
+}
+
+.status-detail {
+    margin-top: 1.25rem;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    color: var(--danger);
+    background: var(--danger-soft);
+    font-size: 0.85rem;
+}
+
+.status-brand {
+    margin: 2rem 0 0;
+    color: var(--subtle);
+    font-size: 0.8rem;
+}

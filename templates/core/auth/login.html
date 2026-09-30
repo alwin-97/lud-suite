@@ -1,20 +1,18 @@
-{% extends "base.html" %}
+{% extends "layouts/base.html" %}
 {% load static socialaccount %}
 
 {% block title %}Sign in{% endblock %}
 {% block body_class %}login-page{% endblock %}
 
-{% block links %}
-<link rel="stylesheet" href="{% static 'css/login.css' %}">
+{% block styles %}
+    <link rel="stylesheet" href="{% static 'css/pages/login.css' %}">
+    <link rel="stylesheet" href="{% static 'css/footer.css' %}">
 {% endblock %}
 
-{% block content %}
+{% block body %}
 <main class="login-shell">
     <section class="login-intro" aria-labelledby="welcome-title">
-        <div class="brand-mark">
-            <img src="{% static 'images/lud.png' %}" alt="Let Us Dream">
-            <span>Let Us Dream</span>
-        </div>
+        {% include "components/brand_mark.html" with variant="login" only %}
         <div>
             <p class="eyebrow">Application portal</p>
             <h1 id="welcome-title">One community. Shared progress.</h1>
@@ -38,13 +36,7 @@
                 {% endif %}
             </p>
 
-            {% if messages %}
-                <div class="messages" aria-live="polite">
-                    {% for message in messages %}
-                        <div class="message message--{{ message.tags|default:'info' }}">{{ message }}</div>
-                    {% endfor %}
-                </div>
-            {% endif %}
+            {% include "components/flash_messages.html" with messages=messages variant="auth" only %}
 
             {% if google_login_enabled %}
                 <p class="preferred-label">Recommended sign-in</p>
@@ -78,6 +70,8 @@
             </details>
 
         </div>
+
+        {% include "components/shell/site_footer.html" with APP_VERSION=APP_VERSION only %}
     </section>
 </main>
 {% endblock %}

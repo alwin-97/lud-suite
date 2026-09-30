@@ -1,0 +1,51 @@
+{% extends "layouts/base.html" %}
+{% load static nav %}
+
+{% block title_prefix %}Let Us Dream Admin{% endblock %}
+
+{% block styles %}
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'css/shell.css' %}">
+    <link rel="stylesheet" href="{% static 'css/components.css' %}">
+    <link rel="stylesheet" href="{% static 'css/footer.css' %}">
+    {% block page_styles %}{% endblock %}
+{% endblock %}
+
+{% block head %}
+    <script>
+        (function () {
+            try {
+                if (localStorage.getItem('lud-admin-sidebar') === 'collapsed') {
+                    document.documentElement.classList.add('sidebar-collapsed');
+                }
+            } catch (e) {}
+        })();
+    </script>
+{% endblock %}
+
+{% block body %}
+    {% include "components/shell/app_bar.html" with user=user csrf_token=csrf_token subtitle="Admin" home_url=home_url|default:"" only %}
+
+    <div class="admin-shell">
+        {% admin_sidebar %}
+
+        <div class="admin-main">
+            <div class="admin-surface">
+                {% include "components/flash_messages.html" with messages=messages variant="admin" only %}
+
+                <main class="admin-content">
+                    {% block page_content %}{% endblock %}
+                </main>
+            </div>
+
+            {% include "components/shell/site_footer.html" with APP_VERSION=APP_VERSION only %}
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script src="{% static 'js/components/sidebar.js' %}"></script>
+    <script src="{% static 'js/components/account-menu.js' %}"></script>
+    <script src="{% static 'js/components/confirm.js' %}"></script>
+    {% block page_scripts %}{% endblock %}
+{% endblock %}

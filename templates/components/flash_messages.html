@@ -1,0 +1,15 @@
+{% if messages %}
+    {% if variant == "auth" %}
+        <div class="messages" aria-live="polite">
+            {% for message in messages %}
+                <div class="message message--{{ message.tags|default:'info' }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="flash-messages" aria-live="polite">
+            {% for message in messages %}
+                <div class="flash flash--{{ message.tags|default:'info' }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endif %}

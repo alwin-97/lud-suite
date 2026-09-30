@@ -1,0 +1,31 @@
+/* Design tokens: palette from the Let Us Dream logo (leaf green banner,
+   globe blue, navy ink) plus shell sizes. Every colour in the app comes from here. */
+
+:root {
+    --ink: #1c2733;
+    --muted: #5f6b76;
+    --green: #2e7d1f;
+    --green-dark: #1f5c14;
+    --green-soft: #dcefd2;
+    --green-faint: #eef7ea;
+    --blue: #1a67b8;
+    --blue-soft: #e2edf9;
+    --danger: #b3261e;
+    --danger-soft: #fcebea;
+    --warning: #735c18;
+    --warning-soft: #fff7dc;
+    --line: #e1e6ea;
+    --line-strong: #c4ccd3;
+    --hover: rgba(28, 39, 51, 0.06);
+    --row-hover: #f5f8fa;
+    --neutral-soft: #eceff2;
+    --subtle: #8a959e;
+    --tooltip: #3c4650;
+    --on-brand: #ffffff;
+    --on-brand-soft: #dbeed2;
+    --background: #f3f7f9;
+    --surface: #ffffff;
+    --app-bar-height: 64px;
+    --sidebar-width: 256px;
+    --sidebar-collapsed-width: 72px;
+}

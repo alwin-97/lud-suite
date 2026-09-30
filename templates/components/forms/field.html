@@ -1,0 +1,7 @@
+{# Field group for every StyledModelForm field (ProjectFormRenderer.field_template_name). #}
+<div class="form-field{% if field.widget_type == 'checkbox' %} form-field--checkbox{% endif %}{% with extra=field.form.field_wrapper_classes %}{% for name, classes in extra.items %}{% if name == field.name %} {{ classes }}{% endif %}{% endfor %}{% endwith %}">
+    {{ field.label_tag }}
+    {{ field }}
+    {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
+    {% for error in field.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+</div>

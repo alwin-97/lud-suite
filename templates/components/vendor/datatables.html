@@ -1,0 +1,14 @@
+{% comment %}
+Load on every page that uses {% data_table %}:
+    {% block vendor_styles %}{% include "components/vendor/datatables.html#styles" %}{% endblock %}
+    {% block vendor_scripts %}{% include "components/vendor/datatables.html#scripts" %}{% endblock %}
+{% endcomment %}
+{% load static %}
+{% partialdef styles %}
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.1.8/css/dataTables.dataTables.min.css">
+{% endpartialdef %}
+{% partialdef scripts %}
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.datatables.net/2.1.8/js/dataTables.min.js"></script>
+    <script src="{% static 'js/components/data-table.js' %}"></script>
+{% endpartialdef %}

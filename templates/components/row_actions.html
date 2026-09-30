@@ -1,0 +1,10 @@
+{# Rendered by {% row_actions %}: the whole actions <td>. #}
+<td class="table-actions">
+    <a href="{{ edit_url }}" class="text-link"><i class="fi fi-rr-pencil" aria-hidden="true"></i> {{ edit_label }}</a>
+    {% if delete_url %}
+        <form method="post" action="{{ delete_url }}" data-confirm="{{ confirm }}">
+            {% csrf_token %}
+            <button type="submit" class="text-button text-button--danger"><i class="fi fi-rr-trash" aria-hidden="true"></i> Delete</button>
+        </form>
+    {% endif %}
+</td>

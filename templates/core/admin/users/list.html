@@ -1,34 +1,36 @@
-{% extends "core/admin/base_admin.html" %}
+{% extends "layouts/admin.html" %}
+{% load ui %}
 
 {% block title %}Users{% endblock %}
+{% block vendor_styles %}{% include "components/vendor/datatables.html#styles" %}{% endblock %}
+{% block vendor_scripts %}{% include "components/vendor/datatables.html#scripts" %}{% endblock %}
 
 {% block page_content %}
-<section class="page-heading page-heading--split">
-    <div><p class="eyebrow">Access management</p><h1>Platform users</h1><p>Only provisioned users can sign in with Google.</p></div>
-    <a href="{% url 'platform_user_create' %}" class="button button--primary">Add user</a>
-</section>
+{% page_header eyebrow="Access management" title="Platform users" description="Only provisioned users can sign in with Google." %}
+    {% include "components/table_filters.html" with table_id="users-table" fields="Role,Cohort,Status" only %}
+    <a href="{% url 'platform_user_create' %}" class="button button--primary"><i class="fi fi-rr-plus" aria-hidden="true"></i> Add user</a>
+{% endpage_header %}
 
-<div class="table-card">
-    <table class="data-table" data-empty-message="No users have been provisioned yet.">
-        <thead><tr><th>User</th><th>Cohort roles</th><th>Status</th><th class="actions-column">Actions</th></tr></thead>
-        <tbody>
-            {% for platform_user in platform_users %}
-                <tr>
-                    <td><strong>{{ platform_user.get_full_name|default:platform_user.email }}</strong><small class="cell-note">{{ platform_user.email }}</small></td>
-                    <td>
-                        <div class="role-list">
-                            {% for membership in platform_user.cohort_memberships.all %}
-                                <span class="role-chip">{{ membership.get_role_display }} · {{ membership.cohort.name }}</span>
-                            {% empty %}
-                                <span class="muted">No roles assigned</span>
-                            {% endfor %}
-                        </div>
-                    </td>
-                    <td><span class="status-badge {% if platform_user.is_active %}status-badge--active{% endif %}">{% if platform_user.is_active %}Active{% else %}Inactive{% endif %}</span></td>
-                    <td class="table-actions"><a href="{% url 'platform_user_edit' platform_user.id %}" class="text-link">Edit access</a></td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
+{% data_table id="users-table" empty="No users have been provisioned yet." %}
+    <thead><tr><th>User</th><th>Cohort roles</th><th>Status</th><th class="actions-column">Actions</th></tr></thead>
+    <tbody>
+        {% for platform_user in platform_users %}
+            <tr data-filter-status="{% if platform_user.is_active %}Active{% else %}Inactive{% endif %}">
+                <td><strong>{{ platform_user.get_full_name|default:platform_user.email }}</strong><small class="cell-note">{{ platform_user.email }}</small></td>
+                <td>
+                    <div class="role-list">
+                        {% for membership in platform_user.cohort_memberships.all %}
+                            <span class="role-chip" data-filter-role="{{ membership.get_role_display }}" data-filter-cohort="{{ membership.cohort.name }} · {{ membership.cohort.chapter }}">{{ membership.get_role_display }} · {{ membership.cohort.name }}</span>
+                        {% empty %}
+                            <span class="muted" data-filter-role="No roles assigned" data-filter-cohort="No cohort assigned">No roles assigned</span>
+                        {% endfor %}
+                    </div>
+                </td>
+                <td>{% status_badge platform_user.is_active %}</td>
+                {% url 'platform_user_edit' platform_user.pk as edit_url %}
+                {% row_actions edit_url edit_label="Edit access" %}
+            </tr>
+        {% endfor %}
+    </tbody>
+{% enddata_table %}
 {% endblock %}

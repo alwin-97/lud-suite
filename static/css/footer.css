@@ -1,0 +1,53 @@
+.site-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem clamp(1rem, 3vw, 2.5rem);
+    border-top: 1px solid var(--line);
+    color: var(--muted);
+    background: var(--surface);
+    font-family: "Outfit", sans-serif;
+    font-size: 0.76rem;
+    line-height: 1.5;
+}
+
+.site-footer-credit {
+    margin: 0;
+}
+
+.site-footer-credit strong {
+    color: var(--ink);
+    font-weight: 600;
+}
+
+.site-footer-version {
+    flex: 0 0 auto;
+    padding: 0.25rem 0.6rem;
+    border-radius: 999px;
+    color: var(--green-dark);
+    background: var(--green-soft);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+
+/* Standalone pages: keep the footer at the bottom of the viewport and let
+   it move down when the content is taller than the screen. */
+body.has-site-footer {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+body.has-site-footer > main {
+    flex: 1 0 auto;
+    min-height: 0;
+}
+
+@media (max-width: 640px) {
+    .site-footer {
+        flex-direction: column;
+        text-align: center;
+    }
+}

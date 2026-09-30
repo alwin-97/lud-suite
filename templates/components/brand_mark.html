@@ -1,0 +1,17 @@
+{% load static %}
+{% if variant == "app-bar" %}
+    <a href="{{ href }}" class="admin-brand">
+        <img src="{% static 'images/lud.png' %}" alt="Let Us Dream">
+        <span class="admin-brand-text">
+            <strong>Let Us Dream</strong>
+            {% if subtitle %}<small>{{ subtitle }}</small>{% endif %}
+        </span>
+    </a>
+{% elif variant == "login" %}
+    <div class="brand-mark">
+        <img src="{% static 'images/lud.png' %}" alt="Let Us Dream">
+        <span>Let Us Dream</span>
+    </div>
+{% else %}
+    <img src="{% static 'images/lud.png' %}" alt="Let Us Dream" class="member-logo">
+{% endif %}

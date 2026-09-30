@@ -1,0 +1,16 @@
+{% extends "layouts/base.html" %}
+{% load static %}
+{# Must render without a request context: 500.html uses it. #}
+
+{% block styles %}
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'css/pages/status.css' %}">
+{% endblock %}
+
+{% block body_class %}status-page{% endblock %}
+
+{% block body %}
+    <main class="status-shell">
+        {% block card %}{% endblock %}
+    </main>
+{% endblock %}

@@ -1,0 +1,10 @@
+{% extends "layouts/admin.html" %}
+{% load ui %}
+{# Shared create/edit page. Views (core/views/mixins.AdminFormMixin) pass title, eyebrow, description, submit_label, form_layout and cancel_url. #}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block page_content %}
+{% page_header eyebrow=eyebrow title=title description=description %}{% endpage_header %}
+{% include "components/forms/admin_form.html" with form=form submit_label=submit_label cancel_url=cancel_url layout=form_layout csrf_token=csrf_token only %}
+{% endblock %}

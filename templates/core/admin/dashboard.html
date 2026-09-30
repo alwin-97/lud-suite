@@ -1,41 +1,24 @@
-{% extends "core/admin/base_admin.html" %}
+{% extends "layouts/admin.html" %}
+{% load ui %}
 
 {% block title %}Dashboard{% endblock %}
 
 {% block page_content %}
-<section class="page-heading">
-    <div>
-        <p class="eyebrow">Admin dashboard</p>
-        <h1>Welcome{% if user.first_name %}, {{ user.first_name }}{% endif %}.</h1>
-        <p>Configure the chapter network, cohorts, and authorized platform users.</p>
-    </div>
-</section>
+{% page_header eyebrow="Admin dashboard" title=title description="Configure the chapter network, cohorts, and authorized platform users." %}{% endpage_header %}
 
 <section class="stat-grid" aria-label="Platform totals">
-    <article class="stat-card"><strong>{{ location_count }}</strong><span>Active locations</span></article>
-    <article class="stat-card"><strong>{{ chapter_count }}</strong><span>Active chapters</span></article>
-    <article class="stat-card"><strong>{{ cohort_count }}</strong><span>Active cohorts</span></article>
-    <article class="stat-card"><strong>{{ user_count }}</strong><span>Provisioned users</span></article>
+    {% include "components/stat_card.html" with value=location_count label="Active locations" only %}
+    {% include "components/stat_card.html" with value=chapter_count label="Active chapters" only %}
+    {% include "components/stat_card.html" with value=cohort_count label="Active cohorts" only %}
+    {% include "components/stat_card.html" with value=user_count label="Provisioned users" only %}
 </section>
 
 <section class="section-block">
-    <div class="section-heading">
-        <div>
-            <p class="eyebrow">Get started</p>
-            <h2>Administration</h2>
-        </div>
-    </div>
+    {% include "components/section_heading.html" with eyebrow="Get started" title="Administration" only %}
     <div class="action-grid">
-        <a href="{% url 'configuration_home' %}" class="action-card">
-            <span class="action-number">01</span>
-            <strong>Application configuration</strong>
-            <p>Manage reusable locations, chapters, and three-year cohorts.</p>
-        </a>
-        <a href="{% url 'platform_user_list' %}" class="action-card">
-            <span class="action-number">02</span>
-            <strong>User access</strong>
-            <p>Provision Google accounts and assign one or more cohort roles.</p>
-        </a>
+        {% url 'configuration_home' as configuration_url %}{% url 'platform_user_list' as users_url %}
+        {% include "components/link_card.html" with href=configuration_url badge="01" title="Application configuration" text="Manage reusable locations, chapters, and three-year cohorts." only %}
+        {% include "components/link_card.html" with href=users_url badge="02" title="User access" text="Provision Google accounts and assign one or more cohort roles." only %}
     </div>
 </section>
 {% endblock %}

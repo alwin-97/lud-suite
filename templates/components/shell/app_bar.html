@@ -1,0 +1,8 @@
+{% url 'admin_dashboard' as dashboard_url %}
+<header class="app-bar">
+    <button type="button" class="icon-button sidebar-toggle" id="sidebarToggle" aria-label="Collapse sidebar" aria-expanded="true">
+        <i class="fi fi-rr-menu-burger" aria-hidden="true"></i>
+    </button>
+    {% include "components/brand_mark.html" with variant="app-bar" href=home_url|default:dashboard_url subtitle=subtitle only %}
+    {% include "components/shell/account_menu.html" with user=user csrf_token=csrf_token only %}
+</header>

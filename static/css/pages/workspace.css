@@ -1,0 +1,60 @@
+/* Member workspace page. */
+
+/* Member workspace */
+.member-shell {
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    padding: 1rem;
+    background: var(--background);
+}
+
+.member-card {
+    width: min(100%, 650px);
+    padding: clamp(1.5rem, 5vw, 2.75rem);
+    border-radius: 16px;
+    background: var(--surface);
+}
+
+.member-logo {
+    width: 76px;
+    margin-bottom: 1.25rem;
+}
+
+.member-card h1 {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 600;
+}
+
+.member-card > p:not(.eyebrow) {
+    color: var(--muted);
+    line-height: 1.6;
+}
+
+.membership-list {
+    display: grid;
+    gap: 0.5rem;
+    margin: 1.5rem 0;
+}
+
+.membership-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.8rem 1rem;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+}
+
+.membership-row div {
+    display: grid;
+    gap: 0.2rem;
+}
+
+.membership-row span,
+.membership-row small {
+    color: var(--muted);
+    font-size: 0.78rem;
+}

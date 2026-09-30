@@ -1,0 +1,30 @@
+{# Rendered by {% admin_sidebar %}; items come from core/navigation.py. #}
+<aside class="admin-sidebar" aria-label="Admin navigation">
+    <nav class="sidebar-nav">
+        {% for item in items %}
+            {% if item.children %}
+                <div class="sidebar-group{% if item.active %} open{% endif %}">
+                    <div class="sidebar-group-row">
+                        <a href="{{ item.url }}" class="sidebar-link sidebar-group-link{% if item.active %} active{% endif %}" data-tooltip="{{ item.label }}">
+                            <span class="sidebar-icon"><i class="fi fi-rr-{{ item.icon }}" aria-hidden="true"></i></span>
+                            <span class="sidebar-label">{{ item.label }}</span>
+                        </a>
+                        <button type="button" class="sidebar-group-toggle" aria-label="Toggle {{ item.label|lower }} options" aria-expanded="{% if item.active %}true{% else %}false{% endif %}">
+                            <i class="fi fi-rr-angle-small-down" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                    <div class="sidebar-submenu">
+                        {% for child in item.children %}
+                            <a href="{{ child.url }}" class="sidebar-sublink{% if child.active %} active{% endif %}"{% if child.active %} aria-current="page"{% endif %}>{{ child.label }}</a>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% else %}
+                <a href="{{ item.url }}" class="sidebar-link{% if item.active %} active{% endif %}" data-tooltip="{{ item.label }}"{% if item.active %} aria-current="page"{% endif %}>
+                    <span class="sidebar-icon"><i class="fi fi-rr-{{ item.icon }}" aria-hidden="true"></i></span>
+                    <span class="sidebar-label">{{ item.label }}</span>
+                </a>
+            {% endif %}
+        {% endfor %}
+    </nav>
+</aside>

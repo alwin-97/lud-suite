@@ -1,39 +1,8 @@
 from django import forms
 from django.db import transaction
 
-from core.models import Chapter, Cohort, CohortMembership, CustomUser, Location
-
-
-class StyledModelForm(forms.ModelForm):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        for field in self.fields.values():
-            if isinstance(field.widget, forms.CheckboxInput):
-                field.widget.attrs["class"] = "checkbox-input"
-            else:
-                field.widget.attrs["class"] = "form-control"
-
-
-class LocationForm(StyledModelForm):
-    class Meta:
-        model = Location
-        fields = ("name", "is_active")
-
-
-class ChapterForm(StyledModelForm):
-    class Meta:
-        model = Chapter
-        fields = ("name", "location", "is_active")
-
-
-class CohortForm(StyledModelForm):
-    class Meta:
-        model = Cohort
-        fields = ("name", "chapter", "start_date", "is_active")
-        widgets = {"start_date": forms.DateInput(attrs={"type": "date"})}
-        help_texts = {
-            "start_date": "The end date is calculated automatically, three years later.",
-        }
+from core.forms.base import StyledModelForm
+from core.models import Cohort, CohortMembership, CustomUser
 
 
 class PlatformUserForm(StyledModelForm):
@@ -43,6 +12,8 @@ class PlatformUserForm(StyledModelForm):
         widget=forms.CheckboxSelectMultiple,
         help_text="Select every role this user holds. A user may have multiple roles and cohorts.",
     )
+
+    field_wrapper_classes = {"assignments": "form-field--full assignment-field"}
 
     class Meta:
         model = CustomUser

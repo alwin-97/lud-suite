@@ -1,0 +1,14 @@
+{# Rendered by {% status_card %}; used by layouts/centered.html pages. No request context required. #}
+<div class="status-card">
+    <div class="status-icon status-icon--{{ tone }}"><i class="fi fi-rr-{{ icon }}" aria-hidden="true"></i></div>
+    {% if code %}<div class="status-code">{{ code }}</div>{% endif %}
+    <h1 class="status-title">{{ title }}</h1>
+    <div class="status-body">{{ body }}</div>
+    {% if action_url %}
+        <a href="{{ action_url }}" class="button button--primary">
+            {% if action_icon %}<i class="fi fi-rr-{{ action_icon }}" aria-hidden="true"></i>{% endif %}
+            {{ action_label }}
+        </a>
+    {% endif %}
+    <p class="status-brand">Let Us Dream &middot; Application Suite</p>
+</div>

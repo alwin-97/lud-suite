@@ -1,0 +1,478 @@
+/* Admin shell (Gmail-style): app bar, account menu, sidebar, content surface. */
+
+/* App bar */
+.app-bar {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    height: var(--app-bar-height);
+    padding: 0 1rem 0 0.75rem;
+    background: var(--background);
+}
+
+.icon-button {
+    display: grid;
+    flex: 0 0 auto;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    color: var(--muted);
+    background: none;
+    cursor: pointer;
+}
+
+.icon-button:hover {
+    background: var(--hover);
+}
+
+.icon-button .fi {
+    font-size: 20px;
+}
+
+.admin-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    min-width: 0;
+    padding-right: 0.5rem;
+    color: var(--ink);
+    text-decoration: none;
+}
+
+.admin-brand img {
+    width: 44px;
+    height: 36px;
+    flex: 0 0 auto;
+    object-fit: contain;
+}
+
+.admin-brand-text {
+    display: grid;
+    line-height: 1.15;
+    white-space: nowrap;
+}
+
+.admin-brand-text strong {
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.admin-brand-text small {
+    color: var(--green);
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.account-menu {
+    position: relative;
+    margin-left: auto;
+}
+
+.account-button {
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: none;
+    cursor: pointer;
+}
+
+.account-button:hover,
+.account-button[aria-expanded="true"] {
+    background: var(--hover);
+}
+
+.account-avatar {
+    display: grid;
+    flex: 0 0 auto;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    color: var(--on-brand);
+    background: var(--green);
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.account-avatar--large {
+    width: 64px;
+    height: 64px;
+    margin-bottom: 0.5rem;
+    font-size: 1.6rem;
+}
+
+.account-popover {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    display: grid;
+    justify-items: center;
+    gap: 0.2rem;
+    width: min(320px, calc(100vw - 2rem));
+    padding: 1.5rem 1.25rem 1.25rem;
+    border: 1px solid var(--line);
+    border-radius: 24px;
+    background: var(--surface);
+    box-shadow: 0 4px 16px rgba(28, 39, 51, 0.14);
+    text-align: center;
+}
+
+.account-popover[hidden] {
+    display: none;
+}
+
+.account-popover strong {
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.account-popover .muted {
+    max-width: 100%;
+    overflow: hidden;
+    font-size: 0.82rem;
+    text-overflow: ellipsis;
+}
+
+.account-popover form {
+    width: 100%;
+    margin: 1rem 0 0;
+}
+
+.account-popover .button {
+    width: 100%;
+    gap: 0.5rem;
+}
+
+.account-popover .button .fi {
+    font-size: 16px;
+}
+
+/* Shell */
+.admin-shell {
+    display: flex;
+    align-items: stretch;
+    min-height: calc(100vh - var(--app-bar-height));
+}
+
+.admin-sidebar {
+    position: sticky;
+    top: var(--app-bar-height);
+    z-index: 40;
+    align-self: flex-start;
+    height: calc(100vh - var(--app-bar-height));
+    width: var(--sidebar-width);
+    flex: 0 0 auto;
+    overflow-y: auto;
+    background: var(--background);
+    transition: width 180ms ease;
+}
+
+html.sidebar-collapsed .admin-sidebar {
+    width: var(--sidebar-collapsed-width);
+    overflow: visible;
+}
+
+.sidebar-nav {
+    display: grid;
+    gap: 2px;
+    padding: 0.5rem 1rem 1rem 0;
+}
+
+.sidebar-link {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 1.1rem;
+    width: 100%;
+    height: 40px;
+    padding: 0 1rem 0 1.6rem;
+    border: 0;
+    border-radius: 0 999px 999px 0;
+    color: var(--ink);
+    font: inherit;
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-align: left;
+    text-decoration: none;
+    background: none;
+    cursor: pointer;
+}
+
+.sidebar-link:hover {
+    background: var(--hover);
+}
+
+.sidebar-link.active {
+    color: var(--green-dark);
+    background: var(--green-soft);
+    font-weight: 700;
+}
+
+.sidebar-icon {
+    display: grid;
+    flex: 0 0 auto;
+    place-items: center;
+    width: 22px;
+    height: 22px;
+}
+
+.sidebar-icon .fi {
+    font-size: 18px;
+}
+
+.sidebar-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+html.sidebar-collapsed .sidebar-nav {
+    padding-right: 0;
+    justify-items: center;
+}
+
+html.sidebar-collapsed .sidebar-link {
+    justify-content: center;
+    width: 56px;
+    height: 32px;
+    padding: 0;
+    border-radius: 999px;
+}
+
+html.sidebar-collapsed .sidebar-nav > .sidebar-link,
+html.sidebar-collapsed .sidebar-group {
+    margin: 4px 0;
+}
+
+html.sidebar-collapsed .sidebar-label {
+    display: none;
+}
+
+html.sidebar-collapsed .sidebar-link:hover::after,
+html.sidebar-collapsed .sidebar-link:focus-visible::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    left: calc(100% + 10px);
+    top: 50%;
+    transform: translateY(-50%);
+    padding: 0.35rem 0.6rem;
+    border-radius: 4px;
+    color: var(--on-brand);
+    background: var(--tooltip);
+    font-size: 0.76rem;
+    font-weight: 500;
+    white-space: nowrap;
+    z-index: 40;
+    pointer-events: none;
+}
+
+.sidebar-group {
+    position: relative;
+}
+
+.sidebar-group-row {
+    position: relative;
+}
+
+.sidebar-group-link {
+    padding-right: 3rem;
+}
+
+.sidebar-group-toggle {
+    position: absolute;
+    top: 50%;
+    right: 0.4rem;
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    color: inherit;
+    background: none;
+    transform: translateY(-50%);
+    cursor: pointer;
+}
+
+.sidebar-group-toggle:hover {
+    background: var(--hover);
+}
+
+.sidebar-group-toggle .fi {
+    font-size: 16px;
+    transition: transform 160ms ease;
+}
+
+.sidebar-group.open > .sidebar-group-row .sidebar-group-toggle .fi {
+    transform: rotate(180deg);
+}
+
+.sidebar-submenu {
+    display: grid;
+    gap: 2px;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 200ms ease;
+}
+
+.sidebar-group.open .sidebar-submenu {
+    max-height: 200px;
+    margin-top: 2px;
+}
+
+.sidebar-sublink {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    height: 34px;
+    padding: 0 1rem 0 4.3rem;
+    border-radius: 0 999px 999px 0;
+    color: var(--muted);
+    font-size: 0.86rem;
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.sidebar-sublink .fi {
+    flex: 0 0 16px;
+    justify-content: center;
+    font-size: 16px;
+}
+
+.sidebar-sublink:hover {
+    color: var(--ink);
+    background: var(--hover);
+}
+
+.sidebar-sublink.active {
+    color: var(--green-dark);
+    background: var(--green-faint);
+    font-weight: 700;
+}
+
+html.sidebar-collapsed .sidebar-group-toggle {
+    display: none;
+}
+
+html.sidebar-collapsed .sidebar-submenu {
+    display: grid;
+    position: absolute;
+    left: calc(100% + 4px);
+    top: -0.5rem;
+    min-width: 200px;
+    max-height: none;
+    margin: 0;
+    padding: 0.5rem 0;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--surface);
+    box-shadow: 0 4px 16px rgba(28, 39, 51, 0.14);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 160ms ease, visibility 160ms;
+    z-index: 45;
+}
+
+html.sidebar-collapsed .sidebar-group:hover .sidebar-submenu,
+html.sidebar-collapsed .sidebar-group:focus-within .sidebar-submenu {
+    opacity: 1;
+    visibility: visible;
+}
+
+html.sidebar-collapsed .sidebar-sublink {
+    padding: 0 1rem;
+    border-radius: 0;
+}
+
+html.sidebar-collapsed .sidebar-group-link:hover::after,
+html.sidebar-collapsed .sidebar-group-link:focus-visible::after {
+    content: none;
+}
+
+/* Content surface */
+.admin-main {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+    padding-right: 1rem;
+}
+
+.admin-surface {
+    display: flex;
+    flex: 1 0 auto;
+    flex-direction: column;
+    border-radius: 16px;
+    background: var(--surface);
+}
+
+.admin-content {
+    flex: 1 0 auto;
+    padding: 1.5rem clamp(1rem, 3vw, 2rem) 2.5rem;
+}
+
+.admin-main .site-footer {
+    border-top: 0;
+    background: transparent;
+    padding-inline: 0.5rem;
+}
+
+@media (max-width: 640px) {
+    .app-bar {
+            padding-right: 0.5rem;
+        }
+
+    .admin-brand-text small {
+            display: none;
+        }
+
+    .sidebar-toggle {
+            display: none;
+        }
+
+    .admin-sidebar {
+            width: var(--sidebar-collapsed-width);
+            overflow: visible;
+        }
+
+    .sidebar-nav {
+            padding-right: 0;
+            justify-items: center;
+        }
+
+    .sidebar-link {
+            justify-content: center;
+            width: 56px;
+            height: 32px;
+            padding: 0;
+            border-radius: 999px;
+        }
+
+    .sidebar-nav > .sidebar-link,
+        .sidebar-group {
+            margin: 4px 0;
+        }
+
+    .sidebar-label,
+        .sidebar-group-toggle,
+        .sidebar-submenu {
+            display: none;
+        }
+
+    .admin-main {
+            padding-right: 0.5rem;
+        }
+}

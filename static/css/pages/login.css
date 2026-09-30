@@ -1,11 +1,7 @@
+/* Sign-in page. Loads after tokens.css; uses its own radius scale (10px inputs)
+   and a one-column breakpoint at 800px. */
 :root {
     color-scheme: light;
-    --ink: #12211f;
-    --muted: #667572;
-    --green: #0b5d52;
-    --green-dark: #073f38;
-    --line: #dfe8e5;
-    --surface: #ffffff;
 }
 
 * {
@@ -17,7 +13,7 @@ body.login-page {
     margin: 0;
     color: var(--ink);
     font-family: "Outfit", sans-serif;
-    background: #f4f7f6;
+    background: var(--background);
 }
 
 .login-shell {
@@ -32,7 +28,7 @@ body.login-page {
     flex-direction: column;
     justify-content: space-between;
     padding: clamp(2rem, 6vw, 5.5rem);
-    color: #fff;
+    color: var(--on-brand);
     background:
         radial-gradient(circle at 15% 15%, rgba(255, 255, 255, 0.13), transparent 30%),
         linear-gradient(145deg, var(--green), var(--green-dark));
@@ -52,12 +48,12 @@ body.login-page {
     padding: 0.3rem;
     object-fit: contain;
     border-radius: 10px;
-    background: #fff;
+    background: var(--surface);
 }
 
 .eyebrow {
     margin: 0 0 0.8rem;
-    color: #74b9ae;
+    color: var(--blue);
     font-size: 0.75rem;
     font-weight: 700;
     letter-spacing: 0.15em;
@@ -65,7 +61,7 @@ body.login-page {
 }
 
 .login-intro .eyebrow {
-    color: #b9ded7;
+    color: var(--on-brand-soft);
 }
 
 .login-intro h1 {
@@ -91,18 +87,27 @@ body.login-page {
 }
 
 .login-panel {
-    display: grid;
-    place-items: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2.5rem;
     padding: 2rem;
+}
+
+.login-panel .site-footer {
+    width: min(100%, 430px);
+    flex-direction: column;
+    gap: 0.6rem;
+    padding: 0 1rem;
+    border: 0;
+    background: transparent;
+    text-align: center;
 }
 
 .login-card {
     width: min(100%, 430px);
-    padding: clamp(1.75rem, 5vw, 3rem);
-    border: 1px solid var(--line);
-    border-radius: 24px;
-    background: var(--surface);
-    box-shadow: 0 24px 70px rgba(18, 33, 31, 0.08);
+    padding: 0 clamp(0rem, 2vw, 0.5rem);
 }
 
 .login-card h2 {
@@ -135,7 +140,7 @@ body.login-page {
 .login-form input {
     width: 100%;
     padding: 0.85rem 0.95rem;
-    border: 1px solid #cdd9d6;
+    border: 1px solid var(--line-strong);
     border-radius: 10px;
     color: var(--ink);
     font: inherit;
@@ -144,7 +149,7 @@ body.login-page {
 
 .login-form input:focus {
     border-color: var(--green);
-    box-shadow: 0 0 0 3px rgba(11, 93, 82, 0.12);
+    box-shadow: inset 0 0 0 1px var(--green);
 }
 
 .primary-button,
@@ -164,20 +169,20 @@ body.login-page {
 
 .primary-button {
     margin-top: 0.9rem;
-    border: 1px solid #c7d8d4;
+    border: 1px solid var(--line-strong);
     color: var(--green-dark);
-    background: #edf4f2;
+    background: var(--green-faint);
 }
 
 .primary-button:hover {
     border-color: var(--green);
-    background: #e2efec;
+    background: var(--green-soft);
 }
 
 .google-button {
-    border: 1px solid #cdd9d6;
+    border: 1px solid var(--line-strong);
     color: var(--ink);
-    background: #fff;
+    background: var(--surface);
 }
 
 .google-button:hover {
@@ -186,15 +191,15 @@ body.login-page {
 
 .google-button--primary {
     min-height: 56px;
-    border: 2px solid #d4dfdc;
+    border: 1px solid var(--line-strong);
+    border-radius: 999px;
     font-size: 1rem;
-    box-shadow: 0 12px 28px rgba(18, 33, 31, 0.1);
-    transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+    transition: background-color 140ms ease, border-color 140ms ease;
 }
 
 .google-button--primary:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 16px 34px rgba(18, 33, 31, 0.14);
+    border-color: var(--green);
+    background: var(--green-faint);
 }
 
 .google-button img {
@@ -222,8 +227,8 @@ body.login-page {
     margin-bottom: 1rem;
     padding: 0.8rem 0.9rem;
     border-radius: 9px;
-    color: #735c18;
-    background: #fff7dc;
+    color: var(--warning);
+    background: var(--warning-soft);
     font-size: 0.84rem;
     line-height: 1.5;
 }
@@ -237,9 +242,9 @@ body.login-page {
 .credential-fallback summary {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center;
     gap: 1rem;
-    color: #566460;
+    color: var(--muted);
     font-size: 0.86rem;
     font-weight: 600;
     cursor: pointer;
@@ -251,7 +256,7 @@ body.login-page {
 }
 
 .credential-fallback summary small {
-    color: #94a19e;
+    color: var(--subtle);
     font-size: 0.72rem;
     font-weight: 500;
 }
@@ -275,14 +280,14 @@ body.login-page {
 .message {
     padding: 0.75rem 0.9rem;
     border-radius: 9px;
-    background: #edf5f3;
-    color: #174f47;
+    background: var(--green-faint);
+    color: var(--green-dark);
     font-size: 0.86rem;
 }
 
 .message--error {
-    color: #8e2b2b;
-    background: #fceded;
+    color: var(--danger);
+    background: var(--danger-soft);
 }
 
 @media (max-width: 800px) {

@@ -1,0 +1,15 @@
+{# layout: "stack" (single column card) or "grid" (two columns, wide card). #}
+<div class="form-card{% if layout == 'grid' %} form-card--wide{% endif %}">
+    <form method="post" class="admin-form">
+        {% csrf_token %}
+        {% if form.non_field_errors %}<div class="form-errors">{{ form.non_field_errors }}</div>{% endif %}
+        {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
+        {% if layout == "grid" %}<div class="form-grid">{% endif %}
+        {% for field in form.visible_fields %}{{ field.as_field_group }}{% endfor %}
+        {% if layout == "grid" %}</div>{% endif %}
+        <div class="form-actions">
+            <button type="submit" class="button button--primary"><i class="fi fi-rr-disk" aria-hidden="true"></i> {{ submit_label|default:"Save" }}</button>
+            <a href="{{ cancel_url }}" class="button button--secondary"><i class="fi fi-rr-cross" aria-hidden="true"></i> Cancel</a>
+        </div>
+    </form>
+</div>
