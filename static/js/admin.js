@@ -1,4 +1,29 @@
 (function () {
+    if (!window.DataTable) {
+        return;
+    }
+
+    document.querySelectorAll('table.data-table').forEach(function (table) {
+        new DataTable(table, {
+            pageLength: 10,
+            lengthMenu: [10, 25, 50, 100],
+            autoWidth: false,
+            order: [],
+            columnDefs: [
+                { targets: 'actions-column', orderable: false, searchable: false }
+            ],
+            language: {
+                search: '',
+                searchPlaceholder: 'Search…',
+                lengthMenu: '_MENU_ per page',
+                emptyTable: table.dataset.emptyMessage || 'No records yet.',
+                zeroRecords: 'No matching records found.'
+            }
+        });
+    });
+})();
+
+(function () {
     var toggle = document.getElementById('sidebarToggle');
     if (!toggle) {
         return;

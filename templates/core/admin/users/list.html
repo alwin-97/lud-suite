@@ -9,7 +9,7 @@
 </section>
 
 <div class="table-card">
-    <table>
+    <table class="data-table" data-empty-message="No users have been provisioned yet.">
         <thead><tr><th>User</th><th>Cohort roles</th><th>Status</th><th class="actions-column">Actions</th></tr></thead>
         <tbody>
             {% for platform_user in platform_users %}
@@ -27,8 +27,6 @@
                     <td><span class="status-badge {% if platform_user.is_active %}status-badge--active{% endif %}">{% if platform_user.is_active %}Active{% else %}Inactive{% endif %}</span></td>
                     <td class="table-actions"><a href="{% url 'platform_user_edit' platform_user.id %}" class="text-link">Edit access</a></td>
                 </tr>
-            {% empty %}
-                <tr><td colspan="4" class="empty-cell">No users have been provisioned yet.</td></tr>
             {% endfor %}
         </tbody>
     </table>

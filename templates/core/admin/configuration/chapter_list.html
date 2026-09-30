@@ -9,7 +9,7 @@
 </section>
 
 <div class="table-card">
-    <table>
+    <table class="data-table" data-empty-message="No chapters yet.">
         <thead><tr><th>Name</th><th>Location</th><th>Cohorts</th><th>Status</th><th class="actions-column">Actions</th></tr></thead>
         <tbody>
             {% for chapter in chapters %}
@@ -21,8 +21,6 @@
                         <form method="post" action="{% url 'chapter_delete' chapter.id %}" onsubmit="return confirm('Delete this chapter?');">{% csrf_token %}<button class="text-button text-button--danger">Delete</button></form>
                     </td>
                 </tr>
-            {% empty %}
-                <tr><td colspan="5" class="empty-cell">No chapters yet.</td></tr>
             {% endfor %}
         </tbody>
     </table>

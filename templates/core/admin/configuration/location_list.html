@@ -9,7 +9,7 @@
 </section>
 
 <div class="table-card">
-    <table>
+    <table class="data-table" data-empty-message="No locations yet. Add the first location to continue.">
         <thead><tr><th>Name</th><th>Chapters</th><th>Status</th><th class="actions-column">Actions</th></tr></thead>
         <tbody>
             {% for location in locations %}
@@ -22,8 +22,6 @@
                         <form method="post" action="{% url 'location_delete' location.id %}" onsubmit="return confirm('Delete this location?');">{% csrf_token %}<button class="text-button text-button--danger">Delete</button></form>
                     </td>
                 </tr>
-            {% empty %}
-                <tr><td colspan="4" class="empty-cell">No locations yet. Add the first location to continue.</td></tr>
             {% endfor %}
         </tbody>
     </table>

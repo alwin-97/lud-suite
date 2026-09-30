@@ -9,14 +9,14 @@
 </section>
 
 <div class="table-card">
-    <table>
+    <table class="data-table" data-empty-message="No cohorts yet.">
         <thead><tr><th>Name</th><th>Chapter</th><th>Duration</th><th>Users</th><th>Status</th><th class="actions-column">Actions</th></tr></thead>
         <tbody>
             {% for cohort in cohorts %}
                 <tr>
                     <td><strong>{{ cohort.name }}</strong></td>
                     <td>{{ cohort.chapter.name }}<small class="cell-note">{{ cohort.chapter.location.name }}</small></td>
-                    <td>{{ cohort.start_date|date:"d M Y" }}<small class="cell-note">to {{ cohort.end_date|date:"d M Y" }}</small></td>
+                    <td data-order="{{ cohort.start_date|date:'Y-m-d' }}">{{ cohort.start_date|date:"d M Y" }}<small class="cell-note">to {{ cohort.end_date|date:"d M Y" }}</small></td>
                     <td>{{ cohort.user_count }}</td>
                     <td><span class="status-badge {% if cohort.is_active %}status-badge--active{% endif %}">{% if cohort.is_active %}Active{% else %}Inactive{% endif %}</span></td>
                     <td class="table-actions">
@@ -24,8 +24,6 @@
                         <form method="post" action="{% url 'cohort_delete' cohort.id %}" onsubmit="return confirm('Delete this cohort and all of its role assignments?');">{% csrf_token %}<button class="text-button text-button--danger">Delete</button></form>
                     </td>
                 </tr>
-            {% empty %}
-                <tr><td colspan="6" class="empty-cell">No cohorts yet.</td></tr>
             {% endfor %}
         </tbody>
     </table>
