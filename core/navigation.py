@@ -43,6 +43,7 @@ ADMIN_NAV = (
         "configuration_home",
         icon="settings-sliders",
         children=(
+            NavItem("Programs", "program_list", match_prefix="program_"),
             NavItem("Locations", "location_list", match_prefix="location_"),
             NavItem("Chapters", "chapter_list", match_prefix="chapter_"),
             NavItem("Cohorts", "cohort_list", match_prefix="cohort_"),

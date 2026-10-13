@@ -6,17 +6,18 @@
 {% block vendor_scripts %}{% include "components/vendor/datatables.html#scripts" %}{% endblock %}
 
 {% block page_content %}
-{% page_header eyebrow="Configuration" title="Locations" description="Manage reusable chapter locations." %}
-    {% include "components/table_filters.html" with table_id="locations-table" fields="Status" only %}
+{% page_header eyebrow="Configuration" title="Locations" description="Manage the places where each program operates." %}
+    {% include "components/table_filters.html" with table_id="locations-table" fields="Program,Status" only %}
     <a href="{% url 'location_create' %}" class="button button--primary"><i class="fi fi-rr-plus" aria-hidden="true"></i> Add location</a>
 {% endpage_header %}
 
 {% data_table id="locations-table" empty="No locations yet. Add the first location to continue." %}
-    <thead><tr><th>Name</th><th>Chapters</th><th>Status</th><th class="actions-column">Actions</th></tr></thead>
+    <thead><tr><th>Name</th><th>Program</th><th>Chapters</th><th>Status</th><th class="actions-column">Actions</th></tr></thead>
     <tbody>
         {% for location in locations %}
-            <tr data-filter-status="{% if location.is_active %}Active{% else %}Inactive{% endif %}">
+            <tr data-filter-status="{% if location.is_active %}Active{% else %}Inactive{% endif %}" data-filter-program="{{ location.program.name }}">
                 <td><strong>{{ location.name }}</strong></td>
+                <td>{{ location.program.name }}</td>
                 <td>{{ location.chapter_count }}</td>
                 <td>{% status_badge location.is_active %}</td>
                 {% url 'location_edit' location.pk as edit_url %}{% url 'location_delete' location.pk as delete_url %}

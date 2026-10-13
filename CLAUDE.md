@@ -4,6 +4,8 @@ Django 6.0.3 + django-allauth (Google sign-in) app for the Let Us Dream programm
 Single app `core`, SQLite, custom user `core.CustomUser`. Users are provisioned by an
 admin and assigned roles per cohort (`CohortMembership`); only provisioned users can sign in.
 
+Data hierarchy: `Program` → `Location` → `Chapter` → `Cohort` → `CohortMembership`. A program owns its whole tree (only `Location` holds the FK; chapter and cohort reach it through the location) and sets `duration_months`, which drives each cohort's `end_date`. Roles are global (`CustomUser.role = admin`) or local (`CohortMembership.role`, per cohort and so per program). A membership only grants access while the program, location, chapter and cohort are all active (`ACTIVE_MEMBERSHIP_FILTER`).
+
 ## Commands
 
 ```bash
@@ -131,7 +133,7 @@ Every data table is a DataTables 2.1.8 table (jQuery 3.7.1 + DataTables from CDN
 ### Multi-select filters on every DataTable page
 
 - Put the shared filter control beside the Add button in `.page-heading-actions`, inside the page heading. Use `{% include "components/table_filters.html" with table_id="widgets-table" fields="Location,Status" only %}` and give the associated table the matching unique `id`.
-- Every new DataTable page must offer relevant categorical filters. Current pages: Locations — Status; Chapters — Location and Status; Cohorts — Location, Chapter and Status; Users — Role, Cohort and Status.
+- Every new DataTable page must offer relevant categorical filters. Current pages: Programs — Status; Locations — Program and Status; Chapters — Program, Location and Status; Cohorts — Program, Location, Chapter and Status; Users — Role, Program, Cohort and Status.
 - The control uses checkbox groups for multi-selection. Selected values within one category match **any** value (OR); separate categories must **all** match (AND). No selection means no restriction. Changes apply immediately alongside DataTables search, sorting and pagination, resetting to the first page. Show the selected-option count, matching-record count, and a Clear filters action; clearing filters preserves the text search.
 - Supply exact, escaped values with `data-filter-status="Active"`, `data-filter-location="…"`, etc., on each `<tr>`. For multi-valued fields, put attributes on child elements (e.g. role chips with `data-filter-role` and `data-filter-cohort`). Field names in `fields` map to lowercase attribute suffixes. Use qualified labels for chapters/cohorts to distinguish repeated names across locations. Prefetch any related objects used by these labels in the view.
 - `static/js/admin.js` builds options from **all** rows, not just the visible page, and applies a table-scoped DataTables `search.fixed()` predicate using exact values, never substring matching or user-built regexes. Options stay available after filtering. Filters start unselected on each page load. If JavaScript is unavailable, hide the control and retain the table.

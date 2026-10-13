@@ -1,0 +1,81 @@
+{% extends "layouts/admin.html" %}
+{% load ui %}
+
+{% block title %}Manage {{ cohort.name }}{% endblock %}
+{% block vendor_styles %}{% include "components/vendor/datatables.html#styles" %}{% endblock %}
+{% block vendor_scripts %}{% include "components/vendor/datatables.html#scripts" %}{% endblock %}
+
+{% block page_content %}
+{% with program=cohort.chapter.location.program %}
+{% page_header eyebrow="Manage cohort" title=cohort.name description=program.name|add:" · "|add:cohort.chapter.name|add:" · "|add:cohort.chapter.location.name %}
+    <a href="{% url 'cohort_list' %}" class="button button--secondary"><i class="fi fi-rr-arrow-left" aria-hidden="true"></i> All cohorts</a>
+    <a href="{% url 'cohort_edit' cohort.pk %}" class="button button--secondary"><i class="fi fi-rr-pencil" aria-hidden="true"></i> Edit cohort</a>
+{% endpage_header %}
+
+<section class="stat-grid" aria-label="Cohort summary">
+    {% include "components/stat_card.html" with value=active_member_count label="Active role assignments" only %}
+    {% for label, count in role_counts %}
+        {% include "components/stat_card.html" with value=count label=label only %}
+    {% endfor %}
+</section>
+
+<p>
+    {% status_badge cohort.is_active %}
+    Runs {{ cohort.start_date|date:"d M Y" }} to {{ cohort.end_date|date:"d M Y" }}
+    ({{ program.duration_months }} months).
+    {% if not cohort.is_active or not cohort.chapter.is_active or not cohort.chapter.location.is_active or not program.is_active %}
+        <span class="muted">This cohort, its chapter, location or program is inactive, so members cannot sign in through it.</span>
+    {% endif %}
+</p>
+{% endwith %}
+
+<section class="section-block">
+    {% include "components/section_heading.html" with eyebrow="Access" title="Add a member" only %}
+    <div class="form-card form-card--wide">
+        <form method="post" class="admin-form">
+            {% csrf_token %}
+            {% if form.non_field_errors %}<div class="form-errors">{{ form.non_field_errors }}</div>{% endif %}
+            <div class="form-grid">
+                {% for field in form.visible_fields %}{{ field.as_field_group }}{% endfor %}
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="button button--primary"><i class="fi fi-rr-plus" aria-hidden="true"></i> Add member</button>
+            </div>
+        </form>
+    </div>
+</section>
+
+<section class="section-block">
+    <div class="section-heading">
+        <div>
+            <p class="eyebrow">People</p>
+            <h2>Members</h2>
+        </div>
+        <div class="page-heading-actions">
+            {% include "components/table_filters.html" with table_id="members-table" fields="Role,Status" only %}
+        </div>
+    </div>
+    {% data_table id="members-table" empty="No one has a role in this cohort yet." %}
+        <thead><tr><th>User</th><th>Role</th><th>Status</th><th class="actions-column">Actions</th></tr></thead>
+        <tbody>
+            {% for membership in memberships %}
+                <tr data-filter-role="{{ membership.get_role_display }}" data-filter-status="{% if membership.is_active %}Active{% else %}Inactive{% endif %}">
+                    <td><strong>{{ membership.user.get_full_name|default:membership.user.email }}</strong><small class="cell-note">{{ membership.user.email }}</small></td>
+                    <td><span class="role-chip">{{ membership.get_role_display }}</span></td>
+                    <td>{% status_badge membership.is_active %}</td>
+                    <td class="table-actions">
+                        <form method="post" action="{% url 'cohort_member_toggle' cohort.pk membership.pk %}">
+                            {% csrf_token %}
+                            <button type="submit" class="text-button"><i class="fi fi-rr-{% if membership.is_active %}pause{% else %}play{% endif %}" aria-hidden="true"></i> {% if membership.is_active %}Deactivate{% else %}Activate{% endif %}</button>
+                        </form>
+                        <form method="post" action="{% url 'cohort_member_remove' cohort.pk membership.pk %}" data-confirm="Remove this role from the cohort?">
+                            {% csrf_token %}
+                            <button type="submit" class="text-button text-button--danger"><i class="fi fi-rr-trash" aria-hidden="true"></i> Remove</button>
+                        </form>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    {% enddata_table %}
+</section>
+{% endblock %}

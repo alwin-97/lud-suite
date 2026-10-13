@@ -67,9 +67,11 @@ def status_badge(active, on="Active", off="Inactive"):
 
 
 @register.inclusion_tag("components/row_actions.html", takes_context=True)
-def row_actions(context, edit_url, delete_url="", confirm="Delete this item?", edit_label="Edit"):
-    """Renders the actions <td>: an Edit link and, optionally, a confirmed POST delete."""
+def row_actions(context, edit_url, delete_url="", confirm="Delete this item?", edit_label="Edit", manage_url=""):
+    """Renders the actions <td>: an optional Manage link, an Edit link and,
+    optionally, a confirmed POST delete."""
     return {
+        "manage_url": manage_url,
         "edit_url": edit_url,
         "edit_label": edit_label,
         "delete_url": delete_url,

@@ -127,7 +127,7 @@ class FormRenderingTests(PlatformTestCase):
         self.assertIn('href="%s"' % reverse("location_list"), html)
 
     def test_invalid_post_shows_field_errors(self):
-        response = self.client.post(reverse("location_create"), {"name": ""})
+        response = self.client.post(reverse("location_create"), {"name": "", "program": ""})
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, '<span class="field-error">This field is required.</span>', html=True)
 
@@ -137,5 +137,5 @@ class FormRenderingTests(PlatformTestCase):
         self.assertIn("form-card form-card--wide", html)
         self.assertIn('<div class="form-grid">', html)
         self.assertIn("form-field form-field--full assignment-field", html)
-        self.assertIn('class="assignment-grid"', html)
+        self.assertIn("data-assignment-picker", html)
         self.assertIn("Save user", html)

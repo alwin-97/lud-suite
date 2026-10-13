@@ -1,15 +1,36 @@
+import calendar
+
 from django.contrib.auth.models import AbstractUser
+from django.core.validators import MinValueValidator
 from django.db import models
 
 
-def three_year_end_date(start_date):
-    """Return the calendar date three years after ``start_date``."""
+def add_months(start_date, months):
+    """Return the calendar date ``months`` after ``start_date``, clamping the day."""
 
-    try:
-        return start_date.replace(year=start_date.year + 3)
-    except ValueError:
-        # A cohort starting on leap day ends on February 28 three years later.
-        return start_date.replace(year=start_date.year + 3, day=28)
+    index = start_date.year * 12 + start_date.month - 1 + months
+    year, month = divmod(index, 12)
+    month += 1
+    last_day = calendar.monthrange(year, month)[1]
+    return start_date.replace(year=year, month=month, day=min(start_date.day, last_day))
+
+
+# Filter applied to CohortMembership: the membership and everything above it
+# (cohort, chapter, location, program) must be active.
+ACTIVE_COHORT_CHAIN_FILTER = {
+    "is_active": True,
+    "chapter__is_active": True,
+    "chapter__location__is_active": True,
+    "chapter__location__program__is_active": True,
+}
+
+ACTIVE_MEMBERSHIP_FILTER = {
+    "is_active": True,
+    "cohort__is_active": True,
+    "cohort__chapter__is_active": True,
+    "cohort__chapter__location__is_active": True,
+    "cohort__chapter__location__program__is_active": True,
+}
 
 
 class CustomUser(AbstractUser):
@@ -47,23 +68,13 @@ class CustomUser(AbstractUser):
             return False
         if self.is_platform_admin:
             return True
-        return self.cohort_memberships.filter(
-            is_active=True,
-            cohort__is_active=True,
-            cohort__chapter__is_active=True,
-            cohort__chapter__location__is_active=True,
-        ).exists()
+        return self.cohort_memberships.filter(**ACTIVE_MEMBERSHIP_FILTER).exists()
 
     def active_role_codes(self):
         if self.is_platform_admin:
             return [self.ADMIN]
         return list(
-            self.cohort_memberships.filter(
-                is_active=True,
-                cohort__is_active=True,
-                cohort__chapter__is_active=True,
-                cohort__chapter__location__is_active=True,
-            )
+            self.cohort_memberships.filter(**ACTIVE_MEMBERSHIP_FILTER)
             .values_list("role", flat=True)
             .distinct()
             .order_by("role")
@@ -73,8 +84,21 @@ class CustomUser(AbstractUser):
         return self.get_full_name() or self.email or self.username
 
 
-class Location(models.Model):
+class Program(models.Model):
+    """A Let Us Dream programme (e.g. DREAMS).
+
+    A program owns its own tree of locations, chapters and cohorts, and sets how
+    long its cohorts run. Platform roles are global (CustomUser.role); cohort
+    roles are local to one cohort, and therefore to one program.
+    """
+
     name = models.CharField(max_length=150, unique=True)
+    description = models.TextField(blank=True)
+    duration_months = models.PositiveSmallIntegerField(
+        default=36,
+        validators=[MinValueValidator(1)],
+        help_text="How long each cohort runs, in months. The cohort end date is calculated from this.",
+    )
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -82,8 +106,50 @@ class Location(models.Model):
     class Meta:
         ordering = ("name",)
 
+    def save(self, *args, **kwargs):
+        previous = None
+        if self.pk:
+            previous = (
+                Program.objects.filter(pk=self.pk)
+                .values_list("duration_months", flat=True)
+                .first()
+            )
+        super().save(*args, **kwargs)
+        # Cohorts still on the calculated end date follow the new duration;
+        # cohorts with a manually chosen end date are left alone.
+        if previous is not None and previous != self.duration_months:
+            for cohort in Cohort.objects.filter(chapter__location__program=self):
+                if cohort.end_date == add_months(cohort.start_date, previous):
+                    Cohort.objects.filter(pk=cohort.pk).update(
+                        end_date=add_months(cohort.start_date, self.duration_months)
+                    )
+
     def __str__(self):
         return self.name
+
+
+class Location(models.Model):
+    program = models.ForeignKey(
+        Program,
+        on_delete=models.PROTECT,
+        related_name="locations",
+    )
+    name = models.CharField(max_length=150)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ("name",)
+        constraints = [
+            models.UniqueConstraint(
+                fields=("program", "name"),
+                name="unique_location_name_per_program",
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.name} ({self.program.name})"
 
 
 class Chapter(models.Model):
@@ -107,7 +173,7 @@ class Chapter(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.name} — {self.location.name}"
+        return f"{self.name} — {self.location}"
 
 
 class Cohort(models.Model):
@@ -118,7 +184,8 @@ class Cohort(models.Model):
         related_name="cohorts",
     )
     start_date = models.DateField()
-    end_date = models.DateField(editable=False)
+    # Blank means "start_date plus the program's duration" (set in save()).
+    end_date = models.DateField(blank=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -132,8 +199,13 @@ class Cohort(models.Model):
             )
         ]
 
+    @property
+    def program(self):
+        return self.chapter.location.program
+
     def save(self, *args, **kwargs):
-        self.end_date = three_year_end_date(self.start_date)
+        if not self.end_date:
+            self.end_date = add_months(self.start_date, self.program.duration_months)
         super().save(*args, **kwargs)
 
     def __str__(self):

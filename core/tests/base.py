@@ -4,7 +4,7 @@ from allauth.socialaccount.models import SocialApp
 from django.contrib.sites.models import Site
 from django.test import TestCase
 
-from core.models import Chapter, Cohort, CohortMembership, CustomUser, Location
+from core.models import Chapter, Cohort, CohortMembership, CustomUser, Location, Program
 
 
 class PlatformTestCase(TestCase):
@@ -24,8 +24,15 @@ class PlatformTestCase(TestCase):
         google_app.sites.add(Site.objects.get_current())
         self.google_app = google_app
 
-    def create_cohort(self, *, start_date=date(2026, 6, 1), name="Cohort 2026"):
-        location = Location.objects.create(name="Kochi")
+    def create_program(self, name="DREAMS", duration_months=36):
+        return Program.objects.get_or_create(
+            name=name, defaults={"duration_months": duration_months}
+        )[0]
+
+    def create_cohort(self, *, start_date=date(2026, 6, 1), name="Cohort 2026", program=None):
+        location = Location.objects.create(
+            name="Kochi", program=program or self.create_program()
+        )
         chapter = Chapter.objects.create(name="Central Chapter", location=location)
         cohort = Cohort.objects.create(
             name=name,

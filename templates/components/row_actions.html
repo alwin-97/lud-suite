@@ -1,5 +1,6 @@
 {# Rendered by {% row_actions %}: the whole actions <td>. #}
 <td class="table-actions">
+    {% if manage_url %}<a href="{{ manage_url }}" class="text-link"><i class="fi fi-rr-users" aria-hidden="true"></i> Manage</a>{% endif %}
     <a href="{{ edit_url }}" class="text-link"><i class="fi fi-rr-pencil" aria-hidden="true"></i> {{ edit_label }}</a>
     {% if delete_url %}
         <form method="post" action="{{ delete_url }}" data-confirm="{{ confirm }}">

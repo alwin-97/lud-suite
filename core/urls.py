@@ -25,6 +25,11 @@ def crud_urls(route, name, list_view, create_view, update_view, delete_view=None
 configuration_patterns = [
     path("", configuration.ConfigurationHomeView.as_view(), name="configuration_home"),
     *crud_urls(
+        "programs/", "program",
+        configuration.ProgramListView, configuration.ProgramCreateView,
+        configuration.ProgramUpdateView, configuration.ProgramDeleteView,
+    ),
+    *crud_urls(
         "locations/", "location",
         configuration.LocationListView, configuration.LocationCreateView,
         configuration.LocationUpdateView, configuration.LocationDeleteView,
@@ -38,6 +43,17 @@ configuration_patterns = [
         "cohorts/", "cohort",
         configuration.CohortListView, configuration.CohortCreateView,
         configuration.CohortUpdateView, configuration.CohortDeleteView,
+    ),
+    path("cohorts/<int:cohort_id>/manage/", configuration.CohortManageView.as_view(), name="cohort_manage"),
+    path(
+        "cohorts/<int:cohort_id>/members/<int:membership_id>/toggle/",
+        configuration.CohortMemberActionView.as_view(action="toggle"),
+        name="cohort_member_toggle",
+    ),
+    path(
+        "cohorts/<int:cohort_id>/members/<int:membership_id>/remove/",
+        configuration.CohortMemberActionView.as_view(action="remove"),
+        name="cohort_member_remove",
     ),
 ]
 

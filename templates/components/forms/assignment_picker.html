@@ -1,0 +1,48 @@
+{# Program -> location -> cohort role picker; see AssignmentPicker in core/forms/users.py. #}
+<div class="assignment-picker" data-assignment-picker>
+    {% if widget.locations %}
+        <div class="assignment-picker-filters">
+            <div class="form-field">
+                <label for="{{ widget.attrs.id }}-program">Program</label>
+                <select id="{{ widget.attrs.id }}-program" class="form-control" data-picker-program hidden>
+                    {% for program in widget.programs %}<option value="{{ program }}">{{ program }}</option>{% endfor %}
+                </select>
+            </div>
+            <div class="form-field">
+                <label for="{{ widget.attrs.id }}-location">Location</label>
+                <select id="{{ widget.attrs.id }}-location" class="form-control" data-picker-location hidden>
+                    {% for location in widget.locations %}<option value="{{ location.key }}" data-program="{{ location.program }}">{{ location.name }}</option>{% endfor %}
+                </select>
+            </div>
+        </div>
+
+        {% for location in widget.locations %}
+            <section class="assignment-location" data-picker-group="{{ location.key }}">
+                <h3 class="assignment-location-title">{{ location.program }} · {{ location.name }}</h3>
+                {% for cohort in location.cohorts %}
+                    <fieldset class="assignment-cohort">
+                        <legend>
+                            {{ cohort.name }}
+                            <small>{{ cohort.chapter }} · {{ cohort.dates }}{% if not cohort.active %} · inactive{% endif %}</small>
+                        </legend>
+                        <div class="assignment-roles">
+                            {% for role in cohort.roles %}
+                                <label>
+                                    <input type="checkbox" name="{{ widget.name }}" value="{{ role.value }}"{% if role.checked %} checked{% endif %} data-picker-summary="{{ location.program }} · {{ location.name }} · {{ cohort.name }} — {{ role.label }}">
+                                    {{ role.label }}
+                                </label>
+                            {% endfor %}
+                        </div>
+                    </fieldset>
+                {% endfor %}
+            </section>
+        {% endfor %}
+
+        <div class="assignment-summary" aria-live="polite" hidden>
+            <strong>Selected roles</strong>
+            <ul data-picker-summary-list></ul>
+        </div>
+    {% else %}
+        <p class="muted">No active programs, locations and cohorts exist yet. Create them under Configuration first.</p>
+    {% endif %}
+</div>

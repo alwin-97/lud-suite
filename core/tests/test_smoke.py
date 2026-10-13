@@ -18,6 +18,9 @@ class AdminAccessSmokeTests(PlatformTestCase):
         return [
             reverse("admin_dashboard"),
             reverse("configuration_home"),
+            reverse("program_list"),
+            reverse("program_create"),
+            reverse("program_edit", args=[location.program.pk]),
             reverse("location_list"),
             reverse("location_create"),
             reverse("location_edit", args=[location.pk]),

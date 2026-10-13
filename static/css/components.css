@@ -549,6 +549,82 @@ table.dataTable td.dt-empty {
     box-shadow: inset 0 0 0 1px var(--green);
 }
 
+/* Searchable select (static/js/components/searchable-select.js) */
+.searchable-select {
+    position: relative;
+}
+
+.searchable-select-list {
+    position: absolute;
+    z-index: 20;
+    top: calc(100% + 4px);
+    right: 0;
+    left: 0;
+    max-height: 260px;
+    margin: 0;
+    padding: 0.35rem;
+    overflow-y: auto;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    list-style: none;
+    background: var(--surface);
+    box-shadow: 0 4px 16px rgba(28, 39, 51, 0.14);
+}
+
+.searchable-select-list[hidden] {
+    display: none;
+}
+
+.searchable-select-list li {
+    padding: 0.5rem 0.7rem;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.searchable-select-list li.is-active,
+.searchable-select-list li:hover {
+    background: var(--green-faint);
+}
+
+.searchable-select-list li[aria-selected="true"] {
+    color: var(--green-dark);
+    font-weight: 600;
+}
+
+.searchable-select-list li[data-value] {
+    display: grid;
+    gap: 0.1rem;
+}
+
+.searchable-select-list li small {
+    color: var(--muted);
+    font-size: 0.76rem;
+    line-height: 1.35;
+}
+
+.searchable-select-list .searchable-select-group {
+    padding: 0.6rem 0.7rem 0.25rem;
+    color: var(--blue);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    cursor: default;
+}
+
+.searchable-select-list .searchable-select-group:hover {
+    background: none;
+}
+
+.searchable-select-list .searchable-select-empty {
+    color: var(--muted);
+    cursor: default;
+}
+
+.searchable-select-list .searchable-select-empty:hover {
+    background: none;
+}
+
 .form-field small {
     color: var(--muted);
     font-size: 0.76rem;
@@ -622,6 +698,87 @@ table.dataTable td.dt-empty {
     accent-color: var(--green);
 }
 
+.assignment-picker-filters {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.assignment-location[hidden],
+.assignment-summary[hidden] {
+    display: none;
+}
+
+.assignment-location-title {
+    margin: 0 0 0.6rem;
+    color: var(--blue);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.assignment-cohort {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem 1rem;
+    margin: 0 0 0.5rem;
+    padding: 0.7rem 0.85rem;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+}
+
+.assignment-cohort legend {
+    float: left;
+    width: auto;
+    padding: 0;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.assignment-cohort legend small {
+    display: block;
+    color: var(--muted);
+    font-size: 0.76rem;
+    font-weight: 400;
+}
+
+.assignment-roles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1rem;
+    margin-left: auto;
+}
+
+.assignment-roles label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.84rem;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.assignment-roles input {
+    accent-color: var(--green);
+}
+
+.assignment-summary {
+    margin-top: 1rem;
+    padding: 0.75rem 0.85rem;
+    border-radius: 8px;
+    background: var(--green-faint);
+    font-size: 0.82rem;
+}
+
+.assignment-summary ul {
+    margin: 0.35rem 0 0;
+    padding-left: 1.1rem;
+}
+
 .field-error,
 .form-errors {
     color: var(--danger);
@@ -657,7 +814,8 @@ table.dataTable td.dt-empty {
         .action-grid,
         .configuration-grid,
         .form-grid,
-        .assignment-grid {
+        .assignment-grid,
+        .assignment-picker-filters {
             grid-template-columns: 1fr;
         }
 }

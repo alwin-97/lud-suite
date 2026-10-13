@@ -21,7 +21,10 @@ class PlatformUserListView(AdminRequiredMixin, ListView):
             Prefetch(
                 "cohort_memberships",
                 queryset=CohortMembership.objects.filter(is_active=True).select_related(
-                    "cohort", "cohort__chapter", "cohort__chapter__location"
+                    "cohort",
+                    "cohort__chapter",
+                    "cohort__chapter__location",
+                    "cohort__chapter__location__program",
                 ),
             )
         ).order_by("first_name", "last_name", "email")

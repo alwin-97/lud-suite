@@ -7,16 +7,17 @@
 
 {% block page_content %}
 {% page_header eyebrow="Configuration" title="Chapters" description="Manage chapters and their locations." %}
-    {% include "components/table_filters.html" with table_id="chapters-table" fields="Location,Status" only %}
+    {% include "components/table_filters.html" with table_id="chapters-table" fields="Program,Location,Status" only %}
     <a href="{% url 'chapter_create' %}" class="button button--primary"><i class="fi fi-rr-plus" aria-hidden="true"></i> Add chapter</a>
 {% endpage_header %}
 
 {% data_table id="chapters-table" empty="No chapters yet." %}
-    <thead><tr><th>Name</th><th>Location</th><th>Cohorts</th><th>Status</th><th class="actions-column">Actions</th></tr></thead>
+    <thead><tr><th>Name</th><th>Program</th><th>Location</th><th>Cohorts</th><th>Status</th><th class="actions-column">Actions</th></tr></thead>
     <tbody>
         {% for chapter in chapters %}
-            <tr data-filter-status="{% if chapter.is_active %}Active{% else %}Inactive{% endif %}" data-filter-location="{{ chapter.location.name }}">
+            <tr data-filter-status="{% if chapter.is_active %}Active{% else %}Inactive{% endif %}" data-filter-program="{{ chapter.location.program.name }}" data-filter-location="{{ chapter.location }}">
                 <td><strong>{{ chapter.name }}</strong></td>
+                <td>{{ chapter.location.program.name }}</td>
                 <td>{{ chapter.location.name }}</td>
                 <td>{{ chapter.cohort_count }}</td>
                 <td>{% status_badge chapter.is_active %}</td>

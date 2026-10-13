@@ -22,7 +22,7 @@
             {% for membership in memberships %}
                 {% partialdef membership_row inline %}
                     <div class="membership-row">
-                        <div><strong>{{ membership.get_role_display }}</strong><span>{{ membership.cohort.chapter.name }} · {{ membership.cohort.name }}</span></div>
+                        <div><strong>{{ membership.get_role_display }}</strong><span>{{ membership.cohort.chapter.location.program.name }} · {{ membership.cohort.chapter.name }} · {{ membership.cohort.name }}</span></div>
                         <small>{{ membership.cohort.chapter.location.name }}</small>
                     </div>
                 {% endpartialdef %}

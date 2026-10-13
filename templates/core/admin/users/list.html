@@ -7,7 +7,7 @@
 
 {% block page_content %}
 {% page_header eyebrow="Access management" title="Platform users" description="Only provisioned users can sign in with Google." %}
-    {% include "components/table_filters.html" with table_id="users-table" fields="Role,Cohort,Status" only %}
+    {% include "components/table_filters.html" with table_id="users-table" fields="Role,Program,Cohort,Status" only %}
     <a href="{% url 'platform_user_create' %}" class="button button--primary"><i class="fi fi-rr-plus" aria-hidden="true"></i> Add user</a>
 {% endpage_header %}
 
@@ -20,9 +20,9 @@
                 <td>
                     <div class="role-list">
                         {% for membership in platform_user.cohort_memberships.all %}
-                            <span class="role-chip" data-filter-role="{{ membership.get_role_display }}" data-filter-cohort="{{ membership.cohort.name }} · {{ membership.cohort.chapter }}">{{ membership.get_role_display }} · {{ membership.cohort.name }}</span>
+                            <span class="role-chip" data-filter-role="{{ membership.get_role_display }}" data-filter-program="{{ membership.cohort.chapter.location.program.name }}" data-filter-cohort="{{ membership.cohort.name }} · {{ membership.cohort.chapter }}">{{ membership.get_role_display }} · {{ membership.cohort.name }}</span>
                         {% empty %}
-                            <span class="muted" data-filter-role="No roles assigned" data-filter-cohort="No cohort assigned">No roles assigned</span>
+                            <span class="muted" data-filter-role="No roles assigned" data-filter-program="No program assigned" data-filter-cohort="No cohort assigned">No roles assigned</span>
                         {% endfor %}
                     </div>
                 </td>

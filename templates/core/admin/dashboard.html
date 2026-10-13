@@ -4,9 +4,10 @@
 {% block title %}Dashboard{% endblock %}
 
 {% block page_content %}
-{% page_header eyebrow="Admin dashboard" title=title description="Configure the chapter network, cohorts, and authorized platform users." %}{% endpage_header %}
+{% page_header eyebrow="Admin dashboard" title=title description="Configure programs, their chapters and cohorts, and authorized platform users." %}{% endpage_header %}
 
 <section class="stat-grid" aria-label="Platform totals">
+    {% include "components/stat_card.html" with value=program_count label="Active programs" only %}
     {% include "components/stat_card.html" with value=location_count label="Active locations" only %}
     {% include "components/stat_card.html" with value=chapter_count label="Active chapters" only %}
     {% include "components/stat_card.html" with value=cohort_count label="Active cohorts" only %}
@@ -17,7 +18,7 @@
     {% include "components/section_heading.html" with eyebrow="Get started" title="Administration" only %}
     <div class="action-grid">
         {% url 'configuration_home' as configuration_url %}{% url 'platform_user_list' as users_url %}
-        {% include "components/link_card.html" with href=configuration_url badge="01" title="Application configuration" text="Manage reusable locations, chapters, and three-year cohorts." only %}
+        {% include "components/link_card.html" with href=configuration_url badge="01" title="Application configuration" text="Manage programs and their locations, chapters and cohorts." only %}
         {% include "components/link_card.html" with href=users_url badge="02" title="User access" text="Provision Google accounts and assign one or more cohort roles." only %}
     </div>
 </section>

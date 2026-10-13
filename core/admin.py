@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 
-from core.models import Chapter, Cohort, CohortMembership, CustomUser, Location
+from core.models import Chapter, Cohort, CohortMembership, CustomUser, Location, Program
 
 
 class CohortMembershipInline(admin.TabularInline):
@@ -30,17 +30,24 @@ class CustomUserAdmin(UserAdmin):
     )
 
 
+@admin.register(Program)
+class ProgramAdmin(admin.ModelAdmin):
+    list_display = ("name", "duration_months", "is_active")
+    list_filter = ("is_active",)
+    search_fields = ("name",)
+
+
 @admin.register(Location)
 class LocationAdmin(admin.ModelAdmin):
-    list_display = ("name", "is_active")
-    list_filter = ("is_active",)
+    list_display = ("name", "program", "is_active")
+    list_filter = ("program", "is_active")
     search_fields = ("name",)
 
 
 @admin.register(Chapter)
 class ChapterAdmin(admin.ModelAdmin):
     list_display = ("name", "location", "is_active")
-    list_filter = ("location", "is_active")
+    list_filter = ("location__program", "location", "is_active")
     search_fields = ("name", "location__name")
 
 
