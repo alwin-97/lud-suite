@@ -47,7 +47,9 @@ ADMIN_NAV = (
             NavItem("Locations", "location_list", match_prefix="location_"),
             NavItem("Chapters", "chapter_list", match_prefix="chapter_"),
             NavItem("Cohorts", "cohort_list", match_prefix="cohort_"),
+            NavItem("Permissions Matrix", "role_permissions_matrix", match_prefix="role_permissions_"),
         ),
     ),
     NavItem("Users", "platform_user_list", icon="users", match_prefix="platform_user_"),
+    NavItem("Audit Trail", "audit_log", icon="time-past"),
 )

@@ -1,6 +1,6 @@
 {# layout: "stack" (single column card) or "grid" (two columns, wide card). #}
 <div class="form-card{% if layout == 'grid' %} form-card--wide{% endif %}">
-    <form method="post" class="admin-form">
+    <form method="post" class="admin-form" enctype="multipart/form-data">
         {% csrf_token %}
         {% if form.non_field_errors %}<div class="form-errors">{{ form.non_field_errors }}</div>{% endif %}
         {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}

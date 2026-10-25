@@ -7,7 +7,9 @@ currently contains only:
 - Google authentication for all pre-authorized platform users;
 - a protected administrator dashboard and configuration portal;
 - reusable locations, chapters, and three-year cohorts;
+- cohort terms with multi-format materials (documents, images, and external URLs);
 - cohort-level Community Leader, Mentor, and Mentee role assignments;
+- participant workspace displaying active cohort terms, syllabus documents, and learning resources;
 - support for assigning multiple roles and cohorts to one user;
 - Django's built-in administration site for managing administrator accounts and
   Google OAuth configuration.

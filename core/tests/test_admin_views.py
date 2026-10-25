@@ -157,6 +157,23 @@ class AdminConfigurationViewTests(PlatformTestCase):
         )
         self.assertTrue(user.is_authorized_user)
 
+    def test_admin_cannot_provision_user_with_overlong_email(self):
+        _, _, cohort = self.create_cohort()
+        overlong_email = f"{'a' * 145}@example.com"  # 157 characters
+
+        response = self.client.post(
+            reverse("platform_user_create"),
+            {
+                "first_name": "Test",
+                "last_name": "Long",
+                "email": overlong_email,
+                "is_active": "on",
+                "assignments": [f"{cohort.pk}:{CohortMembership.MENTEE}"],
+            },
+        )
+        self.assertContains(response, "Email address cannot exceed 150 characters.")
+        self.assertFalse(CustomUser.objects.filter(email=overlong_email).exists())
+
     def test_editing_user_replaces_role_assignments(self):
         _, _, cohort = self.create_cohort()
         user = CustomUser.objects.create_user(

@@ -7,6 +7,7 @@ from django.urls import reverse
 
 from core.adapters import SocialAccountAdapter
 from core.models import CohortMembership, CustomUser
+from core.permissions import check_access
 from core.tests.base import PlatformTestCase
 
 
@@ -155,3 +156,25 @@ class AdminAuthenticationTests(PlatformTestCase):
                 RequestFactory().get("/"),
                 unknown_login,
             )
+
+    def test_role_check_access_with_required_roles(self):
+        _, _, cohort = self.create_cohort()
+        user = CustomUser.objects.create_user(
+            username="mentor@example.com",
+            email="mentor@example.com",
+        )
+        CohortMembership.objects.create(
+            user=user,
+            cohort=cohort,
+            role=CohortMembership.MENTOR,
+        )
+        request = RequestFactory().get("/")
+        request.user = user
+
+        # Allowed when holding the required role
+        self.assertIsNone(
+            check_access(request, required_roles=[CohortMembership.MENTOR])
+        )
+        # Denied when not holding the required role
+        with self.assertRaises(PermissionDenied):
+            check_access(request, required_roles=[CohortMembership.COMMUNITY_LEADER])

@@ -795,6 +795,62 @@ table.dataTable td.dt-empty {
     margin-top: 0.5rem;
 }
 
+/* Cohort terms */
+.terms-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.25rem;
+    margin-top: 1rem;
+}
+
+.term-summary-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 1.25rem;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    gap: 0.75rem;
+}
+
+.term-summary-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+.term-title {
+    margin: 0.4rem 0 0;
+    font-size: 1.15rem;
+    font-weight: 600;
+}
+
+.term-dates {
+    margin: 0;
+    font-size: 0.88rem;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.term-desc {
+    margin: 0;
+    font-size: 0.88rem;
+    color: var(--ink);
+    line-height: 1.4;
+}
+
+.term-card-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--line);
+}
+
 @media (max-width: 640px) {
     .page-heading-actions {
             width: 100%;

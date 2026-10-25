@@ -78,3 +78,29 @@ def row_actions(context, edit_url, delete_url="", confirm="Delete this item?", e
         "confirm": confirm,
         "csrf_token": context.get("csrf_token"),
     }
+
+
+@register.simple_tag(takes_context=True)
+def has_perm(context, resource, action=None, cohort=None):
+    """Check if the current user has role permission for action on resource.
+
+    Supports:
+        {% has_perm "terms" "create" as can_create %}
+        {% has_perm "terms:create" as can_create %}
+        {% has_perm "terms" "create" cohort as can_create %}
+    """
+    request = context.get("request")
+    user = getattr(request, "user", None) or context.get("user")
+    if not user or not getattr(user, "is_authenticated", False):
+        return False
+
+    if action is None and ":" in resource:
+        resource, action = resource.split(":", 1)
+    elif action is None:
+        action = "read"
+
+    from core.permissions import has_role_permission
+
+    target_cohort = cohort or context.get("cohort")
+    return has_role_permission(user, resource, action, cohort=target_cohort)
+

@@ -133,6 +133,8 @@ class PlatformUserForm(StyledModelForm):
 
     def clean_email(self):
         email = self.cleaned_data["email"].strip().lower()
+        if len(email) > 150:
+            raise forms.ValidationError("Email address cannot exceed 150 characters.")
         existing = CustomUser.objects.filter(email__iexact=email)
         if self.instance.pk:
             existing = existing.exclude(pk=self.instance.pk)

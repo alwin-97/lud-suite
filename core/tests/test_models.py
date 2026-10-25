@@ -8,7 +8,9 @@ from core.models import Chapter, Cohort, CohortMembership, CustomUser, Location,
 
 class ConfigurationModelTests(TestCase):
     def setUp(self):
-        self.program = Program.objects.get(name="DREAMS")
+        self.program, _ = Program.objects.get_or_create(
+            name="DREAMS", defaults={"duration_months": 36}
+        )
 
     def make_cohort(self, program, start_date, location_name="Pune"):
         location = Location.objects.create(name=location_name, program=program)

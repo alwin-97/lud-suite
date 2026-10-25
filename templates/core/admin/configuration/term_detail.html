@@ -1,0 +1,410 @@
+{% extends "layouts/admin.html" %}
+{% load ui static %}
+
+{% block title %}{{ term.name }} · {{ cohort.name }}{% endblock %}
+
+{% block page_content %}
+{% has_perm "terms" "update" cohort as can_update_term %}
+{% has_perm "terms" "delete" cohort as can_delete_term %}
+{% has_perm "resources" "create" cohort as can_create_resource %}
+{% has_perm "resources" "delete" cohort as can_delete_resource %}
+{% has_perm "activities" "create" cohort as can_create_activity %}
+
+{% with program=cohort.chapter.location.program %}
+{% page_header eyebrow=program.name|add:" · "|add:cohort.name title=term.name description="Sequence "|add:term.sequence|stringformat:"s"|add:" · "|add:cohort.chapter.name|add:" ("|add:cohort.chapter.location.name|add:")" %}
+    <a href="{% url 'cohort_manage' cohort.pk %}" class="button button--secondary"><i class="fi fi-rr-arrow-left" aria-hidden="true"></i> Back to cohort</a>
+    {% if can_update_term %}
+        <a href="{% url 'cohort_term_edit' cohort.pk term.pk %}" class="button button--secondary"><i class="fi fi-rr-pencil" aria-hidden="true"></i> Edit term</a>
+    {% endif %}
+{% endpage_header %}
+
+<section class="stat-grid" aria-label="Term resource totals">
+    {% include "components/stat_card.html" with value=resources|length label="Resources" only %}
+    {% include "components/stat_card.html" with value=tasks|length label="Tasks" only %}
+    {% include "components/stat_card.html" with value=questions|length label="Questions" only %}
+    {% include "components/stat_card.html" with value=activities|length label="Activities" only %}
+</section>
+
+<div class="card" style="margin-bottom: var(--space-6, 1.5rem); padding: 1.25rem 1.5rem; background: var(--surface); border: 1px solid var(--line); border-radius: 8px;">
+    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;">
+        <div>
+            {% status_badge term.is_active %}
+            {% if term.start_date or term.end_date %}
+                <span style="margin-left: 0.75rem; color: var(--muted); font-size: 0.9rem;">
+                    <i class="fi fi-rr-calendar" aria-hidden="true"></i>
+                    Schedule: <strong>{{ term.start_date|date:"d M Y"|default:"TBD" }}</strong> to <strong>{{ term.end_date|date:"d M Y"|default:"TBD" }}</strong>
+                </span>
+            {% endif %}
+        </div>
+        {% if can_delete_term %}
+            <form method="post" action="{% url 'cohort_term_delete' cohort.pk term.pk %}" data-confirm="Are you sure you want to delete this term and all attached resources?">
+                {% csrf_token %}
+                <button type="submit" class="text-button text-button--danger"><i class="fi fi-rr-trash" aria-hidden="true"></i> Delete term</button>
+            </form>
+        {% endif %}
+    </div>
+    {% if term.description %}
+        <p style="margin-top: 0.75rem; color: var(--ink); font-size: 0.95rem; line-height: 1.5;">{{ term.description }}</p>
+    {% endif %}
+</div>
+{% endwith %}
+
+{# Section: Add a Resource #}
+{% if can_create_resource %}
+<section class="section-block">
+    {% include "components/section_heading.html" with eyebrow="Uploads & Materials" title="Add resource to term" only %}
+    <div class="form-card form-card--wide">
+        <form method="post" enctype="multipart/form-data" class="admin-form">
+            {% csrf_token %}
+            {% if resource_form.non_field_errors %}<div class="form-errors">{{ resource_form.non_field_errors }}</div>{% endif %}
+            <div class="form-grid">
+                {% for field in resource_form.visible_fields %}{{ field.as_field_group }}{% endfor %}
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="button button--primary"><i class="fi fi-rr-plus" aria-hidden="true"></i> Add resource</button>
+            </div>
+        </form>
+    </div>
+</section>
+{% endif %}
+
+{# Section: Documents #}
+{% if documents %}
+<section class="section-block">
+    <div class="section-heading">
+        <div>
+            <p class="eyebrow">Files</p>
+            <h2>Documents ({{ documents|length }})</h2>
+        </div>
+    </div>
+    <div class="resources-list" style="display: flex; flex-direction: column; gap: 0.75rem;">
+        {% for doc in documents %}
+            <div class="card" style="display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.25rem; border: 1px solid var(--line); border-radius: 8px; background: var(--surface);">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <div style="width: 42px; height: 42px; border-radius: 8px; background: var(--blue-soft, #e2edf9); color: var(--blue, #1a67b8); display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
+                        <i class="fi fi-rr-document" aria-hidden="true"></i>
+                    </div>
+                    <div>
+                        <strong style="display: block; font-size: 0.95rem;">{{ doc.title }}</strong>
+                        <small class="cell-note">
+                            {% if doc.file_extension %}<span class="role-chip" style="font-size: 0.75rem; text-transform: uppercase;">{{ doc.file_extension }}</span>{% endif %}
+                            Uploaded {{ doc.created_at|date:"d M Y, H:i" }}
+                            {% if doc.description %} · {{ doc.description }}{% endif %}
+                        </small>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    {% if doc.file %}
+                        <a href="{{ doc.file.url }}" class="button button--secondary button--sm" download target="_blank" rel="noopener noreferrer">
+                            <i class="fi fi-rr-download" aria-hidden="true"></i> Download
+                        </a>
+                    {% endif %}
+                    {% if can_delete_resource %}
+                        <form method="post" action="{% url 'cohort_term_resource_delete' cohort.pk term.pk doc.pk %}" data-confirm="Remove this document?">
+                            {% csrf_token %}
+                            <button type="submit" class="text-button text-button--danger" title="Delete document"><i class="fi fi-rr-trash" aria-hidden="true"></i></button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+{# Section: Images #}
+{% if images %}
+<section class="section-block">
+    <div class="section-heading">
+        <div>
+            <p class="eyebrow">Gallery</p>
+            <h2>Images ({{ images|length }})</h2>
+        </div>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1rem;">
+        {% for img in images %}
+            <div class="card" style="overflow: hidden; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); display: flex; flex-direction: column;">
+                {% if img.file %}
+                    <div style="height: 160px; background: #f0f4f7; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                        <img src="{{ img.file.url }}" alt="{{ img.title }}" style="width: 100%; height: 100%; object-fit: cover;">
+                    </div>
+                {% endif %}
+                <div style="padding: 1rem; flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+                    <div>
+                        <strong style="display: block; font-size: 0.95rem; margin-bottom: 0.25rem;">{{ img.title }}</strong>
+                        {% if img.description %}<p style="font-size: 0.85rem; color: var(--muted); margin: 0 0 0.5rem 0;">{{ img.description }}</p>{% endif %}
+                        <small class="cell-note" style="display: block; margin-bottom: 0.75rem;">{{ img.created_at|date:"d M Y" }}</small>
+                    </div>
+                    <div style="display: flex; align-items: center; justify-content: space-between; pt-2; border-top: 1px solid var(--line); padding-top: 0.5rem;">
+                        {% if img.file %}
+                            <a href="{{ img.file.url }}" target="_blank" rel="noopener noreferrer" class="button button--secondary button--sm">
+                                <i class="fi fi-rr-expand" aria-hidden="true"></i> View
+                            </a>
+                        {% endif %}
+                        {% if can_delete_resource %}
+                            <form method="post" action="{% url 'cohort_term_resource_delete' cohort.pk term.pk img.pk %}" data-confirm="Remove this image?">
+                                {% csrf_token %}
+                                <button type="submit" class="text-button text-button--danger" title="Delete image"><i class="fi fi-rr-trash" aria-hidden="true"></i></button>
+                            </form>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+{# Section: Links / URLs #}
+{% if links %}
+<section class="section-block">
+    <div class="section-heading">
+        <div>
+            <p class="eyebrow">Web resources</p>
+            <h2>Links &amp; URLs ({{ links|length }})</h2>
+        </div>
+    </div>
+    <div class="resources-list" style="display: flex; flex-direction: column; gap: 0.75rem;">
+        {% for link in links %}
+            <div class="card" style="display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.25rem; border: 1px solid var(--line); border-radius: 8px; background: var(--surface);">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <div style="width: 42px; height: 42px; border-radius: 8px; background: var(--green-soft, #dcefd2); color: var(--green-dark, #1f5c14); display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
+                        <i class="fi fi-rr-link-alt" aria-hidden="true"></i>
+                    </div>
+                    <div>
+                        <strong style="display: block; font-size: 0.95rem;">
+                            <a href="{{ link.url }}" target="_blank" rel="noopener noreferrer" style="color: var(--blue, #1a67b8); text-decoration: none;">
+                                {{ link.title }} <i class="fi fi-rr-arrow-up-right-from-square" style="font-size: 0.75rem;" aria-hidden="true"></i>
+                            </a>
+                        </strong>
+                        <small class="cell-note" style="word-break: break-all;">
+                            {{ link.url }}
+                            {% if link.description %} · {{ link.description }}{% endif %}
+                        </small>
+                    </div>
+                </div>
+                <div>
+                    {% if can_delete_resource %}
+                        <form method="post" action="{% url 'cohort_term_resource_delete' cohort.pk term.pk link.pk %}" data-confirm="Remove this link?">
+                            {% csrf_token %}
+                            <button type="submit" class="text-button text-button--danger" title="Delete link"><i class="fi fi-rr-trash" aria-hidden="true"></i></button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+{% if not resources %}
+<div class="form-card" style="margin-top: 1.5rem;">
+    <p class="muted">No resources attached to this term yet. Use the <strong>Add resource to term</strong> form above to upload documents, images, or provide external URLs.</p>
+</div>
+{% endif %}
+
+{# Section: Tasks & Assignments #}
+<section class="section-block">
+    <div class="section-heading" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+        <div>
+            <p class="eyebrow">Assignments &amp; Deliverables</p>
+            <h2>Tasks in {{ term.name }} ({{ tasks|length }})</h2>
+        </div>
+        {% if can_manage_tasks %}
+            <div class="page-heading-actions">
+                <a href="{% url 'cohort_term_task_create' cohort.pk term.pk %}" class="button button--primary button--sm">
+                    <i class="fi fi-rr-plus" aria-hidden="true"></i> Create task
+                </a>
+            </div>
+        {% endif %}
+    </div>
+
+    {% if tasks %}
+        <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+            {% for task in tasks %}
+                <div class="card" style="padding: 1rem 1.25rem; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;">
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem; flex-wrap: wrap;">
+                            <span class="role-chip">{{ task.get_target_audience_display }}</span>
+                            <span class="role-chip" style="background: var(--blue-soft, #e2edf9); color: var(--blue, #1a67b8);">
+                                Points: {{ task.points }}
+                            </span>
+                            <strong>
+                                <a href="{% url 'cohort_term_task_detail' cohort.pk term.pk task.pk %}" style="color: var(--ink); text-decoration: none;">
+                                    {{ task.title }}
+                                </a>
+                            </strong>
+                        </div>
+                        <small class="cell-note">
+                            Accepts: <strong>{{ task.allowed_types_display }}</strong>
+                            {% if task.due_date %} · Due: {{ task.due_date|date:"d M Y" }}{% endif %}
+                            · {{ task.submissions.count }} submission{{ task.submissions.count|pluralize }}
+                        </small>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <a href="{% url 'cohort_term_task_detail' cohort.pk term.pk task.pk %}" class="button button--secondary button--sm">
+                            <i class="fi fi-rr-eye" aria-hidden="true"></i> View &amp; Submissions
+                        </a>
+                        {% if can_manage_tasks %}
+                            <a href="{% url 'cohort_term_task_edit' cohort.pk term.pk task.pk %}" class="button button--secondary button--sm">
+                                <i class="fi fi-rr-pencil" aria-hidden="true"></i> Edit
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="form-card">
+            <p class="muted">No tasks created under {{ term.name }} yet. Click <strong>Create task</strong> to assign deliverables accepting files, images, text, or URLs.</p>
+        </div>
+    {% endif %}
+</section>
+
+{# Section: Questions & Reflections #}
+<section class="section-block">
+    <div class="section-heading" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+        <div>
+            <p class="eyebrow">Inquiries &amp; Assessments</p>
+            <h2>Questions in {{ term.name }} ({{ questions|length }})</h2>
+        </div>
+        {% if can_manage_questions %}
+            <div class="page-heading-actions">
+                <a href="{% url 'cohort_term_question_create' cohort.pk term.pk %}" class="button button--primary button--sm">
+                    <i class="fi fi-rr-plus" aria-hidden="true"></i> Create question
+                </a>
+            </div>
+        {% endif %}
+    </div>
+
+    {% if questions %}
+        <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+            {% for q in questions %}
+                <div class="card" style="padding: 1rem 1.25rem; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;">
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem; flex-wrap: wrap;">
+                            <span class="role-chip">{{ q.get_target_audience_display }}</span>
+                            {% if q.is_required %}
+                                <span class="role-chip" style="background: var(--red-soft, #fbeae8); color: var(--danger, #c0392b);">Required</span>
+                            {% endif %}
+                            <strong>
+                                <a href="{% url 'cohort_term_question_detail' cohort.pk term.pk q.pk %}" style="color: var(--ink); text-decoration: none;">
+                                    {{ q.title }}
+                                </a>
+                            </strong>
+                        </div>
+                        <p style="margin: 0 0 0.25rem 0; font-size: 0.9rem; color: var(--muted); line-height: 1.4;">
+                            {{ q.prompt|truncatewords:20 }}
+                        </p>
+                        <small class="cell-note">
+                            Accepts: <strong>{{ q.allowed_types_display }}</strong>
+                            {% if q.due_date %} · Due: {{ q.due_date|date:"d M Y" }}{% endif %}
+                            · {{ q.responses.count }} answer{{ q.responses.count|pluralize }}
+                        </small>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <a href="{% url 'cohort_term_question_detail' cohort.pk term.pk q.pk %}" class="button button--secondary button--sm">
+                            <i class="fi fi-rr-eye" aria-hidden="true"></i> View &amp; Answers
+                        </a>
+                        {% if can_manage_questions %}
+                            <a href="{% url 'cohort_term_question_edit' cohort.pk term.pk q.pk %}" class="button button--secondary button--sm">
+                                <i class="fi fi-rr-pencil" aria-hidden="true"></i> Edit
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="form-card">
+            <p class="muted">No questions created under {{ term.name }} yet. Click <strong>Create question</strong> to ask prompts accepting files, images, text, or links.</p>
+        </div>
+    {% endif %}
+</section>
+
+{# Section: Planned Activities for this Term #}
+<section class="section-block">
+    <div class="section-heading" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+        <div>
+            <p class="eyebrow">Timeline Planning</p>
+            <h2>Activities in {{ term.name }} ({{ activities|length }})</h2>
+        </div>
+        <div class="page-heading-actions">
+            <a href="{% url 'cohort_timeline' cohort.pk %}" class="button button--secondary button--sm">
+                <i class="fi fi-rr-time-forward" aria-hidden="true"></i> Complete timeline
+            </a>
+            {% if can_create_activity %}
+                <a href="{% url 'cohort_activity_create' cohort.pk %}?term={{ term.pk }}" class="button button--primary button--sm">
+                    <i class="fi fi-rr-plus" aria-hidden="true"></i> Plan activity
+                </a>
+            {% endif %}
+        </div>
+    </div>
+    {% if activities %}
+        <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+            {% for act in activities %}
+                <div class="card" style="padding: 1rem 1.25rem; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;">
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+                            <span class="{{ act.status_badge_class }}">{{ act.get_status_display }}</span>
+                            <span class="role-chip" style="font-size: 0.8rem;">{{ act.get_target_audience_display }}</span>
+                            <strong>{{ act.title }}</strong>
+                        </div>
+                        {% if act.start_date or act.end_date %}
+                            <small class="cell-note">
+                                <i class="fi fi-rr-calendar" aria-hidden="true"></i>
+                                {{ act.start_date|date:"d M Y"|default:"TBD" }} to {{ act.end_date|date:"d M Y"|default:"TBD" }}
+                            </small>
+                        {% endif %}
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <a href="{% url 'cohort_activity_edit' cohort.pk act.pk %}" class="button button--secondary button--sm">
+                            <i class="fi fi-rr-pencil" aria-hidden="true"></i> Edit
+                        </a>
+                        <form method="post" action="{% url 'cohort_activity_delete' cohort.pk act.pk %}" data-confirm="Remove this activity?">
+                            {% csrf_token %}
+                            <button type="submit" class="text-button text-button--danger" title="Delete activity"><i class="fi fi-rr-trash" aria-hidden="true"></i></button>
+                        </form>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="form-card">
+            <p class="muted">No activities have been planned for {{ term.name }} yet. Click <strong>Plan activity</strong> to schedule tasks or milestones.</p>
+        </div>
+    {% endif %}
+</section>
+
+{# Section: Audit Trail for this Term #}
+<section class="section-block">
+    <div class="section-heading">
+        <div>
+            <p class="eyebrow">Audit &amp; Review</p>
+            <h2>Term Audit Trail</h2>
+        </div>
+    </div>
+    {% if history %}
+        <div style="display: flex; flex-direction: column; gap: 0.6rem;">
+            {% for item in history %}
+                <div class="card" style="padding: 0.8rem 1.1rem; border: 1px solid var(--line); border-radius: 6px; background: var(--surface);">
+                    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;">
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <span class="{{ item.action_badge_class }}">{{ item.get_action_display }}</span>
+                            <strong>{{ item.entity_type }}: {{ item.entity_name }}</strong>
+                        </div>
+                        <small class="cell-note">{{ item.created_at|date:"d M Y, H:i" }}</small>
+                    </div>
+                    <p style="margin: 0.2rem 0; font-size: 0.85rem; color: var(--ink);">{{ item.description }}</p>
+                    <small class="cell-note">By: {{ item.actor_name }}</small>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="form-card">
+            <p class="muted">No audit trail records found for this term.</p>
+        </div>
+    {% endif %}
+</section>
+
+{% endblock %}

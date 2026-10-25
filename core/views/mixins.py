@@ -42,6 +42,22 @@ class AdminFormMixin(AdminRequiredMixin):
 
     def form_valid(self, form):
         response = super().form_valid(form)
+        from core.models import ChangeHistory, Cohort, log_change
+        action = (
+            ChangeHistory.Action.CREATE
+            if self.title_verb == "Add"
+            else ChangeHistory.Action.UPDATE
+        )
+        cohort = self.object if isinstance(self.object, Cohort) else getattr(self.object, "cohort", None)
+        log_change(
+            actor=self.request.user,
+            action=action,
+            entity_type=self.verbose_name().capitalize(),
+            entity_name=str(self.object),
+            entity_id=getattr(self.object, "pk", None),
+            cohort=cohort,
+            description=self.get_success_message(),
+        )
         messages.success(self.request, self.get_success_message())
         return response
 
@@ -80,7 +96,10 @@ class AdminDeleteView(AdminRequiredMixin, DeleteView):
 
     def form_valid(self, form):
         verbose = self.model._meta.verbose_name
+        from core.models import ChangeHistory, log_change
         try:
+            name = str(self.object)
+            pk = self.object.pk
             self.object.delete()
         except ProtectedError:
             messages.error(
@@ -88,5 +107,13 @@ class AdminDeleteView(AdminRequiredMixin, DeleteView):
                 self.protected_message or f"This {verbose} is in use. Deactivate it instead.",
             )
         else:
+            log_change(
+                actor=self.request.user,
+                action=ChangeHistory.Action.DELETE,
+                entity_type=verbose.capitalize(),
+                entity_name=name,
+                entity_id=pk,
+                description=f"{verbose.capitalize()} '{name}' deleted.",
+            )
             messages.success(self.request, f"{verbose.capitalize()} deleted successfully.")
         return redirect(self.get_success_url())

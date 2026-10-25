@@ -1,0 +1,132 @@
+{% extends "layouts/admin.html" %}
+{% load ui static %}
+
+{% block title %}Audit Trail &amp; Logs{% endblock %}
+
+{% block page_content %}
+{% page_header eyebrow="Compliance &amp; Governance" title="Platform Audit Trail" description="Review chronological logs of allocations, reallocations, timeline planning, resources, and configuration changes." %}
+    <span class="role-chip" style="font-size: 0.9rem; padding: 0.4rem 0.8rem;">
+        <i class="fi fi-rr-time-past" aria-hidden="true"></i> {{ total_logs }} log entr{{ total_logs|pluralize:"y,ies" }}
+    </span>
+{% endpage_header %}
+
+{# Filter Bar #}
+<div class="card" style="margin-bottom: 1.5rem; padding: 1.25rem; background: var(--surface); border: 1px solid var(--line); border-radius: 8px;">
+    <form method="get" style="display: flex; flex-wrap: wrap; gap: 0.8rem; align-items: flex-end;">
+        <div style="flex: 1; min-width: 180px;">
+            <label for="q" style="display: block; font-size: 0.85rem; font-weight: 500; margin-bottom: 0.3rem;">Search description or user</label>
+            <input type="text" id="q" name="q" value="{{ search_query }}" placeholder="Filter by text..." class="form-control" style="width: 100%;">
+        </div>
+
+        <div style="min-width: 160px;">
+            <label for="action" style="display: block; font-size: 0.85rem; font-weight: 500; margin-bottom: 0.3rem;">Action</label>
+            <select id="action" name="action" class="form-control" style="width: 100%;">
+                <option value="">All actions</option>
+                {% for code, label in actions %}
+                    <option value="{{ code }}" {% if selected_action == code %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div style="min-width: 150px;">
+            <label for="entity" style="display: block; font-size: 0.85rem; font-weight: 500; margin-bottom: 0.3rem;">Entity</label>
+            <select id="entity" name="entity" class="form-control" style="width: 100%;">
+                <option value="">All entities</option>
+                {% for entity in entity_types %}
+                    <option value="{{ entity }}" {% if selected_entity == entity %}selected{% endif %}>{{ entity }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div style="min-width: 170px;">
+            <label for="cohort" style="display: block; font-size: 0.85rem; font-weight: 500; margin-bottom: 0.3rem;">Cohort</label>
+            <select id="cohort" name="cohort" class="form-control" style="width: 100%;">
+                <option value="">All cohorts</option>
+                {% for c in cohorts %}
+                    <option value="{{ c.pk }}" {% if selected_cohort == c.pk|stringformat:"s" %}selected{% endif %}>{{ c.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div style="display: flex; gap: 0.5rem;">
+            <button type="submit" class="button button--primary"><i class="fi fi-rr-filter" aria-hidden="true"></i> Filter</button>
+            {% if search_query or selected_action or selected_entity or selected_cohort %}
+                <a href="{% url 'audit_log' %}" class="button button--secondary"><i class="fi fi-rr-cross" aria-hidden="true"></i> Reset</a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+{# Audit Table #}
+{% if history_entries %}
+    <div class="card" style="overflow: hidden; border: 1px solid var(--line); border-radius: 8px; background: var(--surface);">
+        <table class="table" style="width: 100%; border-collapse: collapse; font-size: 0.88rem;">
+            <thead>
+                <tr style="background: var(--neutral-soft, #eceff2); border-bottom: 2px solid var(--line); text-align: left;">
+                    <th style="padding: 0.8rem 1rem;">Timestamp</th>
+                    <th style="padding: 0.8rem 1rem;">Action</th>
+                    <th style="padding: 0.8rem 1rem;">Target Entity</th>
+                    <th style="padding: 0.8rem 1rem;">Cohort</th>
+                    <th style="padding: 0.8rem 1rem;">Performed By</th>
+                    <th style="padding: 0.8rem 1rem;">Summary</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entry in history_entries %}
+                    <tr style="border-bottom: 1px solid var(--line);">
+                        <td style="padding: 0.8rem 1rem; white-space: nowrap; color: var(--muted);">
+                            {{ entry.created_at|date:"d M Y, H:i" }}
+                        </td>
+                        <td style="padding: 0.8rem 1rem; white-space: nowrap;">
+                            <span class="{{ entry.action_badge_class }}">{{ entry.get_action_display }}</span>
+                        </td>
+                        <td style="padding: 0.8rem 1rem; white-space: nowrap;">
+                            <strong style="color: var(--ink);">{{ entry.entity_type }}</strong>
+                            <small class="cell-note" style="display: block;">{{ entry.entity_name|truncatechars:30 }}</small>
+                        </td>
+                        <td style="padding: 0.8rem 1rem; white-space: nowrap;">
+                            {% if entry.cohort %}
+                                <a href="{% url 'cohort_manage' entry.cohort.pk %}" style="color: var(--blue); text-decoration: none;">
+                                    {{ entry.cohort.name }}
+                                </a>
+                            {% else %}
+                                <span class="muted">—</span>
+                            {% endif %}
+                        </td>
+                        <td style="padding: 0.8rem 1rem; white-space: nowrap;">
+                            <strong style="font-size: 0.85rem;">{{ entry.actor_name }}</strong>
+                        </td>
+                        <td style="padding: 0.8rem 1rem; color: var(--ink);">
+                            {{ entry.description }}
+                            {% if entry.details %}
+                                <details style="margin-top: 0.25rem;">
+                                    <summary style="font-size: 0.75rem; color: var(--blue); cursor: pointer;">View diff / metadata</summary>
+                                    <pre style="margin: 0.35rem 0 0 0; padding: 0.5rem; background: var(--neutral-soft); border-radius: 4px; font-size: 0.75rem; overflow-x: auto;">{{ entry.details }}</pre>
+                                </details>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {# Pagination #}
+    {% if is_paginated %}
+        <div style="display: flex; justify-content: center; gap: 0.5rem; margin-top: 1.5rem;">
+            {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}{% if selected_action %}&action={{ selected_action }}{% endif %}{% if selected_entity %}&entity={{ selected_entity }}{% endif %}{% if selected_cohort %}&cohort={{ selected_cohort }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}" class="button button--secondary button--sm">Previous</a>
+            {% endif %}
+            <span class="role-chip" style="font-size: 0.85rem;">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}{% if selected_action %}&action={{ selected_action }}{% endif %}{% if selected_entity %}&entity={{ selected_entity }}{% endif %}{% if selected_cohort %}&cohort={{ selected_cohort }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}" class="button button--secondary button--sm">Next</a>
+            {% endif %}
+        </div>
+    {% endif %}
+{% else %}
+    <div class="form-card">
+        <p class="muted">No audit trail records match the chosen filter criteria.</p>
+    </div>
+{% endif %}
+
+{% endblock %}

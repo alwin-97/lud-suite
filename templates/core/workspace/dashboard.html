@@ -20,13 +20,326 @@
 
         <div class="membership-list">
             {% for membership in memberships %}
-                {% partialdef membership_row inline %}
+                <div class="membership-block">
                     <div class="membership-row">
-                        <div><strong>{{ membership.get_role_display }}</strong><span>{{ membership.cohort.chapter.location.program.name }} · {{ membership.cohort.chapter.name }} · {{ membership.cohort.name }}</span></div>
+                        <div>
+                            <strong>{{ membership.get_role_display }}</strong>
+                            <span>{{ membership.cohort.chapter.location.program.name }} · {{ membership.cohort.chapter.name }} · {{ membership.cohort.name }}</span>
+                        </div>
                         <small>{{ membership.cohort.chapter.location.name }}</small>
                     </div>
-                {% endpartialdef %}
+
+                    {% if membership.cohort.terms.all %}
+                        <div class="workspace-terms">
+                            <h3 class="workspace-terms-title"><i class="fi fi-rr-book-alt" aria-hidden="true"></i> Cohort Terms &amp; Materials</h3>
+                            <div class="workspace-terms-list">
+                                {% for term in membership.cohort.terms.all %}
+                                    <details class="workspace-term-details"{% if forloop.first %} open{% endif %}>
+                                        <summary class="workspace-term-summary">
+                                            <span><strong>{{ term.name }}</strong> (Sequence {{ term.sequence }})</span>
+                                            <span class="muted">
+                                                {% if term.start_date %}{{ term.start_date|date:"M Y" }} – {{ term.end_date|date:"M Y"|default:"TBD" }}{% endif %}
+                                                · {{ term.resources.count }} resource{{ term.resources.count|pluralize }}
+                                            </span>
+                                        </summary>
+                                        <div class="workspace-term-content">
+                                            {% if term.description %}
+                                                <p class="workspace-term-desc">{{ term.description }}</p>
+                                            {% endif %}
+                                            {% if term.resources.all %}
+                                                <ul class="workspace-resource-list">
+                                                    {% for res in term.resources.all %}
+                                                        <li class="workspace-resource-item">
+                                                            {% if res.is_image and res.file %}
+                                                                <div class="workspace-resource-preview">
+                                                                    <img src="{{ res.file.url }}" alt="{{ res.title }}" class="workspace-thumbnail">
+                                                                    <div>
+                                                                        <a href="{{ res.file.url }}" target="_blank" rel="noopener noreferrer">
+                                                                            <i class="fi fi-rr-picture" aria-hidden="true"></i> {{ res.title }}
+                                                                        </a>
+                                                                        <small class="muted">Image</small>
+                                                                    </div>
+                                                                </div>
+                                                            {% elif res.is_document and res.file %}
+                                                                <div class="workspace-resource-doc">
+                                                                    <a href="{{ res.file.url }}" download target="_blank" rel="noopener noreferrer">
+                                                                        <i class="fi fi-rr-document" aria-hidden="true"></i> {{ res.title }}
+                                                                    </a>
+                                                                    <small class="muted">Document{% if res.file_extension %} ({{ res.file_extension|upper }}){% endif %}</small>
+                                                                </div>
+                                                            {% elif res.is_link and res.url %}
+                                                                <div class="workspace-resource-link">
+                                                                    <a href="{{ res.url }}" target="_blank" rel="noopener noreferrer">
+                                                                        <i class="fi fi-rr-arrow-up-right-from-square" aria-hidden="true"></i> {{ res.title }}
+                                                                    </a>
+                                                                    <small class="muted">External link</small>
+                                                                </div>
+                                                            {% endif %}
+                                                        </li>
+                                                    {% endfor %}
+                                                </ul>
+                                            {% else %}
+                                                <p class="muted" style="font-size: 0.85rem; margin: 0.5rem 0 0;">No materials attached to this term yet.</p>
+                                            {% endif %}
+
+                                            {% if term.tasks.all %}
+                                                <div style="margin-top: 1rem; border-top: 1px solid var(--line); padding-top: 0.75rem;">
+                                                    <strong style="font-size: 0.85rem; color: var(--muted); display: block; margin-bottom: 0.5rem;">
+                                                        <i class="fi fi-rr-check-circle" aria-hidden="true"></i> Tasks &amp; Deliverables
+                                                    </strong>
+                                                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                                                        {% for task in term.tasks.all %}
+                                                            <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.85rem; padding: 0.5rem 0.75rem; background: var(--surface, #ffffff); border: 1px solid var(--line); border-radius: 6px;">
+                                                                <div>
+                                                                    <strong>{{ task.title }}</strong>
+                                                                    <div class="muted" style="font-size: 0.75rem;">
+                                                                        Accepts: {{ task.allowed_types_display }}
+                                                                        {% if task.due_date %} · Due: {{ task.due_date|date:"d M Y" }}{% endif %}
+                                                                        · {{ task.points }} pts
+                                                                    </div>
+                                                                </div>
+                                                                <a href="{% url 'cohort_term_task_detail' membership.cohort.pk term.pk task.pk %}" class="button button--secondary button--sm">
+                                                                    Submit / View
+                                                                </a>
+                                                            </div>
+                                                        {% endfor %}
+                                                    </div>
+                                                </div>
+                                            {% endif %}
+
+                                            {% if term.questions.all %}
+                                                <div style="margin-top: 1rem; border-top: 1px solid var(--line); padding-top: 0.75rem;">
+                                                    <strong style="font-size: 0.85rem; color: var(--muted); display: block; margin-bottom: 0.5rem;">
+                                                        <i class="fi fi-rr-interrogation" aria-hidden="true"></i> Questions &amp; Inquiries
+                                                    </strong>
+                                                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                                                        {% for q in term.questions.all %}
+                                                            <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.85rem; padding: 0.5rem 0.75rem; background: var(--surface, #ffffff); border: 1px solid var(--line); border-radius: 6px;">
+                                                                <div>
+                                                                    <strong>{{ q.title }}</strong>
+                                                                    <div class="muted" style="font-size: 0.75rem;">
+                                                                        Accepts: {{ q.allowed_types_display }}
+                                                                        {% if q.is_required %} · Required{% endif %}
+                                                                        {% if q.due_date %} · Due: {{ q.due_date|date:"d M Y" }}{% endif %}
+                                                                    </div>
+                                                                </div>
+                                                                <a href="{% url 'cohort_term_question_detail' membership.cohort.pk term.pk q.pk %}" class="button button--secondary button--sm">
+                                                                    Answer / View
+                                                                </a>
+                                                            </div>
+                                                        {% endfor %}
+                                                    </div>
+                                                </div>
+                                            {% endif %}
+
+                                            {% if term.activities.all %}
+                                                <div style="margin-top: 1rem; border-top: 1px solid var(--line); padding-top: 0.75rem;">
+                                                    <strong style="font-size: 0.85rem; color: var(--muted); display: block; margin-bottom: 0.5rem;">
+                                                        <i class="fi fi-rr-time-forward" aria-hidden="true"></i> Planned Activities &amp; Milestones
+                                                    </strong>
+                                                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                                                        {% for act in term.activities.all %}
+                                                            <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.85rem; padding: 0.4rem 0.6rem; background: var(--neutral-soft, #f7f9fa); border-radius: 6px;">
+                                                                <div>
+                                                                    <span class="{{ act.status_badge_class }}" style="font-size: 0.75rem;">{{ act.get_status_display }}</span>
+                                                                    <strong style="margin-left: 0.4rem;">{{ act.title }}</strong>
+                                                                </div>
+                                                                {% if act.start_date or act.end_date %}
+                                                                    <small class="muted">{{ act.start_date|date:"d M"|default:"TBD" }} – {{ act.end_date|date:"d M Y"|default:"TBD" }}</small>
+                                                                {% endif %}
+                                                            </div>
+                                                        {% endfor %}
+                                                    </div>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </details>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            {% empty %}
+                <p class="muted">No active cohort assignments.</p>
             {% endfor %}
+        </div>
+
+        {# Mentor: My Mentees Section #}
+        {% if is_mentor %}
+            <div class="workspace-mentees" style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--line); margin-bottom: 2rem;">
+                <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem;">
+                    <div>
+                        <h2 style="font-size: 1.15rem; font-weight: 600; margin: 0; color: var(--ink);">
+                            <i class="fi fi-rr-users-alt" aria-hidden="true"></i> My Mentees ({{ mentor_mentees|length }})
+                        </h2>
+                        <small class="muted">Access your assigned mentees' progress, submissions, and activity reports.</small>
+                    </div>
+                </div>
+
+                {% if mentor_mentees %}
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem;">
+                        {% for mem in mentor_mentees %}
+                            <div class="card" style="padding: 1.25rem; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); display: flex; flex-direction: column; justify-content: space-between;">
+                                <div>
+                                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
+                                        <strong style="font-size: 1rem; color: var(--ink);">{{ mem.user.get_full_name|default:mem.user.username }}</strong>
+                                        <span class="role-chip" style="font-size: 0.75rem;">{{ mem.cohort.name }}</span>
+                                    </div>
+                                    <small class="muted" style="display: block; margin-bottom: 0.75rem;">{{ mem.user.email }}</small>
+                                    
+                                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; font-size: 0.8rem; margin-bottom: 1rem;">
+                                        <span class="role-chip" style="background: var(--blue-soft, #e2edf9); color: var(--blue, #1a67b8);">
+                                            {{ mem.user.activity_reports.count }} Report{{ mem.user.activity_reports.count|pluralize }}
+                                        </span>
+                                        <span class="role-chip" style="background: var(--green-soft, #dcefd2); color: var(--green-dark, #1f5c14);">
+                                            {{ mem.user.task_submissions.count }} Task{{ mem.user.task_submissions.count|pluralize }}
+                                        </span>
+                                        <span class="role-chip">
+                                            {{ mem.user.question_responses.count }} Answer{{ mem.user.question_responses.count|pluralize }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div style="display: flex; gap: 0.5rem; border-top: 1px solid var(--line); padding-top: 0.75rem;">
+                                    <a href="{% url 'user_activity_report' mem.user.pk %}" class="button button--secondary button--sm" style="flex: 1; text-align: center;">
+                                        <i class="fi fi-rr-eye" aria-hidden="true"></i> View Activity Report
+                                    </a>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="muted" style="font-size: 0.9rem;">
+                        No mentees have been assigned to you yet in your active cohorts.
+                    </p>
+                {% endif %}
+            </div>
+        {% endif %}
+
+        {# Senior Mentor: Mentors & Mentees in Scope #}
+        {% if is_senior_mentor and senior_mentorship %}
+            <div class="workspace-senior-scope" style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--line); margin-bottom: 2rem;">
+                <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.25rem;">
+                    <div>
+                        <h2 style="font-size: 1.15rem; font-weight: 600; margin: 0; color: var(--ink);">
+                            <i class="fi fi-rr-network" aria-hidden="true"></i> Senior Mentorship Scope (Mentors &amp; Mentees)
+                        </h2>
+                        <small class="muted">Oversight of all mentors, mentees, and mentorship pairings across your cohorts.</small>
+                    </div>
+                </div>
+
+                {# Sub-section: Mentors in Scope #}
+                <div style="margin-bottom: 1.5rem;">
+                    <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 0.75rem; color: var(--ink);">
+                        <i class="fi fi-rr-user-tie" aria-hidden="true"></i> Mentors in Scope ({{ senior_mentorship.mentors|length }})
+                    </h3>
+                    {% if senior_mentorship.mentors %}
+                        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 0.75rem;">
+                            {% for m in senior_mentorship.mentors %}
+                                <div class="card" style="padding: 1rem; border: 1px solid var(--line); border-radius: 8px; background: var(--surface);">
+                                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.25rem;">
+                                        <strong style="font-size: 0.95rem;">{{ m.user.get_full_name|default:m.user.username }}</strong>
+                                        <span class="role-chip" style="font-size: 0.7rem;">{{ m.cohort.name }}</span>
+                                    </div>
+                                    <small class="muted" style="display: block; margin-bottom: 0.75rem;">{{ m.user.email }}</small>
+                                    <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--line); padding-top: 0.5rem;">
+                                        <span style="font-size: 0.8rem; color: var(--muted);">
+                                            {{ m.user.activity_reports.count }} report{{ m.user.activity_reports.count|pluralize }}
+                                        </span>
+                                        <a href="{% url 'user_activity_report' m.user.pk %}" class="button button--secondary button--sm">
+                                            Activity Report
+                                        </a>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="muted" style="font-size: 0.85rem;">No mentors enrolled in this scope.</p>
+                    {% endif %}
+                </div>
+
+                {# Sub-section: Mentees in Scope #}
+                <div>
+                    <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 0.75rem; color: var(--ink);">
+                        <i class="fi fi-rr-graduation-cap" aria-hidden="true"></i> Mentees in Scope ({{ senior_mentorship.mentees|length }})
+                    </h3>
+                    {% if senior_mentorship.mentees %}
+                        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 0.75rem;">
+                            {% for m in senior_mentorship.mentees %}
+                                <div class="card" style="padding: 1rem; border: 1px solid var(--line); border-radius: 8px; background: var(--surface);">
+                                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.25rem;">
+                                        <strong style="font-size: 0.95rem;">{{ m.user.get_full_name|default:m.user.username }}</strong>
+                                        <span class="role-chip" style="font-size: 0.7rem;">{{ m.cohort.name }}</span>
+                                    </div>
+                                    <small class="muted" style="display: block; margin-bottom: 0.5rem;">{{ m.user.email }}</small>
+                                    <div style="display: flex; gap: 0.5rem; font-size: 0.75rem; margin-bottom: 0.75rem;">
+                                        <span class="role-chip">{{ m.user.task_submissions.count }} tasks</span>
+                                        <span class="role-chip">{{ m.user.activity_reports.count }} reports</span>
+                                    </div>
+                                    <div style="border-top: 1px solid var(--line); padding-top: 0.5rem;">
+                                        <a href="{% url 'user_activity_report' m.user.pk %}" class="button button--secondary button--sm" style="width: 100%; text-align: center;">
+                                            View Mentee Dossier
+                                        </a>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="muted" style="font-size: 0.85rem;">No mentees enrolled in this scope.</p>
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+
+        {# Activity Reports Section #}
+        <div class="workspace-reports" style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--line); margin-bottom: 2rem;">
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem;">
+                <div>
+                    <h2 style="font-size: 1.15rem; font-weight: 600; margin: 0; color: var(--ink);">
+                        <i class="fi fi-rr-document-signed" aria-hidden="true"></i> My Activity Reports
+                    </h2>
+                    <small class="muted">Track deliverables, log hours, and record milestone progress across terms.</small>
+                </div>
+                <div style="display: flex; gap: 0.5rem;">
+                    <a href="{% url 'user_activity_report' user.pk %}" class="button button--secondary button--sm">
+                        <i class="fi fi-rr-eye" aria-hidden="true"></i> Full Activity Dossier
+                    </a>
+                    <a href="{% url 'user_activity_report_create' user.pk %}" class="button button--primary button--sm">
+                        <i class="fi fi-rr-plus" aria-hidden="true"></i> Prepare Activity Report
+                    </a>
+                </div>
+            </div>
+
+            {% if reports %}
+                <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                    {% for rep in reports %}
+                        <div style="padding: 1rem 1.25rem; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; border-left: 3px solid {% if rep.status == 'approved' %}var(--green, #00875a){% elif rep.status == 'reviewed' %}var(--blue, #1a67b8){% else %}var(--amber, #f59f00){% endif %}; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;">
+                            <div>
+                                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+                                    <span class="{{ rep.status_badge_class }}" style="font-size: 0.75rem;">{{ rep.get_status_display }}</span>
+                                    <span class="role-chip" style="font-size: 0.75rem;">{{ rep.hours_spent }} hrs</span>
+                                    <small class="muted">{{ rep.report_date|date:"d M Y" }}</small>
+                                </div>
+                                <strong style="font-size: 0.95rem; display: block;">{{ rep.title }}</strong>
+                                <small class="muted">{{ rep.cohort.name }}{% if rep.term %} · {{ rep.term.name }}{% endif %}</small>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <a href="{% url 'user_activity_report' user.pk %}" class="button button--secondary button--sm">
+                                    View
+                                </a>
+                                {% if rep.status != 'approved' %}
+                                    <a href="{% url 'user_activity_report_edit' user.pk rep.pk %}" class="button button--secondary button--sm">
+                                        Edit
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="muted" style="font-size: 0.9rem; margin-top: 0.5rem;">
+                    You have not submitted any activity reports yet. Click <strong>Prepare Activity Report</strong> above to record your accomplishments, milestones, and reflections.
+                </p>
+            {% endif %}
         </div>
 
         <form method="post" action="{% url 'logout' %}">{% csrf_token %}<button type="submit" class="button button--secondary"><i class="fi fi-rr-sign-out-alt" aria-hidden="true"></i> Sign out</button></form>

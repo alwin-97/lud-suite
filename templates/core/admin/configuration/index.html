@@ -7,10 +7,12 @@
 {% page_header eyebrow="Application configuration" title="Program structure" description="Create a program first, then its locations, chapters and cohorts." %}{% endpage_header %}
 
 <div class="configuration-grid">
-    {% url 'program_list' as program_url %}{% url 'location_list' as location_url %}{% url 'chapter_list' as chapter_url %}{% url 'cohort_list' as cohort_url %}
+    {% url 'program_list' as program_url %}{% url 'location_list' as location_url %}{% url 'chapter_list' as chapter_url %}{% url 'cohort_list' as cohort_url %}{% url 'role_permissions_matrix' as perms_url %}{% url 'audit_log' as audit_url %}
     {% include "components/link_card.html" with variant="configuration" href=program_url badge=program_count title="Programs" text="Programmes such as DREAMS, each with its own structure and cohort length." only %}
     {% include "components/link_card.html" with variant="configuration" href=location_url badge=location_count title="Locations" text="Places where a program operates." only %}
     {% include "components/link_card.html" with variant="configuration" href=chapter_url badge=chapter_count title="Chapters" text="Local units connected to a location." only %}
     {% include "components/link_card.html" with variant="configuration" href=cohort_url badge=cohort_count title="Cohorts" text="Participant groups within chapters, running for the program's cohort length." only %}
+    {% include "components/link_card.html" with variant="configuration" href=perms_url badge=role_count title="Role Permissions (RBAC)" text="Granular CRUD permission matrix across cohort terms, resources, timeline activities, and members." only %}
+    {% include "components/link_card.html" with variant="configuration" href=audit_url title="Platform Audit Trail" text="Chronological logs and compliance review across all platform stages and changes." only %}
 </div>
 {% endblock %}

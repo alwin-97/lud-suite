@@ -27,8 +27,14 @@
                     </div>
                 </td>
                 <td>{% status_badge platform_user.is_active %}</td>
-                {% url 'platform_user_edit' platform_user.pk as edit_url %}
-                {% row_actions edit_url edit_label="Edit access" %}
+                <td class="table-actions">
+                    <a href="{% url 'user_activity_report' platform_user.pk %}" class="button button--secondary button--sm" title="View &amp; Prepare Activity Report">
+                        <i class="fi fi-rr-document-signed" aria-hidden="true"></i> Activity Report
+                    </a>
+                    <a href="{% url 'platform_user_edit' platform_user.pk %}" class="button button--secondary button--sm">
+                        <i class="fi fi-rr-pencil" aria-hidden="true"></i> Edit access
+                    </a>
+                </td>
             </tr>
         {% endfor %}
     </tbody>

@@ -44,18 +44,4 @@ class Migration(migrations.Migration):
                 ('objects', django.contrib.auth.models.UserManager()),
             ],
         ),
-        migrations.CreateModel(
-            name='Activity',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('date', models.DateField()),
-                ('duration', models.DecimalField(decimal_places=2, max_digits=4)),
-                ('activity', models.CharField(choices=[('YCLP-Class', 'YCLP-Class'), ('DREAMS Summer Camp', 'DREAMS Summer Camp'), ('DREAMS Follow-Up', 'DREAMS Follow-Up'), ('Others', 'Others')], default='YCLP-Class', max_length=255)),
-                ('other_activity', models.CharField(blank=True, max_length=255, null=True)),
-                ('learnings', models.TextField(blank=True)),
-                ('feedback', models.TextField(blank=True)),
-                ('photo', models.ImageField(blank=True, null=True, upload_to='photos/')),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
-            ],
-        ),
     ]

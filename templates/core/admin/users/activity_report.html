@@ -1,0 +1,378 @@
+{% extends "layouts/admin.html" %}
+{% load ui static %}
+
+{% block title %}Activity Report · {{ target_user.get_full_name|default:target_user.email }}{% endblock %}
+
+{% block page_styles %}
+<style>
+@media print {
+    .app-bar, .admin-sidebar, .site-footer, .page-heading-actions, .filter-card, .btn-no-print {
+        display: none !important;
+    }
+    .admin-main, .admin-surface, .admin-content {
+        margin: 0 !important;
+        padding: 0 !important;
+        background: white !important;
+    }
+    .card {
+        border: 1px solid #ccc !important;
+        box-shadow: none !important;
+        break-inside: avoid;
+    }
+    body {
+        font-size: 11pt;
+        color: black !important;
+        background: white !important;
+    }
+}
+</style>
+{% endblock %}
+
+{% block page_content %}
+{% page_header eyebrow="Participant Dossier &amp; Evaluation" title="Activity Report: "|add:target_user.get_full_name|default:target_user.email description=target_user.email %}
+    <div class="page-heading-actions btn-no-print" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+        <a href="{% url 'platform_user_list' %}" class="button button--secondary">
+            <i class="fi fi-rr-arrow-left" aria-hidden="true"></i> All users
+        </a>
+        <button type="button" onclick="window.print()" class="button button--secondary">
+            <i class="fi fi-rr-print" aria-hidden="true"></i> Print / PDF Report
+        </button>
+        {% if can_create %}
+            <a href="{% url 'user_activity_report_create' target_user.pk %}{% if selected_cohort %}?cohort={{ selected_cohort }}{% endif %}{% if selected_term %}&amp;term={{ selected_term }}{% endif %}" class="button button--primary">
+                <i class="fi fi-rr-plus" aria-hidden="true"></i> Prepare Activity Report
+            </a>
+        {% endif %}
+    </div>
+{% endpage_header %}
+
+{# Participant Profile Summary #}
+<div class="card" style="margin-bottom: 1.5rem; padding: 1.25rem 1.5rem; background: var(--surface); border: 1px solid var(--line); border-radius: 8px;">
+    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+        <div>
+            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.35rem;">
+                <h3 style="margin: 0; font-size: 1.15rem; font-weight: 600;">
+                    {{ target_user.get_full_name|default:target_user.email }}
+                </h3>
+                {% status_badge target_user.is_active %}
+            </div>
+            <p style="margin: 0 0 0.5rem 0; font-size: 0.88rem; color: var(--muted);">
+                <i class="fi fi-rr-envelope" aria-hidden="true"></i> {{ target_user.email }}
+                · Joined: {{ target_user.date_joined|date:"d M Y" }}
+            </p>
+            <div style="display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center;">
+                <span class="cell-note" style="font-weight: 500;">Cohort Assignments:</span>
+                {% for membership in memberships %}
+                    <span class="role-chip" style="font-size: 0.8rem;">
+                        <i class="fi fi-rr-users" aria-hidden="true"></i>
+                        {{ membership.get_role_display }} · {{ membership.cohort.name }} ({{ membership.cohort.chapter.location.program.name }})
+                    </span>
+                {% empty %}
+                    <span class="muted cell-note">No active cohort memberships.</span>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{# Executive KPI Metrics #}
+<section class="stat-grid" aria-label="Activity report metrics" style="margin-bottom: 1.5rem;">
+    {% include "components/stat_card.html" with value=total_targeted label="Targeted Activities" only %}
+    {% include "components/stat_card.html" with value=completed_activities label="Activities Completed" only %}
+    {% include "components/stat_card.html" with value=completion_rate|stringformat:"d"|add:"%" label="Completion Rate" only %}
+    {% include "components/stat_card.html" with value=total_reports label="Reports Prepared" only %}
+    {% include "components/stat_card.html" with value=total_hours|stringformat:".1f"|add:" hrs" label="Total Time Logged" only %}
+</section>
+
+{# Filter Bar #}
+<div class="card filter-card btn-no-print" style="margin-bottom: 2rem; padding: 1.25rem; background: var(--surface); border: 1px solid var(--line); border-radius: 8px;">
+    <form method="get" style="display: flex; flex-wrap: wrap; gap: 0.8rem; align-items: flex-end;">
+        {% if cohorts|length > 1 %}
+            <div style="min-width: 180px;">
+                <label for="cohort" style="display: block; font-size: 0.85rem; font-weight: 500; margin-bottom: 0.3rem;">Cohort</label>
+                <select id="cohort" name="cohort" class="form-control" style="width: 100%;">
+                    <option value="">All assigned cohorts</option>
+                    {% for c in cohorts %}
+                        <option value="{{ c.pk }}" {% if selected_cohort == c.pk|stringformat:"s" %}selected{% endif %}>{{ c.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        {% endif %}
+
+        <div style="min-width: 160px;">
+            <label for="status" style="display: block; font-size: 0.85rem; font-weight: 500; margin-bottom: 0.3rem;">Report Status</label>
+            <select id="status" name="status" class="form-control" style="width: 100%;">
+                <option value="">All statuses</option>
+                <option value="approved" {% if selected_status == "approved" %}selected{% endif %}>Approved</option>
+                <option value="reviewed" {% if selected_status == "reviewed" %}selected{% endif %}>Reviewed</option>
+                <option value="submitted" {% if selected_status == "submitted" %}selected{% endif %}>Submitted</option>
+                <option value="draft" {% if selected_status == "draft" %}selected{% endif %}>Draft</option>
+            </select>
+        </div>
+
+        <div style="display: flex; gap: 0.5rem;">
+            <button type="submit" class="button button--primary"><i class="fi fi-rr-filter" aria-hidden="true"></i> Filter</button>
+            {% if selected_cohort or selected_term or selected_status %}
+                <a href="{% url 'user_activity_report' target_user.pk %}" class="button button--secondary"><i class="fi fi-rr-cross" aria-hidden="true"></i> Clear</a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+{# SECTION 1: Planned Cohort Activities & Milestones Matrix #}
+<section class="section-block" style="margin-bottom: 2.5rem;">
+    <div class="section-heading" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem;">
+        <div>
+            <p class="eyebrow">Curriculum Milestones</p>
+            <h2>Cohort Activities for {{ target_user.first_name|default:target_user.email }} ({{ targeted_activities|length }})</h2>
+        </div>
+    </div>
+
+    {% if targeted_activities %}
+        <div class="card" style="overflow: hidden; border: 1px solid var(--line); border-radius: 8px; background: var(--surface);">
+            <table class="table" style="width: 100%; border-collapse: collapse; font-size: 0.88rem;">
+                <thead>
+                    <tr style="background: var(--neutral-soft, #eceff2); border-bottom: 2px solid var(--line); text-align: left;">
+                        <th style="padding: 0.8rem 1rem;">Term &amp; Cohort</th>
+                        <th style="padding: 0.8rem 1rem;">Activity / Milestone</th>
+                        <th style="padding: 0.8rem 1rem;">Target Group</th>
+                        <th style="padding: 0.8rem 1rem;">Timeline</th>
+                        <th style="padding: 0.8rem 1rem;">Status</th>
+                        <th style="padding: 0.8rem 1rem; text-align: right;" class="btn-no-print">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for act in targeted_activities %}
+                        <tr style="border-bottom: 1px solid var(--line);">
+                            <td style="padding: 0.8rem 1rem; white-space: nowrap;">
+                                <span class="role-chip" style="font-size: 0.75rem;">{{ act.term.name }}</span>
+                                <small class="cell-note" style="display: block;">{{ act.cohort.name }}</small>
+                            </td>
+                            <td style="padding: 0.8rem 1rem;">
+                                <strong style="color: var(--ink);">{{ act.title }}</strong>
+                                {% if act.description %}
+                                    <small class="cell-note" style="display: block; margin-top: 0.2rem;">{{ act.description|truncatewords:15 }}</small>
+                                {% endif %}
+                            </td>
+                            <td style="padding: 0.8rem 1rem; white-space: nowrap;">
+                                <span class="role-chip" style="font-size: 0.75rem;">{{ act.get_target_audience_display }}</span>
+                            </td>
+                            <td style="padding: 0.8rem 1rem; white-space: nowrap; color: var(--muted);">
+                                {% if act.start_date or act.end_date %}
+                                    {{ act.start_date|date:"d M"|default:"TBD" }} – {{ act.end_date|date:"d M Y"|default:"TBD" }}
+                                {% else %}
+                                    <span class="muted">—</span>
+                                {% endif %}
+                            </td>
+                            <td style="padding: 0.8rem 1rem; white-space: nowrap;">
+                                <span class="{{ act.status_badge_class }}">{{ act.get_status_display }}</span>
+                            </td>
+                            <td style="padding: 0.8rem 1rem; text-align: right; white-space: nowrap;" class="btn-no-print">
+                                {% if can_create %}
+                                    <a href="{% url 'user_activity_report_create' target_user.pk %}?cohort={{ act.cohort.pk }}&amp;term={{ act.term.pk }}&amp;activity={{ act.pk }}" class="button button--secondary button--sm" title="Prepare report for this milestone">
+                                        <i class="fi fi-rr-plus" aria-hidden="true"></i> Report
+                                    </a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="form-card">
+            <p class="muted">No cohort activities scheduled matching this participant's active roles.</p>
+        </div>
+    {% endif %}
+</section>
+
+{# SECTION 2: Prepared Activity Reports & Submissions #}
+<section class="section-block" style="margin-bottom: 2.5rem;">
+    <div class="section-heading" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem;">
+        <div>
+            <p class="eyebrow">Logged Deliverables &amp; Progress</p>
+            <h2>Prepared Activity Reports ({{ reports|length }})</h2>
+        </div>
+        {% if can_create %}
+            <div class="page-heading-actions btn-no-print">
+                <a href="{% url 'user_activity_report_create' target_user.pk %}{% if selected_cohort %}?cohort={{ selected_cohort }}{% endif %}" class="button button--primary button--sm">
+                    <i class="fi fi-rr-plus" aria-hidden="true"></i> Prepare Activity Report
+                </a>
+            </div>
+        {% endif %}
+    </div>
+
+    {% if reports %}
+        <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+            {% for rep in reports %}
+                <div class="card" style="padding: 1.4rem 1.6rem; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; border-left: 4px solid {% if rep.status == 'approved' %}var(--green, #00875a){% elif rep.status == 'reviewed' %}var(--blue, #1a67b8){% elif rep.status == 'submitted' %}var(--amber, #f59f00){% else %}var(--line-strong){% endif %};">
+                    {# Report Header #}
+                    <div style="display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 0.8rem;">
+                        <div>
+                            <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.3rem;">
+                                <span class="{{ rep.status_badge_class }}">{{ rep.get_status_display }}</span>
+                                <span class="role-chip" style="font-size: 0.78rem;">
+                                    <i class="fi fi-rr-time-fast" aria-hidden="true"></i> {{ rep.hours_spent }} hrs logged
+                                </span>
+                                <span class="role-chip" style="font-size: 0.78rem;">
+                                    {{ rep.get_progress_status_display }}
+                                </span>
+                                <small class="cell-note">{{ rep.report_date|date:"d M Y" }}</small>
+                            </div>
+                            <h3 style="margin: 0; font-size: 1.15rem; font-weight: 600; color: var(--ink);">
+                                {{ rep.title }}
+                            </h3>
+                            <p style="margin: 0.2rem 0 0 0; font-size: 0.85rem; color: var(--muted);">
+                                {{ rep.cohort.name }}{% if rep.term %} · {{ rep.term.name }}{% endif %}{% if rep.activity %} · Linked: <em>{{ rep.activity.title }}</em>{% endif %}
+                            </p>
+                        </div>
+
+                        {# Actions #}
+                        <div class="btn-no-print" style="display: flex; align-items: center; gap: 0.5rem;">
+                            {% if can_review and rep.status != 'approved' %}
+                                <a href="{% url 'user_activity_report_review' target_user.pk rep.pk %}" class="button button--secondary button--sm">
+                                    <i class="fi fi-rr-check" aria-hidden="true"></i> Review / Evaluate
+                                </a>
+                            {% endif %}
+                            {% if can_create %}
+                                <a href="{% url 'user_activity_report_edit' target_user.pk rep.pk %}" class="button button--secondary button--sm">
+                                    <i class="fi fi-rr-pencil" aria-hidden="true"></i> Edit
+                                </a>
+                            {% endif %}
+                            {% if can_review or target_user == request.user %}
+                                <form method="post" action="{% url 'user_activity_report_delete' target_user.pk rep.pk %}" data-confirm="Delete this activity report?" style="display: inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="text-button text-button--danger" title="Delete report"><i class="fi fi-rr-trash" aria-hidden="true"></i></button>
+                                </form>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {# Summary #}
+                    <div style="margin-bottom: 0.9rem;">
+                        <strong style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); display: block; margin-bottom: 0.25rem;">
+                            Deliverables &amp; Achievements
+                        </strong>
+                        <p style="margin: 0; font-size: 0.93rem; color: var(--ink); line-height: 1.5; white-space: pre-line;">{{ rep.summary }}</p>
+                    </div>
+
+                    {# Reflections and Challenges #}
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; margin-bottom: 0.9rem;">
+                        {% if rep.reflections %}
+                            <div style="padding: 0.8rem 1rem; background: var(--neutral-soft, #f7f9fa); border-radius: 6px; border-left: 3px solid var(--blue, #1a67b8);">
+                                <strong style="font-size: 0.82rem; color: var(--blue, #1a67b8); display: block; margin-bottom: 0.2rem;">
+                                    <i class="fi fi-rr-bulb" aria-hidden="true"></i> Key Learnings &amp; Reflections
+                                </strong>
+                                <p style="margin: 0; font-size: 0.88rem; color: var(--ink); line-height: 1.45; white-space: pre-line;">{{ rep.reflections }}</p>
+                            </div>
+                        {% endif %}
+                        {% if rep.challenges %}
+                            <div style="padding: 0.8rem 1rem; background: var(--neutral-soft, #f7f9fa); border-radius: 6px; border-left: 3px solid var(--amber, #f59f00);">
+                                <strong style="font-size: 0.82rem; color: var(--amber, #b27b00); display: block; margin-bottom: 0.2rem;">
+                                    <i class="fi fi-rr-flag" aria-hidden="true"></i> Challenges &amp; Resolution
+                                </strong>
+                                <p style="margin: 0; font-size: 0.88rem; color: var(--ink); line-height: 1.45; white-space: pre-line;">{{ rep.challenges }}</p>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    {# Next Steps & Attachment #}
+                    {% if rep.next_steps or rep.attachment %}
+                        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.8rem; padding-top: 0.6rem; border-top: 1px solid var(--line);">
+                            {% if rep.next_steps %}
+                                <div style="flex: 1; min-width: 240px;">
+                                    <strong style="font-size: 0.82rem; color: var(--muted);">Next Steps:</strong>
+                                    <span style="font-size: 0.88rem; color: var(--ink); margin-left: 0.3rem;">{{ rep.next_steps }}</span>
+                                </div>
+                            {% endif %}
+                            {% if rep.attachment %}
+                                <div>
+                                    <a href="{{ rep.attachment.url }}" target="_blank" rel="noopener noreferrer" class="button button--secondary button--sm">
+                                        <i class="fi fi-rr-clip" aria-hidden="true"></i>
+                                        View Attachment{% if rep.file_extension %} ({{ rep.file_extension|upper }}){% endif %}
+                                    </a>
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+
+                    {# Reviewer Feedback #}
+                    {% if rep.feedback %}
+                        <div style="margin-top: 0.9rem; padding: 0.8rem 1rem; background: var(--green-soft, #e3f5ec); border-radius: 6px; border-left: 3px solid var(--green, #00875a);">
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.25rem;">
+                                <strong style="font-size: 0.82rem; color: var(--green, #00875a);">
+                                    <i class="fi fi-rr-comment-check" aria-hidden="true"></i> Reviewer Feedback
+                                </strong>
+                                {% if rep.reviewed_by %}
+                                    <small class="cell-note">Evaluated by: {{ rep.reviewed_by.get_full_name|default:rep.reviewed_by.email }}</small>
+                                {% endif %}
+                            </div>
+                            <p style="margin: 0; font-size: 0.88rem; color: var(--ink); line-height: 1.45; white-space: pre-line;">{{ rep.feedback }}</p>
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="form-card">
+            <p class="muted">No activity reports prepared for this participant yet.{% if can_create %} Click <strong>Prepare Activity Report</strong> above to record activities, milestones, and reflections.{% endif %}</p>
+        </div>
+    {% endif %}
+</section>
+
+{# SECTION 3: Platform Contribution & Audit Log Trail #}
+<section class="section-block" style="margin-bottom: 2rem;">
+    <div class="section-heading" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem;">
+        <div>
+            <p class="eyebrow">Engagement Footprint</p>
+            <h2>Platform Activity Trail ({{ audit_trail|length }})</h2>
+        </div>
+        <div class="page-heading-actions btn-no-print">
+            <a href="{% url 'audit_log' %}?q={{ target_user.email }}" class="button button--secondary button--sm">
+                <i class="fi fi-rr-time-past" aria-hidden="true"></i> View in central log
+            </a>
+        </div>
+    </div>
+
+    {% if audit_trail %}
+        <div class="card" style="overflow: hidden; border: 1px solid var(--line); border-radius: 8px; background: var(--surface);">
+            <table class="table" style="width: 100%; border-collapse: collapse; font-size: 0.88rem;">
+                <thead>
+                    <tr style="background: var(--neutral-soft, #eceff2); border-bottom: 2px solid var(--line); text-align: left;">
+                        <th style="padding: 0.8rem 1rem;">Timestamp</th>
+                        <th style="padding: 0.8rem 1rem;">Action</th>
+                        <th style="padding: 0.8rem 1rem;">Target Entity</th>
+                        <th style="padding: 0.8rem 1rem;">Cohort</th>
+                        <th style="padding: 0.8rem 1rem;">Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entry in audit_trail %}
+                        <tr style="border-bottom: 1px solid var(--line);">
+                            <td style="padding: 0.8rem 1rem; white-space: nowrap; color: var(--muted);">
+                                {{ entry.created_at|date:"d M Y, H:i" }}
+                            </td>
+                            <td style="padding: 0.8rem 1rem; white-space: nowrap;">
+                                <span class="{{ entry.action_badge_class }}">{{ entry.get_action_display }}</span>
+                            </td>
+                            <td style="padding: 0.8rem 1rem; white-space: nowrap;">
+                                <strong>{{ entry.entity_type }}</strong>
+                                <small class="cell-note" style="display: block;">{{ entry.entity_name|truncatechars:25 }}</small>
+                            </td>
+                            <td style="padding: 0.8rem 1rem; white-space: nowrap;">
+                                {{ entry.cohort.name|default:"—" }}
+                            </td>
+                            <td style="padding: 0.8rem 1rem; color: var(--ink);">
+                                {{ entry.description }}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="form-card">
+            <p class="muted">No system actions logged for this user yet.</p>
+        </div>
+    {% endif %}
+</section>
+{% endblock %}

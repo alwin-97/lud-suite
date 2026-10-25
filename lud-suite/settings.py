@@ -8,6 +8,11 @@ SECRET_KEY = os.environ.get(
     "django-insecure-development-only-change-me",
 )
 DEBUG = os.environ.get("DJANGO_DEBUG", "true").lower() == "true"
+if not DEBUG and SECRET_KEY == "django-insecure-development-only-change-me":
+    from django.core.exceptions import ImproperlyConfigured
+    raise ImproperlyConfigured(
+        "DJANGO_SECRET_KEY environment variable must be set when DJANGO_DEBUG is false."
+    )
 ALLOWED_HOSTS = [
     host.strip()
     for host in os.environ.get("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
@@ -91,6 +96,10 @@ USE_TZ = True
 # Static files
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / "static"]
+
+# Media files (uploads)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 

@@ -9,6 +9,7 @@
 {% with program=cohort.chapter.location.program %}
 {% page_header eyebrow="Manage cohort" title=cohort.name description=program.name|add:" · "|add:cohort.chapter.name|add:" · "|add:cohort.chapter.location.name %}
     <a href="{% url 'cohort_list' %}" class="button button--secondary"><i class="fi fi-rr-arrow-left" aria-hidden="true"></i> All cohorts</a>
+    <a href="{% url 'cohort_timeline' cohort.pk %}" class="button button--secondary"><i class="fi fi-rr-time-forward" aria-hidden="true"></i> Activity timeline</a>
     <a href="{% url 'cohort_edit' cohort.pk %}" class="button button--secondary"><i class="fi fi-rr-pencil" aria-hidden="true"></i> Edit cohort</a>
 {% endpage_header %}
 
@@ -29,6 +30,74 @@
 </p>
 {% endwith %}
 
+{% has_perm "terms" "create" cohort as can_create_term %}
+{% has_perm "terms" "update" cohort as can_update_term %}
+{% has_perm "terms" "delete" cohort as can_delete_term %}
+{% has_perm "members" "create" cohort as can_create_member %}
+{% has_perm "members" "update" cohort as can_update_member %}
+{% has_perm "members" "delete" cohort as can_delete_member %}
+
+<section class="section-block">
+    <div class="section-heading">
+        <div>
+            <p class="eyebrow">Curriculum &amp; Schedule</p>
+            <h2>Cohort Terms</h2>
+        </div>
+        {% if can_create_term %}
+            <div class="page-heading-actions">
+                <a href="{% url 'cohort_term_create' cohort.pk %}" class="button button--primary"><i class="fi fi-rr-plus" aria-hidden="true"></i> Add term</a>
+            </div>
+        {% endif %}
+    </div>
+
+    {% if terms %}
+        <div class="terms-grid">
+            {% for term in terms %}
+                <div class="card term-summary-card">
+                    <div class="term-summary-header">
+                        <div>
+                            <span class="role-chip">Sequence {{ term.sequence }}</span>
+                            <h3 class="term-title">{{ term.name }}</h3>
+                        </div>
+                        {% status_badge term.is_active %}
+                    </div>
+                    {% if term.start_date or term.end_date %}
+                        <p class="term-dates">
+                            <i class="fi fi-rr-calendar" aria-hidden="true"></i>
+                            {{ term.start_date|date:"d M Y"|default:"TBD" }} – {{ term.end_date|date:"d M Y"|default:"TBD" }}
+                        </p>
+                    {% endif %}
+                    {% if term.description %}
+                        <p class="term-desc cell-note">{{ term.description|truncatewords:20 }}</p>
+                    {% endif %}
+                    <div class="term-resource-badges">
+                        <span class="cell-note">
+                            <i class="fi fi-rr-folder" aria-hidden="true"></i> {{ term.resources.count }} resource{{ term.resources.count|pluralize }}
+                        </span>
+                    </div>
+                    <div class="term-card-actions">
+                        <a href="{% url 'cohort_term_detail' cohort.pk term.pk %}" class="button button--secondary button--sm"><i class="fi fi-rr-folder-open" aria-hidden="true"></i> View &amp; Manage</a>
+                        {% if can_update_term %}
+                            <a href="{% url 'cohort_term_edit' cohort.pk term.pk %}" class="button button--secondary button--sm"><i class="fi fi-rr-pencil" aria-hidden="true"></i> Edit</a>
+                        {% endif %}
+                        {% if can_delete_term %}
+                            <form method="post" action="{% url 'cohort_term_delete' cohort.pk term.pk %}" data-confirm="Delete this term and all attached resources?" style="display:inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="text-button text-button--danger" title="Delete term"><i class="fi fi-rr-trash" aria-hidden="true"></i></button>
+                            </form>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="form-card">
+            <p class="muted">No terms have been configured for this cohort yet.{% if can_create_term %} Click <strong>Add term</strong> above to define terms and upload documents, links, and image resources.{% endif %}</p>
+        </div>
+    {% endif %}
+</section>
+
+{% if can_create_member %}
 <section class="section-block">
     {% include "components/section_heading.html" with eyebrow="Access" title="Add a member" only %}
     <div class="form-card form-card--wide">
@@ -44,6 +113,7 @@
         </form>
     </div>
 </section>
+{% endif %}
 
 <section class="section-block">
     <div class="section-heading">
@@ -64,18 +134,132 @@
                     <td><span class="role-chip">{{ membership.get_role_display }}</span></td>
                     <td>{% status_badge membership.is_active %}</td>
                     <td class="table-actions">
-                        <form method="post" action="{% url 'cohort_member_toggle' cohort.pk membership.pk %}">
-                            {% csrf_token %}
-                            <button type="submit" class="text-button"><i class="fi fi-rr-{% if membership.is_active %}pause{% else %}play{% endif %}" aria-hidden="true"></i> {% if membership.is_active %}Deactivate{% else %}Activate{% endif %}</button>
-                        </form>
-                        <form method="post" action="{% url 'cohort_member_remove' cohort.pk membership.pk %}" data-confirm="Remove this role from the cohort?">
-                            {% csrf_token %}
-                            <button type="submit" class="text-button text-button--danger"><i class="fi fi-rr-trash" aria-hidden="true"></i> Remove</button>
-                        </form>
+                        <a href="{% url 'user_activity_report' membership.user.pk %}?cohort={{ cohort.pk }}" class="text-button" title="View &amp; Prepare Activity Report"><i class="fi fi-rr-document-signed" aria-hidden="true"></i> Activity Report</a>
+                        {% if can_update_member %}
+                            <a href="{% url 'cohort_member_reallocate' cohort.pk membership.pk %}" class="text-button" title="Reallocate role or cohort"><i class="fi fi-rr-user-arrows-swap" aria-hidden="true"></i> Reallocate</a>
+                            <form method="post" action="{% url 'cohort_member_toggle' cohort.pk membership.pk %}">
+                                {% csrf_token %}
+                                <button type="submit" class="text-button"><i class="fi fi-rr-{% if membership.is_active %}pause{% else %}play{% endif %}" aria-hidden="true"></i> {% if membership.is_active %}Deactivate{% else %}Activate{% endif %}</button>
+                            </form>
+                        {% endif %}
+                        {% if can_delete_member %}
+                            <form method="post" action="{% url 'cohort_member_remove' cohort.pk membership.pk %}" data-confirm="Remove this role from the cohort?">
+                                {% csrf_token %}
+                                <button type="submit" class="text-button text-button--danger"><i class="fi fi-rr-trash" aria-hidden="true"></i> Remove</button>
+                            </form>
+                        {% endif %}
+                        {% if not can_update_member and not can_delete_member %}
+                            <span class="muted cell-note">Read-only</span>
+                        {% endif %}
                     </td>
                 </tr>
             {% endfor %}
         </tbody>
     {% enddata_table %}
+</section>
+
+{# Section: Mentor-Mentee Pairings & Allocation #}
+<section class="section-block">
+    <div class="section-heading">
+        <div>
+            <p class="eyebrow">Mentorship</p>
+            <h2>Mentor — Mentee Allocations ({{ mentor_assignments|length }})</h2>
+        </div>
+    </div>
+
+    {% if can_update_member or can_create_member %}
+        <div class="form-card form-card--wide" style="margin-bottom: 1.5rem;">
+            <form method="post" action="{% url 'cohort_mentor_allocate' cohort.pk %}" class="admin-form">
+                {% csrf_token %}
+                <div class="form-grid">
+                    {% for field in mentor_assignment_form.visible_fields %}{{ field.as_field_group }}{% endfor %}
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="button button--primary button--sm">
+                        <i class="fi fi-rr-user-add" aria-hidden="true"></i> Allocate Mentee to Mentor
+                    </button>
+                </div>
+            </form>
+        </div>
+    {% endif %}
+
+    {% if mentor_assignments %}
+        <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+            {% for assignment in mentor_assignments %}
+                <div class="card" style="padding: 1rem 1.25rem; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;">
+                    <div style="display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;">
+                        <div>
+                            <small class="muted" style="text-transform: uppercase; font-size: 0.7rem; display: block; font-weight: 600;">Mentor</small>
+                            <strong>{{ assignment.mentor.get_full_name|default:assignment.mentor.email }}</strong>
+                            <small class="cell-note" style="display: block;">{{ assignment.mentor.email }}</small>
+                        </div>
+                        <div style="color: var(--blue, #1a67b8); font-size: 1.2rem;">
+                            <i class="fi fi-rr-arrow-right" aria-hidden="true"></i>
+                        </div>
+                        <div>
+                            <small class="muted" style="text-transform: uppercase; font-size: 0.7rem; display: block; font-weight: 600;">Mentee</small>
+                            <strong>{{ assignment.mentee.get_full_name|default:assignment.mentee.email }}</strong>
+                            <small class="cell-note" style="display: block;">{{ assignment.mentee.email }}</small>
+                        </div>
+                        {% if assignment.notes %}
+                            <div style="max-width: 280px;">
+                                <small class="muted" style="display: block; font-size: 0.75rem;">Notes: {{ assignment.notes }}</small>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <a href="{% url 'user_activity_report' assignment.mentee.pk %}?cohort={{ cohort.pk }}" class="button button--secondary button--sm">
+                            <i class="fi fi-rr-document-signed" aria-hidden="true"></i> Mentee Report
+                        </a>
+                        {% if can_update_member %}
+                            <form method="post" action="{% url 'cohort_mentor_unassign' cohort.pk assignment.pk %}" data-confirm="Remove this mentor-mentee pairing?">
+                                {% csrf_token %}
+                                <button type="submit" class="text-button text-button--danger" title="Unassign pairing"><i class="fi fi-rr-cross-circle" aria-hidden="true"></i> Unassign</button>
+                            </form>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="form-card">
+            <p class="muted">No individual mentor-mentee pairings allocated in this cohort yet. Use the form above to pair mentors with their mentees.</p>
+        </div>
+    {% endif %}
+</section>
+
+<section class="section-block">
+    <div class="section-heading">
+        <div>
+            <p class="eyebrow">Audit &amp; Review</p>
+            <h2>Cohort Audit Trail</h2>
+        </div>
+        <div class="page-heading-actions">
+            <a href="{% url 'audit_log' %}?cohort={{ cohort.pk }}" class="button button--secondary button--sm">
+                <i class="fi fi-rr-search-alt" aria-hidden="true"></i> View in central log
+            </a>
+        </div>
+    </div>
+    {% if history %}
+        <div class="audit-timeline">
+            {% for item in history %}
+                <div class="card audit-card" style="margin-bottom: 0.75rem; padding: 0.9rem 1.25rem; border: 1px solid var(--line); border-radius: 8px; background: var(--surface);">
+                    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.35rem;">
+                        <div style="display: flex; align-items: center; gap: 0.6rem;">
+                            <span class="{{ item.action_badge_class }}">{{ item.get_action_display }}</span>
+                            <strong>{{ item.entity_type }}: {{ item.entity_name }}</strong>
+                        </div>
+                        <small class="cell-note">{{ item.created_at|date:"d M Y, H:i" }}</small>
+                    </div>
+                    <p style="margin: 0.25rem 0 0.35rem 0; font-size: 0.88rem; color: var(--ink);">{{ item.description }}</p>
+                    <small class="cell-note">Performed by: <strong>{{ item.actor_name }}</strong></small>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="form-card">
+            <p class="muted">No historical changes recorded for this cohort yet.</p>
+        </div>
+    {% endif %}
 </section>
 {% endblock %}

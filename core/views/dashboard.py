@@ -1,6 +1,14 @@
 from django.views.generic import TemplateView
 
-from core.models import Chapter, Cohort, CustomUser, Location, Program
+from core.models import (
+    ChangeHistory,
+    Chapter,
+    Cohort,
+    CohortActivity,
+    CustomUser,
+    Location,
+    Program,
+)
 from core.permissions import AdminRequiredMixin
 
 
@@ -16,9 +24,13 @@ class AdminDashboardView(AdminRequiredMixin, TemplateView):
             location_count=Location.objects.filter(is_active=True).count(),
             chapter_count=Chapter.objects.filter(is_active=True).count(),
             cohort_count=Cohort.objects.filter(is_active=True).count(),
+            activity_count=CohortActivity.objects.count(),
             user_count=CustomUser.objects.filter(
                 is_active=True,
                 cohort_memberships__is_active=True,
             ).distinct().count(),
+            recent_history=list(
+                ChangeHistory.objects.select_related("actor", "cohort")[:8]
+            ),
         )
         return context

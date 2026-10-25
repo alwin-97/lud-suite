@@ -1,0 +1,114 @@
+{% extends "layouts/admin.html" %}
+{% load ui static %}
+
+{% block title %}Activity Timeline · {{ cohort.name }}{% endblock %}
+
+{% block page_content %}
+{% has_perm "activities" "create" cohort as can_create_activity %}
+{% has_perm "activities" "update" cohort as can_update_activity %}
+{% has_perm "activities" "delete" cohort as can_delete_activity %}
+
+{% with program=cohort.chapter.location.program %}
+{% page_header eyebrow="Curriculum &amp; Timeline Planning" title=cohort.name|add:" Activity Timeline" description="Schedule and track activities, milestones, and deliverables across all terms for "|add:cohort.name %}
+    <a href="{% url 'cohort_manage' cohort.pk %}" class="button button--secondary"><i class="fi fi-rr-arrow-left" aria-hidden="true"></i> Back to cohort</a>
+    {% if can_create_activity %}
+        <a href="{% url 'cohort_activity_create' cohort.pk %}" class="button button--primary"><i class="fi fi-rr-plus" aria-hidden="true"></i> Plan activity</a>
+    {% endif %}
+{% endpage_header %}
+
+<section class="stat-grid" aria-label="Timeline progress">
+    {% include "components/stat_card.html" with value=total_activities label="Total activities" only %}
+    {% include "components/stat_card.html" with value=completed_count label="Completed" only %}
+    {% include "components/stat_card.html" with value=in_progress_count label="In progress" only %}
+    {% include "components/stat_card.html" with value=planned_count label="Planned" only %}
+    {% include "components/stat_card.html" with value=delayed_count label="Delayed" only %}
+</section>
+
+{# Progress Bar #}
+<div class="card" style="margin-bottom: 2rem; padding: 1.25rem 1.5rem; background: var(--surface); border: 1px solid var(--line); border-radius: 8px;">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
+        <span style="font-weight: 600; font-size: 0.95rem;">Overall Cohort Progress</span>
+        <strong style="color: var(--green); font-size: 1.1rem;">{{ progress_percent }}%</strong>
+    </div>
+    <div style="width: 100%; height: 10px; background: var(--neutral-soft, #eceff2); border-radius: 999px; overflow: hidden;">
+        <div style="width: {{ progress_percent }}%; height: 100%; background: var(--green); border-radius: 999px; transition: width 0.3s ease;"></div>
+    </div>
+</div>
+{% endwith %}
+
+{# Timeline by Term #}
+<div class="timeline-container">
+    {% for term in terms %}
+        <section class="section-block timeline-term-block" style="margin-bottom: 2.5rem;">
+            <div class="section-heading" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; padding-bottom: 0.75rem; border-bottom: 2px solid var(--line);">
+                <div>
+                    <span class="role-chip" style="font-weight: 600;">Sequence {{ term.sequence }}</span>
+                    <h2 style="display: inline-block; margin: 0 0.5rem 0 0.75rem; vertical-align: middle;">{{ term.name }}</h2>
+                    {% status_badge term.is_active %}
+                    {% if term.start_date or term.end_date %}
+                        <small class="cell-note" style="margin-left: 0.5rem;">
+                            <i class="fi fi-rr-calendar" aria-hidden="true"></i>
+                            {{ term.start_date|date:"d M Y"|default:"TBD" }} – {{ term.end_date|date:"d M Y"|default:"TBD" }}
+                        </small>
+                    {% endif %}
+                </div>
+                <div class="page-heading-actions">
+                    <a href="{% url 'cohort_term_detail' cohort.pk term.pk %}" class="button button--secondary button--sm">
+                        <i class="fi fi-rr-folder-open" aria-hidden="true"></i> Term resources ({{ term.resources.count }})
+                    </a>
+                    {% if can_create_activity %}
+                        <a href="{% url 'cohort_activity_create' cohort.pk %}?term={{ term.pk }}" class="button button--secondary button--sm">
+                            <i class="fi fi-rr-plus" aria-hidden="true"></i> Add activity
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if term.activities.all %}
+                <div class="timeline-activities-list" style="display: flex; flex-direction: column; gap: 0.9rem; margin-top: 1rem;">
+                    {% for activity in term.activities.all %}
+                        <div class="card" style="padding: 1.1rem 1.4rem; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; border-left: 4px solid {% if activity.status == 'completed' %}var(--green){% elif activity.status == 'in_progress' %}var(--blue){% elif activity.status == 'delayed' %}var(--danger){% else %}var(--line-strong){% endif %};">
+                            <div style="display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 0.4rem;">
+                                <div>
+                                    <span class="{{ activity.status_badge_class }}">{{ activity.get_status_display }}</span>
+                                    <span class="role-chip" style="margin-left: 0.4rem;"><i class="fi fi-rr-users" aria-hidden="true"></i> {{ activity.get_target_audience_display }}</span>
+                                    <h3 style="margin: 0.4rem 0 0; font-size: 1.05rem; font-weight: 600;">{{ activity.title }}</h3>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                    {% if can_update_activity %}
+                                        <a href="{% url 'cohort_activity_edit' cohort.pk activity.pk %}" class="button button--secondary button--sm">
+                                            <i class="fi fi-rr-pencil" aria-hidden="true"></i> Edit
+                                        </a>
+                                    {% endif %}
+                                    {% if can_delete_activity %}
+                                        <form method="post" action="{% url 'cohort_activity_delete' cohort.pk activity.pk %}" data-confirm="Remove this activity from the timeline?">
+                                            {% csrf_token %}
+                                            <button type="submit" class="text-button text-button--danger" title="Delete activity"><i class="fi fi-rr-trash" aria-hidden="true"></i></button>
+                                        </form>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% if activity.start_date or activity.end_date %}
+                                <p style="margin: 0 0 0.4rem 0; font-size: 0.85rem; color: var(--muted);">
+                                    <i class="fi fi-rr-clock" aria-hidden="true"></i> Scheduled: <strong>{{ activity.start_date|date:"d M Y"|default:"TBD" }}</strong> to <strong>{{ activity.end_date|date:"d M Y"|default:"TBD" }}</strong>
+                                </p>
+                            {% endif %}
+                            {% if activity.description %}
+                                <p style="margin: 0; font-size: 0.9rem; color: var(--ink); line-height: 1.45;">{{ activity.description }}</p>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="form-card" style="margin-top: 1rem;">
+                    <p class="muted">No activities planned for {{ term.name }} yet. Click <strong>Add activity</strong> to schedule milestones.</p>
+                </div>
+            {% endif %}
+        </section>
+    {% empty %}
+        <div class="form-card">
+            <p class="muted">No terms exist for this cohort yet. <a href="{% url 'cohort_term_create' cohort.pk %}">Create terms</a> first to plan the cohort's activity timeline.</p>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}
