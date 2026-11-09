@@ -10,6 +10,7 @@
 }
 
 .member-card {
+    min-width: 0;
     width: min(100%, 650px);
     padding: clamp(1.5rem, 5vw, 2.75rem);
     border-radius: 16px;
@@ -40,6 +41,7 @@
 
 .membership-row {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
@@ -49,12 +51,14 @@
 }
 
 .membership-row div {
+    min-width: 0;
     display: grid;
     gap: 0.2rem;
 }
 
 .membership-row span,
 .membership-row small {
+    overflow-wrap: anywhere;
     color: var(--muted);
     font-size: 0.78rem;
 }

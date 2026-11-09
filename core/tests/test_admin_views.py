@@ -14,10 +14,9 @@ class AdminConfigurationViewTests(PlatformTestCase):
     def test_admin_can_create_location_chapter_and_cohort(self):
         self.client.post(
             reverse("program_create"),
-            {"name": "Summer School", "duration_months": 12, "is_active": "on"},
+            {"name": "Summer School", "is_active": "on"},
         )
         program = Program.objects.get(name="Summer School")
-        self.assertEqual(program.duration_months, 12)
 
         self.client.post(
             reverse("location_create"),
@@ -37,6 +36,7 @@ class AdminConfigurationViewTests(PlatformTestCase):
                 "name": "Cohort 2027",
                 "chapter": chapter.pk,
                 "start_date": "2027-04-01",
+                "end_date": "2028-04-01",
                 "is_active": "on",
             },
         )
@@ -55,6 +55,35 @@ class AdminConfigurationViewTests(PlatformTestCase):
 
         self.client.post(reverse("cohort_create"), {**data, "end_date": "2027-10-01"})
         self.assertEqual(Cohort.objects.get(name="Short").end_date, date(2027, 10, 1))
+
+    def test_cohort_description_can_be_created_edited_and_cleared(self):
+        _, chapter, _ = self.create_cohort()
+        data = {
+            "name": "New cohort",
+            "chapter": chapter.pk,
+            "start_date": "2027-04-01",
+            "is_active": "on",
+            "description": "A small group focused on community projects.",
+        }
+        response = self.client.post(reverse("cohort_create"), data)
+        self.assertRedirects(response, reverse("cohort_list"))
+        cohort = Cohort.objects.get(name="New cohort")
+        self.assertEqual(cohort.description, data["description"])
+        self.assertContains(self.client.get(reverse("cohort_list")), cohort.description)
+
+        edit_url = reverse("cohort_edit", args=[cohort.pk])
+        self.assertContains(self.client.get(edit_url), cohort.description)
+        for description in ("Updated description", ""):
+            response = self.client.post(edit_url, {**data, "description": description})
+            self.assertRedirects(response, reverse("cohort_list"))
+            cohort.refresh_from_db()
+            self.assertEqual(cohort.description, description)
+
+        response = self.client.post(edit_url, {**data, "description": "x" * 501})
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("description", response.context["form"].errors)
+        cohort.refresh_from_db()
+        self.assertEqual(cohort.description, "")
 
     def test_admin_configuration_pages_render(self):
         _, _, cohort = self.create_cohort()
@@ -85,6 +114,46 @@ class AdminConfigurationViewTests(PlatformTestCase):
         for url in urls:
             with self.subTest(url=url):
                 self.assertEqual(self.client.get(url).status_code, 200)
+
+    def test_configuration_drawer_forms_and_validation(self):
+        location, chapter, cohort = self.create_cohort()
+        resources = (
+            ("program", location.program), ("location", location),
+            ("chapter", chapter), ("cohort", cohort),
+        )
+        for name, obj in resources:
+            for url in (reverse(f"{name}_create"), reverse(f"{name}_edit", args=[obj.pk])):
+                with self.subTest(url=url):
+                    response = self.client.get(url, HTTP_X_FORM_DRAWER="true")
+                    self.assertTemplateUsed(response, "components/forms/drawer_form.html")
+                    self.assertContains(response, f'action="{url}"')
+                    self.assertNotContains(response, "<!doctype html>")
+                    self.assertNotContains(response, "> Cancel</a>")
+                    invalid = self.client.post(url, {}, HTTP_X_FORM_DRAWER="true")
+                    self.assertEqual(invalid.status_code, 200)
+                    self.assertTrue(invalid.context["form"].errors)
+                    self.assertTemplateUsed(invalid, "components/forms/drawer_form.html")
+
+    def test_configuration_drawer_saves_and_keeps_success_message(self):
+        location, chapter, _ = self.create_cohort()
+        resources = (
+            ("program", Program, {"name": "Drawer program", "duration_months": 12}),
+            ("location", Location, {"name": "Drawer location", "program": location.program_id}),
+            ("chapter", Chapter, {"name": "Drawer chapter", "location": location.pk}),
+            ("cohort", Cohort, {"name": "Drawer cohort", "chapter": chapter.pk, "start_date": "2027-01-01"}),
+        )
+        for name, model, data in resources:
+            with self.subTest(resource=name):
+                response = self.client.post(reverse(f"{name}_create"), data, HTTP_X_FORM_DRAWER="true")
+                self.assertEqual(response.json(), {"saved": True})
+                obj = model.objects.get(name=data["name"])
+                data = {**data, "name": data["name"] + " edited"}
+                response = self.client.post(reverse(f"{name}_edit", args=[obj.pk]), data, HTTP_X_FORM_DRAWER="true")
+                self.assertEqual(response.json(), {"saved": True})
+                obj.refresh_from_db()
+                self.assertEqual(obj.name, data["name"])
+                page = self.client.get(reverse(f"{name}_list"))
+                self.assertContains(page, f"{name.capitalize()} updated successfully.")
 
     def test_location_in_use_cannot_be_deleted(self):
         location, _, _ = self.create_cohort()
@@ -174,7 +243,7 @@ class AdminConfigurationViewTests(PlatformTestCase):
         self.assertContains(response, "Email address cannot exceed 150 characters.")
         self.assertFalse(CustomUser.objects.filter(email=overlong_email).exists())
 
-    def test_editing_user_replaces_role_assignments(self):
+    def test_editing_user_deactivates_previous_role_assignments(self):
         _, _, cohort = self.create_cohort()
         user = CustomUser.objects.create_user(
             username="person@example.com",
@@ -199,9 +268,10 @@ class AdminConfigurationViewTests(PlatformTestCase):
 
         self.assertRedirects(response, reverse("platform_user_list"))
         self.assertEqual(
-            list(user.cohort_memberships.values_list("role", flat=True)),
+            list(user.cohort_memberships.filter(is_active=True).values_list("role", flat=True)),
             [CohortMembership.MENTOR],
         )
+        self.assertTrue(user.cohort_memberships.filter(role=CohortMembership.MENTEE, is_active=False).exists())
 
 
 class CohortManageTests(PlatformTestCase):
@@ -244,7 +314,8 @@ class CohortManageTests(PlatformTestCase):
         self.assertTrue(membership.is_active)
 
         self.client.post(reverse("cohort_member_remove", args=[self.cohort.pk, membership.pk]))
-        self.assertFalse(CohortMembership.objects.filter(pk=membership.pk).exists())
+        membership.refresh_from_db()
+        self.assertFalse(membership.is_active)
 
     def test_membership_of_another_cohort_cannot_be_changed(self):
         other = Cohort.objects.create(

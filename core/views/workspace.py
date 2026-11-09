@@ -118,6 +118,7 @@ def workspace_home_view(request):
         "core/workspace/dashboard.html",
         {
             "memberships": memberships,
+            "scope_memberships": request.user.scope_memberships.filter(is_active=True).select_related("user", "program", "location__program", "chapter__location__program"),
             "reports": reports,
             "is_mentor": is_mentor,
             "mentor_mentees": mentor_mentees,

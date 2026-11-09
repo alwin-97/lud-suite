@@ -17,6 +17,10 @@ body {
     line-height: 1;
 }
 
+a {
+    text-decoration: none;
+}
+
 .eyebrow {
     margin: 0 0 0.35rem;
     color: var(--blue);
@@ -79,11 +83,6 @@ body {
     background: none;
     text-decoration: none;
     cursor: pointer;
-}
-
-.text-link:hover,
-.text-button:hover {
-    text-decoration: underline;
 }
 
 .text-link .fi,

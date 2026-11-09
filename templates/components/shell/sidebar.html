@@ -5,7 +5,7 @@
             {% if item.children %}
                 <div class="sidebar-group{% if item.active %} open{% endif %}">
                     <div class="sidebar-group-row">
-                        <a href="{{ item.url }}" class="sidebar-link sidebar-group-link{% if item.active %} active{% endif %}" data-tooltip="{{ item.label }}">
+                        <a href="{{ item.url }}" class="sidebar-link sidebar-group-link{% if item.active %} active{% endif %}" data-tooltip="{{ item.label }}" aria-label="{{ item.label }}">
                             <span class="sidebar-icon"><i class="fi fi-rr-{{ item.icon }}" aria-hidden="true"></i></span>
                             <span class="sidebar-label">{{ item.label }}</span>
                         </a>
@@ -20,7 +20,7 @@
                     </div>
                 </div>
             {% else %}
-                <a href="{{ item.url }}" class="sidebar-link{% if item.active %} active{% endif %}" data-tooltip="{{ item.label }}"{% if item.active %} aria-current="page"{% endif %}>
+                <a href="{{ item.url }}" class="sidebar-link{% if item.active %} active{% endif %}" data-tooltip="{{ item.label }}" aria-label="{{ item.label }}"{% if item.active %} aria-current="page"{% endif %}>
                     <span class="sidebar-icon"><i class="fi fi-rr-{{ item.icon }}" aria-hidden="true"></i></span>
                     <span class="sidebar-label">{{ item.label }}</span>
                 </a>

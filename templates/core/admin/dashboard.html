@@ -7,12 +7,15 @@
 {% page_header eyebrow="Admin dashboard" title=title description="Configure programs, their chapters and cohorts, and authorized platform users." %}{% endpage_header %}
 
 <section class="stat-grid" aria-label="Platform totals">
-    {% include "components/stat_card.html" with value=program_count label="Active programs" only %}
-    {% include "components/stat_card.html" with value=location_count label="Active locations" only %}
-    {% include "components/stat_card.html" with value=chapter_count label="Active chapters" only %}
-    {% include "components/stat_card.html" with value=cohort_count label="Active cohorts" only %}
-    {% include "components/stat_card.html" with value=activity_count label="Planned activities" only %}
-    {% include "components/stat_card.html" with value=user_count label="Provisioned users" only %}
+    {% url 'program_list' as programs_url %}{% url 'location_list' as locations_url %}
+    {% url 'chapter_list' as chapters_url %}{% url 'cohort_list' as cohorts_url %}
+    {% url 'platform_user_list' as users_url %}
+    {% include "components/stat_card.html" with value=program_count label="Active programs" href=programs_url only %}
+    {% include "components/stat_card.html" with value=location_count label="Active locations" href=locations_url only %}
+    {% include "components/stat_card.html" with value=chapter_count label="Active chapters" href=chapters_url only %}
+    {% include "components/stat_card.html" with value=cohort_count label="Active cohorts" href=cohorts_url only %}
+    {% include "components/stat_card.html" with value=activity_count label="Planned activities" href=cohorts_url only %}
+    {% include "components/stat_card.html" with value=user_count label="Provisioned users" href=users_url only %}
 </section>
 
 <section class="section-block">

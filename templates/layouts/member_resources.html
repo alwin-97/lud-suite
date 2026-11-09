@@ -1,0 +1,25 @@
+{% extends "layouts/base.html" %}
+{% load static %}
+{% block title_prefix %}Let Us Dream{% endblock %}
+{% block styles %}
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'css/shell.css' %}">
+    <link rel="stylesheet" href="{% static 'css/components.css' %}">
+    <link rel="stylesheet" href="{% static 'css/footer.css' %}">
+{% endblock %}
+{% block body %}
+    {% include "components/forms/drawer_shell.html" %}
+    {% url 'workspace_home' as home_url %}
+    {% include "components/shell/app_bar.html" with user=user csrf_token=csrf_token subtitle="Resources" home_url=home_url hide_sidebar=True only %}
+    <div class="resource-member-shell admin-surface">
+        {% include "components/flash_messages.html" with messages=messages only %}
+        <main class="admin-content">{% block page_content %}{% endblock %}</main>
+    </div>
+    {% include "components/shell/site_footer.html" with APP_VERSION=APP_VERSION only %}
+{% endblock %}
+{% block scripts %}
+    <script src="{% static 'js/components/form-drawer.js' %}"></script>
+    <script src="{% static 'js/components/account-menu.js' %}"></script>
+    <script src="{% static 'js/components/confirm.js' %}"></script>
+    <script src="{% static 'js/components/page-context.js' %}"></script>
+{% endblock %}

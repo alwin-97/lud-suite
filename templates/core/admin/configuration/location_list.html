@@ -20,8 +20,8 @@
                 <td>{{ location.program.name }}</td>
                 <td>{{ location.chapter_count }}</td>
                 <td>{% status_badge location.is_active %}</td>
-                {% url 'location_edit' location.pk as edit_url %}{% url 'location_delete' location.pk as delete_url %}
-                {% row_actions edit_url delete_url confirm="Delete this location?" %}
+                {% url 'scope_resources' 'location' location.pk as resources_url %}{% url 'location_detail' location.pk as view_url %}{% url 'location_edit' location.pk as edit_url %}{% url 'location_delete' location.pk as delete_url %}
+                {% row_actions edit_url delete_url view_url=view_url resources_url=resources_url confirm="Delete this location?" %}
             </tr>
         {% endfor %}
     </tbody>

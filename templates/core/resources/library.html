@@ -1,0 +1,70 @@
+{% extends resource_layout %}
+{% load ui %}
+{% block title %}Resources · {{ scope.name|default:"All groups" }}{% endblock %}
+{% block page_content %}
+{% if in_drawer %}
+    <h2 id="form-drawer-title">Resources · {{ scope.name|default:"All groups" }}</h2>
+    <p class="muted">Images, videos and files shared with this group and its parent levels.</p>
+    {% if can_upload %}<p><a href="#add-resources" class="button button--primary">Add more files</a></p>{% endif %}
+{% else %}
+{% page_header eyebrow="Resource library" title=scope.name|default:"Resources" description="Images, videos and files shared with your groups and their parent levels." %}
+    {% if user.is_platform_admin and scope %}
+        <a href="{{ detail_url }}" class="button button--secondary">View {{ scope_type }}</a>
+    {% endif %}
+    <a href="{% if user.is_platform_admin %}{% url 'admin_dashboard' %}{% else %}{% url 'workspace_home' %}{% endif %}" class="button button--secondary">My workspace</a>
+    {% if can_upload %}<a href="#add-resources" class="button button--primary">Add resources</a>{% endif %}
+{% endpage_header %}
+{% endif %}
+
+<details class="detail-panel resource-group-picker">
+    <summary>Browse by level · {{ scope_label }}</summary>
+    <ul class="detail-related-list">
+        <li><a href="{% url 'resource_library' %}">All accessible resources</a></li>
+        {% for item in available_scopes %}<li><a href="{{ item.url }}">{{ item.label }}</a></li>{% endfor %}
+    </ul>
+</details>
+
+{% if can_upload %}
+<section id="add-resources" class="section-block">
+    <h2>Add resources</h2>
+    <p class="muted">Resources are shared with active members at the selected level and in its child groups.</p>
+    <div class="form-card form-card--wide">
+        <form method="post" action="{{ library_url }}" enctype="multipart/form-data" class="admin-form">
+            {% csrf_token %}
+            {% if upload_form.non_field_errors %}<div class="form-errors">{{ upload_form.non_field_errors }}</div>{% endif %}
+            {% for field in upload_form %}<div class="form-field">{{ field.label_tag }}{{ field }}{{ field.errors }}{% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}</div>{% endfor %}
+            <div class="form-actions"><button type="submit" class="button button--primary"><i class="fi fi-rr-plus" aria-hidden="true"></i> Add resources</button></div>
+        </form>
+    </div>
+</section>
+{% endif %}
+
+<section id="shared-resources" class="section-block">
+    <h2>Shared resources</h2>
+    <form method="get" action="{{ library_url }}" class="detail-audit-filters">
+        <div class="form-field"><label for="resource-search">Search resources</label><input id="resource-search" name="q" value="{{ search_query }}" class="form-control" placeholder="Title, file name or description"></div>
+        <div class="form-field"><label for="resource-kind">Type</label><select id="resource-kind" name="kind" class="form-control"><option value="">All types</option>{% for value, label in resource_types %}<option value="{{ value }}"{% if selected_kind == value %} selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+        <button class="button button--secondary" type="submit">Filter</button>
+    </form>
+    <div class="resource-grid">
+        {% for item in resource_page %}
+            <article class="detail-panel resource-card">
+                {% if item.resource_type == "image" %}
+                    <a href="{% url 'resource_file' item.pk %}" target="_blank" rel="noopener"><img src="{% url 'resource_file' item.pk %}" alt="{{ item.title }}" loading="lazy" class="resource-preview"></a>
+                {% elif item.resource_type == "video" %}
+                    <video controls preload="metadata" class="resource-preview" aria-label="{{ item.title }}"><source src="{% url 'resource_file' item.pk %}">Your browser cannot play this video. Use Download to open it.</video>
+                {% else %}<p class="role-chip">File · {{ item.original_name }}</p>{% endif %}
+                <h3>{{ item.title }}</h3>
+                <p class="cell-note">{{ item.origin_label }}</p>
+                {% if item.description %}<p class="detail-description">{{ item.description }}</p>{% endif %}
+                <p class="cell-note">Added {{ item.created_at|date:"d M Y, H:i" }}{% if item.uploaded_by %} · {{ item.uploaded_by }}{% endif %}</p>
+                <div class="form-actions">
+                    <a href="{% url 'resource_file' item.pk %}?download=1" class="button button--secondary">Download</a>
+                    {% if item.can_remove %}<form method="post" action="{% url 'resource_remove' item.pk %}" data-confirm="Remove this resource? It will no longer be accessible to members.">{% csrf_token %}<button type="submit" class="text-button text-button--danger">Remove</button></form>{% endif %}
+                </div>
+            </article>
+        {% empty %}<p class="muted">No resources match this selection.</p>{% endfor %}
+    </div>
+    {% pagination resource_page anchor="shared-resources" label="Resources" %}
+</section>
+{% endblock %}

@@ -412,6 +412,7 @@ html.sidebar-collapsed .sidebar-group-link:focus-visible::after {
 }
 
 .admin-surface {
+    min-width: 0;
     display: flex;
     flex: 1 0 auto;
     flex-direction: column;
@@ -420,14 +421,151 @@ html.sidebar-collapsed .sidebar-group-link:focus-visible::after {
 }
 
 .admin-content {
+    min-width: 0;
+    --content-padding: clamp(1rem, 3vw, 2rem);
     flex: 1 0 auto;
-    padding: 1.5rem clamp(1rem, 3vw, 2rem) 2.5rem;
+    padding: 1.5rem var(--content-padding) 2.5rem;
+}
+
+.admin-content > .page-context {
+    position: sticky;
+    top: var(--app-bar-height);
+    z-index: 30;
+    margin: -1.5rem calc(-1 * var(--content-padding)) 1.5rem;
+    padding: 1.25rem var(--content-padding) 1rem;
+    border-bottom: 1px solid var(--line);
+    border-radius: 16px 16px 0 0;
+    background: var(--surface);
+}
+
+.page-context .page-heading {
+    margin-bottom: 0;
+}
+
+.page-context-bar {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.page-context-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    flex-shrink: 0;
+    min-height: 32px;
+    padding: 0.35rem 0.65rem;
+    border-radius: 6px;
+}
+
+.page-context-toggle .fi {
+    margin: 0;
+    font-size: 1rem;
+    transform: rotate(180deg);
+}
+
+.page-context-minimized .page-context-toggle .fi {
+    transform: rotate(0);
+}
+
+.page-context-toggle:hover {
+    background: var(--hover);
+}
+
+.page-context-compact {
+    display: none;
+    align-items: baseline;
+    flex: 1;
+    min-width: 0;
+    flex-wrap: wrap;
+    gap: 0.35rem 0.65rem;
+}
+
+.page-context-compact h1 {
+    max-width: 100%;
+    margin: 0;
+    font-size: 1.1rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.page-context-kind,
+.page-context-current {
+    color: var(--muted);
+    font-size: 0.8rem;
+}
+
+.page-context-minimized .page-context-compact {
+    display: flex;
+}
+
+.page-context-minimized #page-context-content {
+    display: none;
+}
+
+.page-context-minimized .admin-content > .page-context {
+    padding-block: 0.65rem;
+}
+
+.page-context-minimized .page-context-bar {
+    margin-bottom: 0;
+}
+
+.page-context .detail-nav {
+    margin: 1rem 0 0;
+}
+
+.page-context .detail-nav a {
+    padding: 0.35rem 0.6rem;
+    border-radius: 6px;
+}
+
+.page-context .detail-nav a[aria-current="location"] {
+    color: var(--green-dark);
+    background: var(--green-soft);
+    font-weight: 600;
+}
+
+.admin-content [id] {
+    scroll-margin-top: calc(var(--app-bar-height) + var(--page-context-height, 180px) + 1rem);
 }
 
 .admin-main .site-footer {
     border-top: 0;
     background: transparent;
     padding-inline: 0.5rem;
+}
+
+/* Browser zoom reduces the available height as well as the width. */
+@media (max-height: 650px) {
+    .admin-content > .page-context {
+        padding-block: 0.65rem;
+    }
+
+    #page-context-content {
+        max-height: max(5rem, calc(45dvh - 5rem));
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        scrollbar-gutter: stable;
+    }
+
+    .page-context .page-heading--split {
+        gap: 0.75rem;
+    }
+
+    .page-context .detail-nav {
+        gap: 0.35rem;
+        margin-top: 0.65rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .admin-brand-text {
+        display: none;
+    }
 }
 
 @media (max-width: 640px) {

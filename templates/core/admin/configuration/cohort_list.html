@@ -16,14 +16,14 @@
     <tbody>
         {% for cohort in cohorts %}
             <tr data-filter-status="{% if cohort.is_active %}Active{% else %}Inactive{% endif %}" data-filter-program="{{ cohort.chapter.location.program.name }}" data-filter-location="{{ cohort.chapter.location }}" data-filter-chapter="{{ cohort.chapter }}">
-                <td><strong>{{ cohort.name }}</strong></td>
+                <td><strong>{{ cohort.name }}</strong>{% if cohort.description %}<span class="cell-note">{{ cohort.description }}</span>{% endif %}</td>
                 <td>{{ cohort.chapter.location.program.name }}</td>
                 <td>{% include "components/cell_stack.html" with primary=cohort.chapter.name note=cohort.chapter.location.name only %}</td>
                 <td data-order="{{ cohort.start_date|date:'Y-m-d' }}">{% with start=cohort.start_date|date:"d M Y" end=cohort.end_date|date:"d M Y" %}{% include "components/cell_stack.html" with primary=start note="to "|add:end only %}{% endwith %}</td>
                 <td>{{ cohort.user_count }}</td>
                 <td>{% status_badge cohort.is_active %}</td>
-                {% url 'cohort_manage' cohort.pk as manage_url %}{% url 'cohort_edit' cohort.pk as edit_url %}{% url 'cohort_delete' cohort.pk as delete_url %}
-                {% row_actions edit_url delete_url confirm="Delete this cohort and all of its role assignments?" manage_url=manage_url %}
+                {% url 'cohort_manage' cohort.pk as manage_url %}{% url 'scope_resources' 'cohort' cohort.pk as resources_url %}{% url 'cohort_detail' cohort.pk as view_url %}{% url 'cohort_edit' cohort.pk as edit_url %}{% url 'cohort_delete' cohort.pk as delete_url %}
+                {% row_actions edit_url delete_url view_url=view_url resources_url=resources_url confirm="Delete this cohort and all of its role assignments?" manage_url=manage_url %}
             </tr>
         {% endfor %}
     </tbody>

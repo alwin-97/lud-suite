@@ -12,6 +12,7 @@
     <a href="{% url 'cohort_timeline' cohort.pk %}" class="button button--secondary"><i class="fi fi-rr-time-forward" aria-hidden="true"></i> Activity timeline</a>
     <a href="{% url 'cohort_edit' cohort.pk %}" class="button button--secondary"><i class="fi fi-rr-pencil" aria-hidden="true"></i> Edit cohort</a>
 {% endpage_header %}
+{% if cohort.description %}<p class="muted">{{ cohort.description }}</p>{% endif %}
 
 <section class="stat-grid" aria-label="Cohort summary">
     {% include "components/stat_card.html" with value=active_member_count label="Active role assignments" only %}

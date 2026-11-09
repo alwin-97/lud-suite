@@ -1,0 +1,14 @@
+<div class="section-pagination">
+    <p class="muted">{% if page.paginator.count %}Showing {{ page.start_index }}–{{ page.end_index }} of {{ page.paginator.count }}{% else %}0 records{% endif %}</p>
+    {% if page.has_other_pages %}
+        <nav aria-label="{{ label }} pagination">
+            {% if previous_url %}<a href="{{ previous_url }}" class="button button--secondary" rel="prev">Previous</a>{% else %}<span class="pagination-disabled" aria-disabled="true">Previous</span>{% endif %}
+            {% for link in links %}
+                {% if link.current %}<span class="pagination-current" aria-current="page" aria-label="Page {{ link.number }}">{{ link.number }}</span>
+                {% elif link.url %}<a href="{{ link.url }}" class="pagination-number" aria-label="Page {{ link.number }}">{{ link.number }}</a>
+                {% else %}<span class="muted">{{ link.number }}</span>{% endif %}
+            {% endfor %}
+            {% if next_url %}<a href="{{ next_url }}" class="button button--secondary" rel="next">Next</a>{% else %}<span class="pagination-disabled" aria-disabled="true">Next</span>{% endif %}
+        </nav>
+    {% endif %}
+</div>

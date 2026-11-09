@@ -12,7 +12,7 @@
 {% endpage_header %}
 
 {% data_table id="users-table" empty="No users have been provisioned yet." %}
-    <thead><tr><th>User</th><th>Cohort roles</th><th>Status</th><th class="actions-column">Actions</th></tr></thead>
+    <thead><tr><th>User</th><th>Memberships and roles</th><th>Status</th><th class="actions-column">Actions</th></tr></thead>
     <tbody>
         {% for platform_user in platform_users %}
             <tr data-filter-status="{% if platform_user.is_active %}Active{% else %}Inactive{% endif %}">
@@ -22,7 +22,12 @@
                         {% for membership in platform_user.cohort_memberships.all %}
                             <span class="role-chip" data-filter-role="{{ membership.get_role_display }}" data-filter-program="{{ membership.cohort.chapter.location.program.name }}" data-filter-cohort="{{ membership.cohort.name }} · {{ membership.cohort.chapter }}">{{ membership.get_role_display }} · {{ membership.cohort.name }}</span>
                         {% empty %}
+                            {% if not platform_user.scope_memberships.all %}
                             <span class="muted" data-filter-role="No roles assigned" data-filter-program="No program assigned" data-filter-cohort="No cohort assigned">No roles assigned</span>
+                            {% endif %}
+                        {% endfor %}
+                        {% for membership in platform_user.scope_memberships.all %}
+                            <span class="role-chip" data-filter-role="{{ membership.get_role_display }}" data-filter-program="{{ membership.program_name }}" data-filter-cohort="No cohort assigned">{{ membership.get_role_display }} · {{ membership.scope_label }}</span>
                         {% endfor %}
                     </div>
                 </td>
@@ -34,6 +39,7 @@
                     <a href="{% url 'platform_user_edit' platform_user.pk %}" class="button button--secondary button--sm">
                         <i class="fi fi-rr-pencil" aria-hidden="true"></i> Edit access
                     </a>
+                    <a href="{% url 'audit_log' %}?user={{ platform_user.pk }}" class="text-link">History</a>
                 </td>
             </tr>
         {% endfor %}

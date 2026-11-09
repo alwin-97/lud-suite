@@ -51,9 +51,6 @@ def main():
             # Check if django_migrations table exists
             if "django_migrations" in existing_tables:
                 applied_migs = set(r[0] for r in cursor.execute("SELECT name FROM django_migrations WHERE app='core'"))
-                sys.stderr.write(f"[DB STATUS] Applied core migrations: {sorted(applied_migs)}\n")
-                core_tables = [t for t in sorted(existing_tables) if t.startswith("core_")]
-                sys.stderr.write(f"[DB STATUS] Existing core_* tables: {core_tables}\n")
 
                 # Map migrations to their primary table; if the table already exists but migration isn't recorded, auto-fake it
                 table_mig_map = [

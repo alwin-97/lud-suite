@@ -6,5 +6,5 @@
 
 {% block page_content %}
 {% page_header eyebrow=eyebrow title=title description=description %}{% endpage_header %}
-{% include "components/forms/admin_form.html" with form=form submit_label=submit_label cancel_url=cancel_url layout=form_layout csrf_token=csrf_token only %}
+{% include "components/forms/admin_form.html" with form=form members_form=members_form member_history=member_history submit_label=submit_label cancel_url=cancel_url layout=form_layout csrf_token=csrf_token only %}
 {% endblock %}

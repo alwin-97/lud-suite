@@ -2,13 +2,19 @@
     {% if variant == "auth" %}
         <div class="messages" aria-live="polite">
             {% for message in messages %}
-                <div class="message message--{{ message.tags|default:'info' }}">{{ message }}</div>
+                <div class="message message--{{ message.tags|default:'info' }}" data-flash-message>
+                    <span>{{ message }}</span>
+                    <button type="button" class="flash-dismiss" data-dismiss-message aria-label="Dismiss alert"><span aria-hidden="true">&times;</span></button>
+                </div>
             {% endfor %}
         </div>
     {% else %}
         <div class="flash-messages" aria-live="polite">
             {% for message in messages %}
-                <div class="flash flash--{{ message.tags|default:'info' }}">{{ message }}</div>
+                <div class="flash flash--{{ message.tags|default:'info' }}" data-flash-message>
+                    <span>{{ message }}</span>
+                    <button type="button" class="flash-dismiss" data-dismiss-message aria-label="Dismiss alert"><span aria-hidden="true">&times;</span></button>
+                </div>
             {% endfor %}
         </div>
     {% endif %}

@@ -1,4 +1,14 @@
 {# Rendered by {% page_header %}; the tag body becomes the actions slot. #}
+<header class="page-context">
+<div class="page-context-bar">
+    <div class="page-context-compact">
+        {% if eyebrow %}<span class="page-context-kind">{{ eyebrow }}</span>{% endif %}
+        <h1 title="{{ title }}">{{ title }}</h1>
+        <span class="page-context-current" data-current-section aria-live="polite"></span>
+    </div>
+    <button type="button" class="text-button page-context-toggle" aria-expanded="true" aria-controls="page-context-content" data-page-context-toggle><i class="fi fi-rr-angle-small-down" aria-hidden="true"></i><span data-toggle-label>Minimize</span></button>
+</div>
+<div id="page-context-content">
 <section class="page-heading{% if actions %} page-heading--split{% endif %}">
     <div>
         {% if eyebrow %}<p class="eyebrow">{{ eyebrow }}</p>{% endif %}
@@ -7,3 +17,10 @@
     </div>
     {% if actions %}<div class="page-heading-actions">{{ actions }}</div>{% endif %}
 </section>
+{% if sections %}
+    <nav class="detail-nav" aria-label="Page sections">
+        {% for section in sections %}<a href="#{{ section.anchor }}"{% if forloop.first %} aria-current="location"{% endif %}>{{ section.label }}</a>{% endfor %}
+    </nav>
+{% endif %}
+</div>
+</header>

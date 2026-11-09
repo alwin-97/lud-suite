@@ -1,6 +1,9 @@
 from django.urls import include, path
 
 from core.views import auth, configuration, dashboard, reports, tasks_questions, users, workspace
+from core.views.resource_details import ConfigurationDetailView
+from core.views import resources
+from core.models import Program, Location, Chapter, Cohort
 
 
 def crud_urls(route, name, list_view, create_view, update_view, delete_view=None, pk_kwarg=None):
@@ -23,6 +26,11 @@ def crud_urls(route, name, list_view, create_view, update_view, delete_view=None
 
 
 configuration_patterns = [
+    *[
+        path(f"{route}/<int:pk>/", ConfigurationDetailView.as_view(model=model, resource_name=name), name=f"{name}_detail")
+        for route, name, model in (("programs", "program", Program), ("locations", "location", Location),
+                                   ("chapters", "chapter", Chapter), ("cohorts", "cohort", Cohort))
+    ],
     path("", configuration.ConfigurationHomeView.as_view(), name="configuration_home"),
     *crud_urls(
         "programs/", "program",
@@ -181,6 +189,10 @@ user_patterns = crud_urls(
 )
 
 urlpatterns = [
+    path("resources/", resources.resource_library, name="resource_library"),
+    path("resources/files/<int:resource_id>/", resources.resource_file, name="resource_file"),
+    path("resources/files/<int:resource_id>/remove/", resources.resource_remove, name="resource_remove"),
+    path("resources/<str:scope_type>/<int:scope_id>/", resources.resource_library, name="scope_resources"),
     path("", auth.login_view, name="login"),
     path("dashboard/", dashboard.AdminDashboardView.as_view(), name="admin_dashboard"),
     path("workspace/", workspace.workspace_home_view, name="workspace_home"),

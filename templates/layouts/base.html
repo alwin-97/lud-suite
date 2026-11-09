@@ -11,11 +11,13 @@
     {% block vendor_styles %}{% endblock %}
     <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
     {% block styles %}{% endblock %}
+    <link rel="stylesheet" href="{% static 'css/flash-messages.css' %}">
     {% block head %}{% endblock %}
 </head>
 <body class="{% block body_class %}{% endblock %}">
     {% block body %}{% endblock %}
     {% block vendor_scripts %}{% endblock %}
     {% block scripts %}{% endblock %}
+    <script src="{% static 'js/components/flash-messages.js' %}"></script>
 </body>
 </html>

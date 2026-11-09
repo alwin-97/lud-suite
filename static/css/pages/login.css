@@ -290,7 +290,7 @@ body.login-page {
     background: var(--danger-soft);
 }
 
-@media (max-width: 800px) {
+@media (max-width: 1000px) {
     .login-shell {
         grid-template-columns: 1fr;
     }

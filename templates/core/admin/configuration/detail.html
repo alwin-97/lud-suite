@@ -1,0 +1,144 @@
+{% extends "layouts/admin.html" %}
+{% load ui %}
+
+{% block title %}{{ resource.name }} · Details{% endblock %}
+
+{% block page_content %}
+{% page_header eyebrow=resource_type title=resource.name description="Complete details, memberships and change history." sections=page_sections %}
+    <a href="{{ list_url }}" class="button button--secondary">Back to list</a>
+    <a href="{{ resource_library_url }}" class="button button--secondary" data-resource-drawer>Resources ({{ shared_resource_count }})</a>
+    {% if cohort %}<a href="{% url 'cohort_manage' cohort.pk %}" class="button button--secondary">Manage cohort</a>{% endif %}
+    <a href="{{ edit_url }}" class="button button--primary">Edit {{ resource_type|lower }}</a>
+{% endpage_header %}
+
+<section id="overview" class="section-block">
+    <h2>Overview</h2>
+    <dl class="detail-overview">
+        <div><dt>Record ID</dt><dd>{{ resource.pk }}</dd></div>
+        <div><dt>Name</dt><dd>{{ resource.name }}</dd></div>
+        <div><dt>Status</dt><dd>{% status_badge resource.is_active %}</dd></div>
+        {% for ancestor in ancestors %}<div><dt>{{ ancestor.label }}</dt><dd><a href="{{ ancestor.url }}">{{ ancestor.object.name }}</a></dd></div>{% endfor %}
+        <div><dt>Created</dt><dd>{{ resource.created_at|date:"d M Y, H:i" }}</dd></div>
+        <div><dt>Last updated</dt><dd>{{ resource.updated_at|date:"d M Y, H:i" }}</dd></div>
+        {% if cohort %}
+            <div><dt>Start date</dt><dd>{{ cohort.start_date|date:"d M Y" }}</dd></div>
+            <div><dt>End date</dt><dd>{{ cohort.end_date|date:"d M Y" }}</dd></div>
+        {% endif %}
+    </dl>
+    {% if resource.description %}<h3>Description</h3><p class="detail-description">{{ resource.description }}</p>{% endif %}
+</section>
+
+{% if related_sections %}
+<section id="structure" class="section-block">
+    <h2>Structure</h2>
+    <div class="detail-related-grid">
+        {% for section in related_sections %}
+            <div class="detail-panel" id="{{ section.anchor }}">
+                <h3>{{ section.title }} ({{ section.rows.paginator.count }})</h3>
+                <ul class="detail-related-list">
+                    {% for row in section.rows %}<li><a href="{{ row.url }}">{{ row.object }}</a> {% status_badge row.object.is_active %}</li>{% endfor %}
+                </ul>
+                {% pagination section.rows param=section.param anchor=section.anchor label=section.title %}
+            </div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+<section id="members" class="section-block">
+    <h2>Members</h2>
+    <p class="muted">{{ active_memberships }} active of {{ members|length }} memberships. Includes current and former memberships in this {{ resource_type|lower }}{% if related_sections %} and its sections{% endif %}.</p>
+    <div class="table-card">
+        <table>
+            <thead><tr><th>Person</th><th>Section</th><th>Role</th><th>Membership</th><th>Account</th><th>First joined</th><th>History</th></tr></thead>
+            <tbody>
+            {% for row in members_page %}
+                <tr>
+                    <td><strong>{{ row.membership.user }}</strong><span class="cell-note">{{ row.membership.user.email }}</span></td>
+                    <td><a href="{{ row.scope_url }}">{{ row.scope_type }} · {{ row.scope.name }}</a></td>
+                    <td>{{ row.membership.get_role_display }}</td>
+                    <td>{% status_badge row.membership.is_active on="Active" off="Left / inactive" %}</td>
+                    <td>{% status_badge row.membership.user.is_active %}</td>
+                    <td>{{ row.membership.created_at|date:"d M Y, H:i" }}</td>
+                    <td><a href="{% url 'audit_log' %}?user={{ row.membership.user_id }}">User history</a></td>
+                </tr>
+            {% empty %}<tr><td colspan="7" class="empty-cell">No memberships yet.</td></tr>{% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% pagination members_page param="members_page" anchor="members" label="Members" %}
+</section>
+
+{% if cohort %}
+<section id="curriculum" class="section-block">
+    <h2>Terms and activities</h2>
+    {% for term in terms %}
+        <article class="detail-panel" id="term-{{ term.pk }}">
+            <h3><a href="{% url 'cohort_term_detail' cohort.pk term.pk %}">{{ term.sequence }} · {{ term.name }}</a></h3>
+            <p>{% status_badge term.is_active %} {{ term.start_date|date:"d M Y"|default:"Start date not set" }} – {{ term.end_date|date:"d M Y"|default:"End date not set" }}</p>
+            {% if term.description %}<p class="detail-description">{{ term.description }}</p>{% endif %}
+            <p>{{ term.resources.count }} resources · {{ term.tasks.count }} tasks · {{ term.questions.count }} questions</p>
+            <details{% if term.extra_content_open %} open{% endif %}>
+                <summary>Resources, tasks and questions</summary>
+                <h4 id="term-{{ term.pk }}-resources">Resources</h4>
+                <ul>{% for item in term.resources_page %}<li>{% if item.file %}<a href="{{ item.file.url }}" target="_blank" rel="noopener noreferrer">{{ item.title }}</a>{% elif item.url %}<a href="{{ item.url }}" target="_blank" rel="noopener noreferrer">{{ item.title }}</a>{% else %}{{ item.title }}{% endif %} · {{ item.get_resource_type_display }}{% if item.description %}<p>{{ item.description }}</p>{% endif %}</li>{% empty %}<li>No resources yet.</li>{% endfor %}</ul>
+                {% pagination term.resources_page param=term.resources_page_param anchor=term.resources_anchor label="Resources" %}
+                <h4 id="term-{{ term.pk }}-tasks">Tasks</h4>
+                <ul>{% for item in term.tasks_page %}<li><a href="{% url 'cohort_term_task_detail' cohort.pk term.pk item.pk %}">{{ item.title }}</a></li>{% empty %}<li>No tasks yet.</li>{% endfor %}</ul>
+                {% pagination term.tasks_page param=term.tasks_page_param anchor=term.tasks_anchor label="Tasks" %}
+                <h4 id="term-{{ term.pk }}-questions">Questions</h4>
+                <ul>{% for item in term.questions_page %}<li><a href="{% url 'cohort_term_question_detail' cohort.pk term.pk item.pk %}">{{ item.title }}</a></li>{% empty %}<li>No questions yet.</li>{% endfor %}</ul>
+                {% pagination term.questions_page param=term.questions_page_param anchor=term.questions_anchor label="Questions" %}
+            </details>
+            <a href="{% url 'cohort_term_detail' cohort.pk term.pk %}">View resources, tasks and questions</a>
+        </article>
+    {% empty %}<p class="muted">No terms yet.</p>{% endfor %}
+    {% pagination terms param="terms_page" anchor="curriculum" label="Terms" %}
+    <h3 id="activities">Activities</h3>
+    <div class="table-card">
+        <table>
+            <thead><tr><th>Activity</th><th>Term</th><th>Dates</th><th>Status</th><th>Audience</th></tr></thead>
+            <tbody>
+            {% for activity in activities %}
+                <tr><td><strong>{{ activity.title }}</strong><span class="cell-note">{{ activity.description }}</span></td><td>{{ activity.term.name }}</td><td>{{ activity.start_date|date:"d M Y" }} – {{ activity.end_date|date:"d M Y" }}</td><td>{{ activity.get_status_display }}</td><td>{{ activity.get_target_audience_display }}</td></tr>
+            {% empty %}<tr><td colspan="5" class="empty-cell">No planned activities.</td></tr>{% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% pagination activities param="activities_page" anchor="activities" label="Activities" %}
+    <h3 id="pairings">Mentor–mentee allocations</h3>
+    <div class="table-card"><table>
+        <thead><tr><th>Mentor</th><th>Mentee</th><th>Status</th><th>Assigned by</th><th>Notes</th></tr></thead>
+        <tbody>{% for pairing in pairings %}<tr><td>{{ pairing.mentor }}</td><td>{{ pairing.mentee }}</td><td>{% status_badge pairing.is_active %}</td><td>{{ pairing.assigned_by|default:"System" }}</td><td>{{ pairing.notes|default:"—" }}</td></tr>{% empty %}<tr><td colspan="5" class="empty-cell">No allocations yet.</td></tr>{% endfor %}</tbody>
+    </table></div>
+    {% pagination pairings param="pairings_page" anchor="pairings" label="Mentor allocations" %}
+</section>
+{% endif %}
+
+<section id="audit" class="section-block">
+    <h2>Audit logs and changes ({{ total_logs }})</h2>
+    <p class="muted">Configuration changes, membership changes and related activity, newest first.</p>
+    <form method="get" action="#audit" class="detail-audit-filters">
+        {% for name, value in section_page_params %}<input type="hidden" name="{{ name }}" value="{{ value }}">{% endfor %}
+        <div class="form-field"><label for="audit-query">Search history</label><input id="audit-query" name="q" value="{{ search_query }}" class="form-control" placeholder="Person, description or section"></div>
+        <div class="form-field"><label for="audit-action">Action</label><select id="audit-action" name="action" class="form-control"><option value="">All actions</option>{% for value, label in actions %}<option value="{{ value }}"{% if selected_action == value %} selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+        <button type="submit" class="button button--primary">Filter</button>
+        {% if search_query or selected_action %}<a href="{{ audit_reset_url }}" class="button button--secondary">Reset</a>{% endif %}
+    </form>
+    <p class="muted">{{ history_page.paginator.count }} matching record{{ history_page.paginator.count|pluralize }}.</p>
+    {% for entry in history_page %}
+        <article class="detail-audit-entry">
+            <div class="detail-audit-heading"><span class="{{ entry.action_badge_class }}">{{ entry.get_action_display }}</span><strong>{{ entry.entity_type }} · {{ entry.entity_name }}</strong></div>
+            <p class="cell-note">{{ entry.created_at|date:"d M Y, H:i:s" }} · {{ entry.actor_name }}{% if entry.actor.email %} · {{ entry.actor.email }}{% endif %}</p>
+            <p>{{ entry.description }}</p>
+            {% if entry.field_changes %}
+                <div class="table-card"><table><thead><tr><th>Field</th><th>Before</th><th>After</th></tr></thead><tbody>
+                    {% for change in entry.field_changes %}<tr><td>{{ change.field }}</td><td>{{ change.before|default_if_none:"—" }}</td><td>{{ change.after|default_if_none:"—" }}</td></tr>{% endfor %}
+                </tbody></table></div>
+            {% endif %}
+            {% if entry.details %}<details><summary>Full change details</summary><pre class="detail-metadata">{{ entry.formatted_details }}</pre></details>{% endif %}
+        </article>
+    {% empty %}<p class="muted">No audit records match these filters.</p>{% endfor %}
+    {% pagination history_page anchor="audit" label="Audit history" %}
+</section>
+{% endblock %}

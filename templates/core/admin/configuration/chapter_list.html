@@ -21,8 +21,8 @@
                 <td>{{ chapter.location.name }}</td>
                 <td>{{ chapter.cohort_count }}</td>
                 <td>{% status_badge chapter.is_active %}</td>
-                {% url 'chapter_edit' chapter.pk as edit_url %}{% url 'chapter_delete' chapter.pk as delete_url %}
-                {% row_actions edit_url delete_url confirm="Delete this chapter?" %}
+                {% url 'scope_resources' 'chapter' chapter.pk as resources_url %}{% url 'chapter_detail' chapter.pk as view_url %}{% url 'chapter_edit' chapter.pk as edit_url %}{% url 'chapter_delete' chapter.pk as delete_url %}
+                {% row_actions edit_url delete_url view_url=view_url resources_url=resources_url confirm="Delete this chapter?" %}
             </tr>
         {% endfor %}
     </tbody>

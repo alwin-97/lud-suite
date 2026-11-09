@@ -1,6 +1,7 @@
 """UI components that need Python: slots, csrf or computed markup.
 Plain-markup components are includes in templates/components/ (see docs)."""
 from django import template
+from django.http import QueryDict
 from django.template.loader import render_to_string
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
@@ -14,7 +15,7 @@ def _slot(content):
 
 
 @register.simple_block_tag
-def page_header(content, title, eyebrow="", description=""):
+def page_header(content, title, eyebrow="", description="", sections=None):
     """{% page_header title=… eyebrow=… description=… %}<actions>{% endpage_header %}"""
     return render_to_string(
         "components/page_header.html",
@@ -23,6 +24,7 @@ def page_header(content, title, eyebrow="", description=""):
             "eyebrow": eyebrow,
             "description": description,
             "actions": _slot(content),
+            "sections": sections or [],
         },
     )
 
@@ -67,10 +69,12 @@ def status_badge(active, on="Active", off="Inactive"):
 
 
 @register.inclusion_tag("components/row_actions.html", takes_context=True)
-def row_actions(context, edit_url, delete_url="", confirm="Delete this item?", edit_label="Edit", manage_url=""):
+def row_actions(context, edit_url, delete_url="", confirm="Delete this item?", edit_label="Edit", manage_url="", view_url="", resources_url=""):
     """Renders the actions <td>: an optional Manage link, an Edit link and,
     optionally, a confirmed POST delete."""
     return {
+        "resources_url": resources_url,
+        "view_url": view_url,
         "manage_url": manage_url,
         "edit_url": edit_url,
         "edit_label": edit_label,
@@ -103,4 +107,25 @@ def has_perm(context, resource, action=None, cohort=None):
 
     target_cohort = cohort or context.get("cohort")
     return has_role_permission(user, resource, action, cohort=target_cohort)
+
+
+@register.inclusion_tag("components/pagination.html", takes_context=True)
+def pagination(context, page, param="page", anchor="", label="Records"):
+    """Independent section pagination that retains the other page and filter choices."""
+    request = context.get("request")
+
+    def url(number):
+        query = request.GET.copy() if request else QueryDict(mutable=True)
+        query[param] = number
+        return (request.path if request else "") + f"?{query.urlencode()}" + (f"#{anchor}" if anchor else "")
+
+    links = []
+    for number in page.paginator.get_elided_page_range(page.number, on_each_side=1, on_ends=1):
+        links.append({"number": number, "url": url(number) if isinstance(number, int) else "",
+                      "current": number == page.number})
+    return {
+        "page": page, "label": label, "links": links,
+        "previous_url": url(page.previous_page_number()) if page.has_previous() else "",
+        "next_url": url(page.next_page_number()) if page.has_next() else "",
+    }
 

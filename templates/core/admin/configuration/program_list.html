@@ -12,17 +12,16 @@
 {% endpage_header %}
 
 {% data_table id="programs-table" empty="No programs yet. Add the first program to continue." %}
-    <thead><tr><th>Name</th><th>Cohort length</th><th>Locations</th><th>Cohorts</th><th>Status</th><th class="actions-column">Actions</th></tr></thead>
+    <thead><tr><th>Name</th><th>Locations</th><th>Cohorts</th><th>Status</th><th class="actions-column">Actions</th></tr></thead>
     <tbody>
         {% for program in programs %}
             <tr data-filter-status="{% if program.is_active %}Active{% else %}Inactive{% endif %}">
                 <td>{% include "components/cell_stack.html" with primary=program.name note=program.description only %}</td>
-                <td data-order="{{ program.duration_months }}">{{ program.duration_months }} months</td>
                 <td>{{ program.location_count }}</td>
                 <td>{{ program.cohort_count }}</td>
                 <td>{% status_badge program.is_active %}</td>
-                {% url 'program_edit' program.pk as edit_url %}{% url 'program_delete' program.pk as delete_url %}
-                {% row_actions edit_url delete_url confirm="Delete this program?" %}
+                {% url 'scope_resources' 'program' program.pk as resources_url %}{% url 'program_detail' program.pk as view_url %}{% url 'program_edit' program.pk as edit_url %}{% url 'program_delete' program.pk as delete_url %}
+                {% row_actions edit_url delete_url view_url=view_url resources_url=resources_url confirm="Delete this program?" %}
             </tr>
         {% endfor %}
     </tbody>

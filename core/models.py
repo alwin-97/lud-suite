@@ -5,6 +5,7 @@ from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.utils import timezone
+from core.storage import PrivateResourceStorage, resource_upload_path
 
 
 def add_months(start_date, months):
@@ -70,7 +71,15 @@ class CustomUser(AbstractUser):
             return False
         if self.is_platform_admin:
             return True
-        return self.cohort_memberships.filter(**ACTIVE_MEMBERSHIP_FILTER).exists()
+        return (
+            self.cohort_memberships.filter(**ACTIVE_MEMBERSHIP_FILTER).exists()
+            or self.scope_memberships.filter(is_active=True).filter(
+                models.Q(program__is_active=True)
+                | models.Q(location__is_active=True, location__program__is_active=True)
+                | models.Q(chapter__is_active=True, chapter__location__is_active=True,
+                           chapter__location__program__is_active=True)
+            ).exists()
+        )
 
     @property
     def active_role_codes(self):
@@ -181,6 +190,7 @@ class Chapter(models.Model):
 
 class Cohort(models.Model):
     name = models.CharField(max_length=150)
+    description = models.TextField(blank=True, max_length=500)
     chapter = models.ForeignKey(
         Chapter,
         on_delete=models.PROTECT,
@@ -274,6 +284,104 @@ class CohortMembership(models.Model):
 
     def __str__(self):
         return f"{self.user} — {self.cohort} — {self.get_role_display()}"
+
+
+class ScopeMembership(models.Model):
+    """Direct membership of a program, location or chapter; never inherited."""
+
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="scope_memberships")
+    program = models.ForeignKey(Program, null=True, blank=True, on_delete=models.CASCADE, related_name="memberships")
+    location = models.ForeignKey(Location, null=True, blank=True, on_delete=models.CASCADE, related_name="memberships")
+    chapter = models.ForeignKey(Chapter, null=True, blank=True, on_delete=models.CASCADE, related_name="memberships")
+    role = models.CharField(max_length=30, choices=CohortMembership.ROLE_CHOICES)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                condition=(
+                    models.Q(program__isnull=False, location__isnull=True, chapter__isnull=True)
+                    | models.Q(program__isnull=True, location__isnull=False, chapter__isnull=True)
+                    | models.Q(program__isnull=True, location__isnull=True, chapter__isnull=False)
+                ),
+                name="membership_exactly_one_scope",
+            ),
+            *[
+                models.UniqueConstraint(fields=("user", scope, "role"), name=f"unique_user_{scope}_role")
+                for scope in ("program", "location", "chapter")
+            ],
+        ]
+
+    @property
+    def scope(self):
+        return self.program or self.location or self.chapter
+
+    @property
+    def program_name(self):
+        if self.program_id:
+            return self.program.name
+        return (self.location.program if self.location_id else self.chapter.location.program).name
+
+    @property
+    def scope_label(self):
+        return f"{self.scope._meta.verbose_name.capitalize()}: {self.scope.name}"
+
+    @property
+    def is_effectively_active(self):
+        if not self.is_active or not self.user.is_active:
+            return False
+        if self.program_id:
+            return self.program.is_active
+        location = self.location if self.location_id else self.chapter.location
+        return (location.is_active and location.program.is_active
+                and (not self.chapter_id or self.chapter.is_active))
+
+    def __str__(self):
+        return f"{self.user} — {self.scope} — {self.get_role_display()}"
+
+
+class ScopeResource(models.Model):
+    IMAGE = "image"
+    VIDEO = "video"
+    FILE = "file"
+    RESOURCE_TYPES = ((IMAGE, "Image"), (VIDEO, "Video"), (FILE, "File"))
+    IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".gif", ".webp", ".avif"}
+    VIDEO_EXTENSIONS = {".mp4", ".m4v", ".mov", ".webm", ".ogv"}
+
+    title = models.CharField(max_length=200)
+    description = models.TextField(blank=True)
+    resource_type = models.CharField(max_length=10, choices=RESOURCE_TYPES)
+    file = models.FileField(storage=PrivateResourceStorage(), upload_to=resource_upload_path)
+    original_name = models.CharField(max_length=255)
+    program = models.ForeignKey(Program, null=True, blank=True, on_delete=models.CASCADE, related_name="shared_resources")
+    location = models.ForeignKey(Location, null=True, blank=True, on_delete=models.CASCADE, related_name="shared_resources")
+    chapter = models.ForeignKey(Chapter, null=True, blank=True, on_delete=models.CASCADE, related_name="shared_resources")
+    cohort = models.ForeignKey(Cohort, null=True, blank=True, on_delete=models.CASCADE, related_name="shared_resources")
+    uploaded_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL, related_name="uploaded_scope_resources")
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ("-created_at", "-pk")
+        constraints = [models.CheckConstraint(
+            condition=(
+                models.Q(program__isnull=False, location__isnull=True, chapter__isnull=True, cohort__isnull=True)
+                | models.Q(program__isnull=True, location__isnull=False, chapter__isnull=True, cohort__isnull=True)
+                | models.Q(program__isnull=True, location__isnull=True, chapter__isnull=False, cohort__isnull=True)
+                | models.Q(program__isnull=True, location__isnull=True, chapter__isnull=True, cohort__isnull=False)
+            ), name="resource_exactly_one_scope")]
+
+    @property
+    def scope(self):
+        return self.program or self.location or self.chapter or self.cohort
+
+    @property
+    def scope_type(self):
+        return self.scope._meta.model_name
+
+    def __str__(self):
+        return self.title
 
 
 class MentorAssignment(models.Model):
@@ -440,7 +548,7 @@ class ChangeHistory(models.Model):
     description = models.TextField(help_text="Human-readable summary of the change.")
     cohort = models.ForeignKey(
         Cohort,
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         null=True,
         blank=True,
         related_name="change_history",
@@ -566,7 +674,7 @@ class RolePermission(models.Model):
 
     class Resource(models.TextChoices):
         TERMS = "terms", "Cohort Terms"
-        RESOURCES = "resources", "Term Resources (Files & URLs)"
+        RESOURCES = "resources", "Resources (Images, Videos, Files & URLs)"
         ACTIVITIES = "activities", "Cohort Activities & Timeline"
         MEMBERS = "members", "Member Allocation & Reallocation"
         COHORTS = "cohorts", "Cohorts & Structure"
@@ -1034,6 +1142,10 @@ def log_change(
 ):
     """Record a change in ChangeHistory."""
     user = actor if (actor and getattr(actor, "is_authenticated", False)) else None
+    details = dict(details or {})
+    if cohort and cohort.pk:
+        from core.services.audit import scope_ids
+        details.setdefault("scope_ids", scope_ids(cohort))
     return ChangeHistory.objects.create(
         actor=user,
         action=action,

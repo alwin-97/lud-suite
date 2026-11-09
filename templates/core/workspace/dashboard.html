@@ -6,19 +6,29 @@
 
 {% block styles %}
     <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'css/components.css' %}">
     <link rel="stylesheet" href="{% static 'css/pages/workspace.css' %}">
     <link rel="stylesheet" href="{% static 'css/footer.css' %}">
 {% endblock %}
 
 {% block body %}
+{% include "components/forms/drawer_shell.html" %}
 <main class="member-shell">
     <section class="member-card">
         {% include "components/brand_mark.html" with variant="member" only %}
         <p class="eyebrow">My workspace</p>
         <h1>Welcome{% if user.first_name %}, {{ user.first_name }}{% endif %}.</h1>
+        <p><a href="{% url 'resource_library' %}" class="button button--primary" data-resource-drawer>Images, videos and files</a></p>
         <p>Your Google account is authorized. Role-specific tools will be added in the next application increments.</p>
 
         <div class="membership-list">
+            {% for membership in scope_memberships %}
+                {% if membership.is_effectively_active %}
+                    <div class="membership-row">
+                        <div><strong>{{ membership.get_role_display }}</strong><span>{{ membership.scope_label }}</span></div>
+                    </div>
+                {% endif %}
+            {% endfor %}
             {% for membership in memberships %}
                 <div class="membership-block">
                     <div class="membership-row">
@@ -346,4 +356,8 @@
     </section>
 </main>
 {% include "components/shell/site_footer.html" with APP_VERSION=APP_VERSION only %}
+{% endblock %}
+{% block scripts %}
+    <script src="{% static 'js/components/form-drawer.js' %}"></script>
+    <script src="{% static 'js/components/confirm.js' %}"></script>
 {% endblock %}

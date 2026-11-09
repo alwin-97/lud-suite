@@ -1,5 +1,7 @@
 {# Rendered by {% row_actions %}: the whole actions <td>. #}
 <td class="table-actions">
+    {% if resources_url %}<a href="{{ resources_url }}" class="text-link" data-resource-drawer><i class="fi fi-rr-plus" aria-hidden="true"></i> Upload / Resources</a>{% endif %}
+    {% if view_url %}<a href="{{ view_url }}" class="text-link"><i class="fi fi-rr-eye" aria-hidden="true"></i> View</a>{% endif %}
     {% if manage_url %}<a href="{{ manage_url }}" class="text-link"><i class="fi fi-rr-users" aria-hidden="true"></i> Manage</a>{% endif %}
     <a href="{{ edit_url }}" class="text-link"><i class="fi fi-rr-pencil" aria-hidden="true"></i> {{ edit_label }}</a>
     {% if delete_url %}

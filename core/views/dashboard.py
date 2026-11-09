@@ -1,4 +1,5 @@
 from django.views.generic import TemplateView
+from django.db.models import Q
 
 from core.models import (
     ChangeHistory,
@@ -27,8 +28,7 @@ class AdminDashboardView(AdminRequiredMixin, TemplateView):
             activity_count=CohortActivity.objects.count(),
             user_count=CustomUser.objects.filter(
                 is_active=True,
-                cohort_memberships__is_active=True,
-            ).distinct().count(),
+            ).filter(Q(cohort_memberships__is_active=True) | Q(scope_memberships__is_active=True)).distinct().count(),
             recent_history=list(
                 ChangeHistory.objects.select_related("actor", "cohort")[:8]
             ),

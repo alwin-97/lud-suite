@@ -15,8 +15,11 @@
     <script>
         (function () {
             try {
-                if (localStorage.getItem('lud-admin-sidebar') === 'collapsed') {
+                if (localStorage.getItem('lud-admin-sidebar') === 'collapsed' || window.matchMedia('(max-width: 1100px)').matches) {
                     document.documentElement.classList.add('sidebar-collapsed');
+                }
+                if (localStorage.getItem('lud-page-heading-minimized') === 'true') {
+                    document.documentElement.classList.add('page-context-minimized');
                 }
             } catch (e) {}
         })();
@@ -24,6 +27,7 @@
 {% endblock %}
 
 {% block body %}
+    {% include "components/forms/drawer_shell.html" %}
     {% include "components/shell/app_bar.html" with user=user csrf_token=csrf_token subtitle="Admin" home_url=home_url|default:"" only %}
 
     <div class="admin-shell">
@@ -44,6 +48,9 @@
 {% endblock %}
 
 {% block scripts %}
+    <script src="{% static 'js/components/page-context.js' %}"></script>
+    <script src="{% static 'js/components/resource-members.js' %}"></script>
+    <script src="{% static 'js/components/form-drawer.js' %}"></script>
     <script src="{% static 'js/components/sidebar.js' %}"></script>
     <script src="{% static 'js/components/account-menu.js' %}"></script>
     <script src="{% static 'js/components/confirm.js' %}"></script>

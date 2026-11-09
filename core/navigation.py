@@ -37,6 +37,7 @@ class NavItem:
 
 
 ADMIN_NAV = (
+    NavItem("Resources", "resource_library", icon="folder", match_prefix="scope_resources"),
     NavItem("Dashboard", "admin_dashboard", icon="apps"),
     NavItem(
         "Configuration",

@@ -8,6 +8,8 @@ currently contains only:
 - a protected administrator dashboard and configuration portal;
 - reusable locations, chapters, and three-year cohorts;
 - cohort terms with multi-format materials (documents, images, and external URLs);
+- shared images, videos and files at program, location, chapter and cohort levels;
+- resource upload/view drawers with role-based access, parent-level sharing, and audit history;
 - cohort-level Community Leader, Mentor, and Mentee role assignments;
 - participant workspace displaying active cohort terms, syllabus documents, and learning resources;
 - support for assigning multiple roles and cohorts to one user;
@@ -15,6 +17,14 @@ currently contains only:
   Google OAuth configuration.
 
 ## Local setup
+
+Shared resources uploaded at program, location, chapter and cohort levels are
+stored in `PRIVATE_RESOURCE_ROOT` (`private_resources/` by default). They are
+downloaded through authenticated views, including video range requests. Keep
+this directory outside public media/static hosting. Active members can read
+resources in their groups and their parent levels; uploads and removal require
+the relevant resource permission in a role assigned directly at that level.
+Each uploaded file may be up to 100 MB (`RESOURCE_UPLOAD_MAX_BYTES`).
 
 Create and activate a virtual environment, then install the dependencies:
 

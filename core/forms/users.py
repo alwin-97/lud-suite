@@ -47,7 +47,7 @@ class AssignmentPicker(forms.CheckboxSelectMultiple):
 class PlatformUserForm(StyledModelForm):
     assignments = forms.MultipleChoiceField(
         label="Cohort roles",
-        required=True,
+        required=False,
         widget=AssignmentPicker,
         help_text=(
             "Choose a program, then a location, then tick every role this person holds in "
@@ -65,13 +65,14 @@ class PlatformUserForm(StyledModelForm):
         }
 
     def __init__(self, *args, **kwargs):
+        self.actor = kwargs.pop("actor", None)
         super().__init__(*args, **kwargs)
         self.fields["email"].required = True
         current_cohort_ids = set()
         if self.instance.pk:
             self.initial["assignments"] = [
                 f"{cohort_id}:{role}"
-                for cohort_id, role in self.instance.cohort_memberships.values_list(
+                for cohort_id, role in self.instance.cohort_memberships.filter(is_active=True).values_list(
                     "cohort_id", "role"
                 )
             ]
@@ -158,24 +159,16 @@ class PlatformUserForm(StyledModelForm):
             (int(value.split(":", 1)[0]), value.split(":", 1)[1])
             for value in self.cleaned_data["assignments"]
         }
-        user.cohort_memberships.exclude(
-            cohort_id__in={cohort_id for cohort_id, _ in selected_assignments}
-        ).delete()
-
+        from core.services.memberships import add_membership, set_membership_active
         existing = {
             (membership.cohort_id, membership.role): membership
             for membership in user.cohort_memberships.all()
         }
         for key, membership in existing.items():
             if key not in selected_assignments:
-                membership.delete()
+                set_membership_active(membership, False, self.actor)
 
         for cohort_id, role in selected_assignments:
-            CohortMembership.objects.update_or_create(
-                user=user,
-                cohort_id=cohort_id,
-                role=role,
-                defaults={"is_active": True},
-            )
+            add_membership(Cohort.objects.get(pk=cohort_id), user, role, self.actor)
 
         return user

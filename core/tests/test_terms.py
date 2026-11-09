@@ -197,22 +197,23 @@ class TermAndResourceTests(PlatformTestCase):
         )
         self.assertRedirects(realloc_response, reverse("cohort_manage", args=[self.cohort.pk]))
         membership.refresh_from_db()
-        self.assertEqual(membership.role, CohortMembership.SENIOR_MEMBER)
+        self.assertFalse(membership.is_active)
+        membership = CohortMembership.objects.get(user=user, cohort=self.cohort, role=CohortMembership.SENIOR_MEMBER)
 
         # Verify reallocation logged
         realloc_log = ChangeHistory.objects.filter(
-            action=ChangeHistory.Action.REALLOCATE, entity_name__contains="Senior Member"
+            action=ChangeHistory.Action.REALLOCATE, details__new_role=CohortMembership.SENIOR_MEMBER
         ).first()
         self.assertIsNotNone(realloc_log)
 
         # 3. Reallocate to another cohort
-        _, _, other_cohort = self.create_cohort(name="Cohort 2027")
+        other_cohort = Cohort.objects.create(name="Cohort 2027", chapter=self.cohort.chapter, start_date=date(2027, 1, 1))
         move_response = self.client.post(
             reverse("cohort_member_reallocate", args=[self.cohort.pk, membership.pk]),
             {"role": CohortMembership.SENIOR_MEMBER, "target_cohort": other_cohort.pk},
         )
         self.assertRedirects(move_response, reverse("cohort_manage", args=[self.cohort.pk]))
-        self.assertFalse(CohortMembership.objects.filter(user=user, cohort=self.cohort).exists())
+        self.assertFalse(CohortMembership.objects.filter(user=user, cohort=self.cohort, is_active=True).exists())
         self.assertTrue(CohortMembership.objects.filter(user=user, cohort=other_cohort, role=CohortMembership.SENIOR_MEMBER).exists())
 
     def test_activity_timeline_planning_across_multiple_terms(self):

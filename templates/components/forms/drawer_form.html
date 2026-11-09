@@ -1,0 +1,3 @@
+<h2 id="form-drawer-title">{{ title }}</h2>
+{% if description %}<p class="muted">{{ description }}</p>{% endif %}
+{% include "components/forms/admin_form.html" with form=form members_form=members_form member_history=member_history submit_label=submit_label layout=form_layout csrf_token=csrf_token action=request.path only %}

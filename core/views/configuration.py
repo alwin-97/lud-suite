@@ -1,5 +1,6 @@
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied
+from django.db import transaction
 from django.db.models import Count, Q
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
@@ -186,23 +187,20 @@ class CohortManageView(RoleAccessRequiredMixin, DetailView):
     permission_resource = "cohorts"
     permission_action = "read"
 
+    @transaction.atomic
     def post(self, request, *args, **kwargs):
         self.object = self.get_object()
         if not has_role_permission(request.user, "members", "create", cohort=self.object):
             raise PermissionDenied("You do not have permission to allocate members to this cohort.")
         form = CohortMemberForm(request.POST, cohort=self.object)
         if form.is_valid():
+            from core.services.memberships import record_membership
+            existing = getattr(form, "existing", None)
+            previous = existing.is_active if existing else None
             membership = form.save()
-            log_change(
-                actor=request.user,
-                action=ChangeHistory.Action.ALLOCATE,
-                entity_type="Member",
-                entity_name=f"{membership.user} ({membership.get_role_display()})",
-                entity_id=membership.pk,
-                cohort=self.object,
-                description=f"Allocated {membership.get_role_display()} role to {membership.user} in {self.object.name}.",
-                details={"user": membership.user.email, "role": membership.role},
-            )
+            record_membership(membership, request.user,
+                              ChangeHistory.Action.ACTIVATE if previous is False else ChangeHistory.Action.ALLOCATE,
+                              previous)
             messages.success(
                 request,
                 f"{membership.user} allocated as {membership.get_role_display()}.",
@@ -251,7 +249,9 @@ class CohortMemberActionView(RoleAccessRequiredMixin, View):
         self.permission_action = "delete" if self.action == "remove" else "update"
         return super().dispatch(request, *args, **kwargs)
 
+    @transaction.atomic
     def post(self, request, cohort_id, membership_id):
+        from core.services.memberships import set_membership_active
         membership = get_object_or_404(
             CohortMembership.objects.select_related("user", "cohort"),
             pk=membership_id,
@@ -267,11 +267,10 @@ class CohortMemberActionView(RoleAccessRequiredMixin, View):
                 cohort=membership.cohort,
                 description=f"Removed {membership.get_role_display()} role from {membership.user}.",
             )
-            membership.delete()
+            set_membership_active(membership, False, request.user)
             messages.success(request, f"{membership.user}'s {membership.get_role_display()} role removed.")
         else:
-            membership.is_active = not membership.is_active
-            membership.save(update_fields=["is_active"])
+            set_membership_active(membership, not membership.is_active, request.user)
             action = ChangeHistory.Action.ACTIVATE if membership.is_active else ChangeHistory.Action.DEACTIVATE
             state = "activated" if membership.is_active else "deactivated"
             log_change(
@@ -573,23 +572,23 @@ class CohortMemberReallocateView(RoleAccessRequiredMixin, DetailView):
         )
         return context
 
+    @transaction.atomic
     def post(self, request, *args, **kwargs):
         self.object = self.get_object()
         membership = self.object
+        old_role = membership.role
         form = CohortMemberReallocateForm(request.POST, instance=membership)
         if form.is_valid():
+            # ModelForm validation updates its instance; retain the original role row.
+            membership.role = old_role
             old_role_display = membership.get_role_display()
             target_cohort = form.cleaned_data.get("target_cohort") or self.cohort
             new_role = form.cleaned_data.get("role")
 
             if target_cohort.pk != self.cohort.pk:
-                new_membership, _ = CohortMembership.objects.update_or_create(
-                    user=membership.user,
-                    cohort=target_cohort,
-                    role=new_role,
-                    defaults={"is_active": True},
-                )
-                membership.delete()
+                from core.services.memberships import add_membership, set_membership_active
+                new_membership = add_membership(target_cohort, membership.user, new_role, request.user)
+                set_membership_active(membership, False, request.user)
                 log_change(
                     actor=request.user,
                     action=ChangeHistory.Action.REALLOCATE,
@@ -609,8 +608,10 @@ class CohortMemberReallocateView(RoleAccessRequiredMixin, DetailView):
                     f"{membership.user} reallocated to {target_cohort.name} as {new_membership.get_role_display()}.",
                 )
             else:
-                membership.role = new_role
-                membership.save(update_fields=["role"])
+                if membership.role != new_role:
+                    from core.services.memberships import add_membership, set_membership_active
+                    set_membership_active(membership, False, request.user)
+                    membership = add_membership(self.cohort, membership.user, new_role, request.user)
                 log_change(
                     actor=request.user,
                     action=ChangeHistory.Action.REALLOCATE,
@@ -934,6 +935,9 @@ class AuditTrailReviewView(RoleAccessRequiredMixin, ListView):
         if cohort_id:
             qs = qs.filter(cohort_id=cohort_id)
         query = self.request.GET.get("q", "").strip()
+        user_id = self.request.GET.get("user", "").strip()
+        if user_id.isdigit():
+            qs = qs.filter(Q(details__user_id=int(user_id)) | Q(entity_type="User", entity_id=int(user_id)))
         if query:
             qs = qs.filter(
                 Q(description__icontains=query)
@@ -970,6 +974,7 @@ class AuditTrailReviewView(RoleAccessRequiredMixin, ListView):
             selected_action=self.request.GET.get("action", ""),
             selected_entity=self.request.GET.get("entity", ""),
             selected_cohort=self.request.GET.get("cohort", ""),
+            selected_user=self.request.GET.get("user", "") if self.request.GET.get("user", "").isdigit() else "",
             search_query=self.request.GET.get("q", ""),
             total_logs=self.get_queryset().count(),
         )
@@ -985,7 +990,7 @@ class RolePermissionMatrixView(AdminRequiredMixin, TemplateView):
 
     RESOURCE_DESCRIPTIONS = {
         RolePermission.Resource.TERMS: "Create, view, update schedule, and delete terms within a cohort.",
-        RolePermission.Resource.RESOURCES: "Upload syllabus/documents, images, attach external resource URLs, and remove files.",
+        RolePermission.Resource.RESOURCES: "View, upload and remove resources at assigned program, location, chapter, cohort and term levels. Members can read resources shared at their parent levels.",
         RolePermission.Resource.ACTIVITIES: "Schedule milestones, view timeline progress, update activity status, and remove activities.",
         RolePermission.Resource.MEMBERS: "Allocate members, change roles (Mentee, Mentor, Senior Member, Leader), transfer between cohorts, activate/deactivate.",
         RolePermission.Resource.COHORTS: "View and manage cohort profile, curriculum overview, and metadata.",

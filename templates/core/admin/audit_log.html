@@ -13,6 +13,7 @@
 {# Filter Bar #}
 <div class="card" style="margin-bottom: 1.5rem; padding: 1.25rem; background: var(--surface); border: 1px solid var(--line); border-radius: 8px;">
     <form method="get" style="display: flex; flex-wrap: wrap; gap: 0.8rem; align-items: flex-end;">
+        {% if selected_user %}<input type="hidden" name="user" value="{{ selected_user }}">{% endif %}
         <div style="flex: 1; min-width: 180px;">
             <label for="q" style="display: block; font-size: 0.85rem; font-weight: 500; margin-bottom: 0.3rem;">Search description or user</label>
             <input type="text" id="q" name="q" value="{{ search_query }}" placeholder="Filter by text..." class="form-control" style="width: 100%;">
@@ -115,11 +116,11 @@
     {% if is_paginated %}
         <div style="display: flex; justify-content: center; gap: 0.5rem; margin-top: 1.5rem;">
             {% if page_obj.has_previous %}
-                <a href="?page={{ page_obj.previous_page_number }}{% if selected_action %}&action={{ selected_action }}{% endif %}{% if selected_entity %}&entity={{ selected_entity }}{% endif %}{% if selected_cohort %}&cohort={{ selected_cohort }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}" class="button button--secondary button--sm">Previous</a>
+                <a href="?page={{ page_obj.previous_page_number }}{% if selected_user %}&user={{ selected_user }}{% endif %}{% if selected_action %}&action={{ selected_action }}{% endif %}{% if selected_entity %}&entity={{ selected_entity }}{% endif %}{% if selected_cohort %}&cohort={{ selected_cohort }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}" class="button button--secondary button--sm">Previous</a>
             {% endif %}
             <span class="role-chip" style="font-size: 0.85rem;">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
             {% if page_obj.has_next %}
-                <a href="?page={{ page_obj.next_page_number }}{% if selected_action %}&action={{ selected_action }}{% endif %}{% if selected_entity %}&entity={{ selected_entity }}{% endif %}{% if selected_cohort %}&cohort={{ selected_cohort }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}" class="button button--secondary button--sm">Next</a>
+                <a href="?page={{ page_obj.next_page_number }}{% if selected_user %}&user={{ selected_user }}{% endif %}{% if selected_action %}&action={{ selected_action }}{% endif %}{% if selected_entity %}&entity={{ selected_entity }}{% endif %}{% if selected_cohort %}&cohort={{ selected_cohort }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}" class="button button--secondary button--sm">Next</a>
             {% endif %}
         </div>
     {% endif %}

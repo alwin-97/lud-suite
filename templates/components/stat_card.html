@@ -1,1 +1,5 @@
+{% if href %}
+<a class="stat-card stat-card--link" href="{{ href }}"><strong>{{ value }}</strong><span>{{ label }}</span></a>
+{% else %}
 <article class="stat-card"><strong>{{ value }}</strong><span>{{ label }}</span></article>
+{% endif %}

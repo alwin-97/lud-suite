@@ -100,6 +100,8 @@ STATICFILES_DIRS = [BASE_DIR / "static"]
 # Media files (uploads)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+PRIVATE_RESOURCE_ROOT = BASE_DIR / 'private_resources'
+RESOURCE_UPLOAD_MAX_BYTES = 100 * 1024 * 1024
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 

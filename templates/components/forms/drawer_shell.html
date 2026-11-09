@@ -1,0 +1,13 @@
+<dialog class="form-drawer" id="form-drawer" closedby="none" aria-labelledby="form-drawer-title"
+    data-resource-prefix="{% url 'resource_library' %}"
+    data-create-urls="{% url 'program_create' %} {% url 'location_create' %} {% url 'chapter_create' %} {% url 'cohort_create' %}">
+    <div class="form-drawer-header">
+        <button type="button" class="button button--secondary" data-close-drawer aria-label="Close form">Close <span aria-hidden="true">&times;</span></button>
+    </div>
+    <div class="form-drawer-loader" role="status" hidden>
+        {% load static %}<img src="{% static 'images/lud.png' %}" alt="Let Us Dream">
+        <span id="form-drawer-loading-title" class="form-drawer-loading-label">Loading…</span>
+    </div>
+    <p class="form-drawer-error" role="alert" hidden></p>
+    <div class="form-drawer-content"></div>
+</dialog>

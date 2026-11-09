@@ -1,0 +1,44 @@
+<section class="resource-members" aria-labelledby="resource-members-title">
+    <h3 id="resource-members-title">Members</h3>
+    <p class="muted">Add existing users or create new people. Memberships apply to this group.</p>
+    <input type="hidden" name="members_present" value="1">
+    {% if members_form.non_field_errors %}<div class="form-errors">{{ members_form.non_field_errors }}</div>{% endif %}
+    {% if members_form.active_memberships.field.choices %}
+        <fieldset class="resource-member-status">
+            <legend>Current memberships</legend>
+            <p class="muted">Uncheck people who have left. Check them again when they return. Their history is retained.</p>
+            {{ members_form.active_memberships.errors }}
+            {{ members_form.active_memberships }}
+        </fieldset>
+    {% endif %}
+    <div class="form-field">
+        {{ members_form.users.label_tag }}
+        <input type="search" class="form-control" data-member-search placeholder="Search users by name or email" aria-label="Search existing users">
+        {{ members_form.users }}
+        {{ members_form.users.errors }}
+        <small>{{ members_form.users.help_text }}</small>
+    </div>
+    <div class="form-field">
+        {{ members_form.new_people.label_tag }}{{ members_form.new_people }}
+        {{ members_form.new_people.errors }}<small>{{ members_form.new_people.help_text }}</small>
+    </div>
+    <div class="form-field">
+        {{ members_form.role.label_tag }}{{ members_form.role }}{{ members_form.role.errors }}
+        <small>This role applies to all people being added. Save, then edit to add people with another role.</small>
+    </div>
+    <div class="form-field form-field--checkbox">
+        {{ members_form.reactivate_accounts }}{{ members_form.reactivate_accounts.label_tag }}
+        <small>{{ members_form.reactivate_accounts.help_text }}</small>
+    </div>
+    {% if member_history %}
+        <details>
+            <summary>Recent membership changes</summary>
+            <ul>
+                {% for change in member_history %}
+                    <li>{{ change.description }} <small class="muted">{{ change.created_at|date:"d M Y, H:i" }} · {{ change.actor_name }}</small></li>
+                {% endfor %}
+            </ul>
+            <a href="{% url 'audit_log' %}">View complete audit log</a>
+        </details>
+    {% endif %}
+</section>

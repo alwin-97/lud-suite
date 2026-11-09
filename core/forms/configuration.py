@@ -2,6 +2,7 @@ from django import forms
 from django.db.models import Exists, OuterRef, Prefetch
 
 from core.forms.base import StyledModelForm
+from core.forms.resource_library import ResourceAttachmentsForm
 from core.models import (
     Chapter,
     Cohort,
@@ -16,20 +17,20 @@ from core.models import (
 )
 
 
-class ProgramForm(StyledModelForm):
+class ProgramForm(ResourceAttachmentsForm):
     class Meta:
         model = Program
-        fields = ("name", "description", "duration_months", "is_active")
+        fields = ("name", "description", "is_active")
         widgets = {"description": forms.Textarea(attrs={"rows": 3})}
 
 
-class LocationForm(StyledModelForm):
+class LocationForm(ResourceAttachmentsForm):
     class Meta:
         model = Location
         fields = ("program", "name", "is_active")
 
 
-class ChapterForm(StyledModelForm):
+class ChapterForm(ResourceAttachmentsForm):
     class Meta:
         model = Chapter
         fields = ("name", "location", "is_active")
@@ -39,15 +40,19 @@ class ChapterForm(StyledModelForm):
         self.fields["location"].queryset = Location.objects.select_related("program")
 
 
-class CohortForm(StyledModelForm):
+class CohortForm(ResourceAttachmentsForm):
+    field_wrapper_classes = {"description": "form-field--full"}
+
     class Meta:
         model = Cohort
-        fields = ("name", "chapter", "start_date", "end_date", "is_active")
+        fields = ("name", "chapter", "description", "start_date", "end_date", "is_active")
         widgets = {
+            "description": forms.Textarea(attrs={"rows": 3}),
             "start_date": forms.DateInput(attrs={"type": "date"}),
             "end_date": forms.DateInput(attrs={"type": "date"}),
         }
         help_texts = {
+            "description": "Optional short description of this cohort (up to 500 characters).",
             "end_date": "Leave blank to use the program's cohort length from the start date.",
         }
 
