@@ -3,9 +3,11 @@
 {% block title %}Resources · {{ scope.name|default:"All groups" }}{% endblock %}
 {% block page_content %}
 {% if in_drawer %}
-    <h2 id="form-drawer-title">Resources · {{ scope.name|default:"All groups" }}</h2>
-    <p class="muted">Images, videos and files shared with this group and its parent levels.</p>
-    {% if can_upload %}<p><a href="#add-resources" class="button button--primary">Add more files</a></p>{% endif %}
+    <div data-drawer-heading>
+        <h2 data-drawer-title>Resources · {{ scope.name|default:"All groups" }}</h2>
+        <p class="muted" data-drawer-header-detail>Images, videos and files shared with this group and its parent levels.</p>
+        {% if can_upload %}<p data-drawer-header-detail><a href="#add-resources" class="button button--primary">Add more files</a></p>{% endif %}
+    </div>
 {% else %}
 {% page_header eyebrow="Resource library" title=scope.name|default:"Resources" description="Images, videos and files shared with your groups and their parent levels." %}
     {% if user.is_platform_admin and scope %}

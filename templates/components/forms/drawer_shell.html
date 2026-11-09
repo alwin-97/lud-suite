@@ -2,12 +2,21 @@
     data-resource-prefix="{% url 'resource_library' %}"
     data-create-urls="{% url 'program_create' %} {% url 'location_create' %} {% url 'chapter_create' %} {% url 'cohort_create' %}">
     <div class="form-drawer-header">
-        <button type="button" class="button button--secondary" data-close-drawer aria-label="Close form">Close <span aria-hidden="true">&times;</span></button>
+        <div class="form-drawer-header-copy">
+            <h2 id="form-drawer-title" data-drawer-heading-title>Loading…</h2>
+            <div id="form-drawer-header-details" class="form-drawer-header-details" data-drawer-heading-details></div>
+        </div>
+        <div class="form-drawer-header-controls">
+            <button type="button" class="text-button" data-toggle-drawer-header aria-expanded="true" aria-controls="form-drawer-header-details"><i class="fi fi-rr-angle-small-down" aria-hidden="true"></i> <span data-drawer-toggle-label>Minimize</span></button>
+            <button type="button" class="button button--secondary" data-close-drawer aria-label="Close form">Close <span aria-hidden="true">&times;</span></button>
+        </div>
     </div>
     <div class="form-drawer-loader" role="status" hidden>
         {% load static %}<img src="{% static 'images/lud.png' %}" alt="Let Us Dream">
         <span id="form-drawer-loading-title" class="form-drawer-loading-label">Loading…</span>
     </div>
-    <p class="form-drawer-error" role="alert" hidden></p>
-    <div class="form-drawer-content"></div>
+    <div class="form-drawer-body">
+        <p class="form-drawer-error" role="alert" hidden></p>
+        <div class="form-drawer-content"></div>
+    </div>
 </dialog>

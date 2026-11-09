@@ -2,6 +2,10 @@
     var drawer = document.getElementById('form-drawer');
     if (!drawer) return;
     var content = drawer.querySelector('.form-drawer-content');
+    var body = drawer.querySelector('.form-drawer-body');
+    var headingTitle = drawer.querySelector('[data-drawer-heading-title]');
+    var headingDetails = drawer.querySelector('[data-drawer-heading-details]');
+    var headerToggle = drawer.querySelector('[data-toggle-drawer-header]');
     var error = drawer.querySelector('.form-drawer-error');
     var loader = drawer.querySelector('.form-drawer-loader');
     var close = drawer.querySelector('[data-close-drawer]');
@@ -11,6 +15,37 @@
     var opener;
     var saving = false;
     var resourcesChanged = false;
+
+    function minimizeHeader(minimized, persist) {
+        drawer.classList.toggle('form-drawer--minimized', minimized);
+        headerToggle.setAttribute('aria-expanded', String(!minimized));
+        headerToggle.querySelector('[data-drawer-toggle-label]').textContent = minimized ? 'Maximize' : 'Minimize';
+        if (persist) {
+            try { localStorage.setItem('lud-drawer-heading-minimized', String(minimized)); } catch (err) {}
+        }
+    }
+
+    var minimized = false;
+    try { minimized = localStorage.getItem('lud-drawer-heading-minimized') === 'true'; } catch (err) {}
+    minimizeHeader(minimized, false);
+    headerToggle.addEventListener('click', function () {
+        minimizeHeader(!drawer.classList.contains('form-drawer--minimized'), true);
+    });
+
+    function render(html) {
+        content.innerHTML = html;
+        var heading = content.querySelector('[data-drawer-heading]');
+        var title = heading && heading.querySelector('[data-drawer-title]');
+        headingTitle.textContent = title ? title.textContent : 'Form';
+        headingDetails.replaceChildren();
+        if (heading) {
+            heading.querySelectorAll('[data-drawer-header-detail]').forEach(function (item) {
+                headingDetails.appendChild(item);
+            });
+            heading.remove();
+        }
+        drawer.setAttribute('aria-labelledby', 'form-drawer-title');
+    }
 
     function isResourceURL(url) {
         return url.origin === window.location.origin && (url.pathname === resourcePrefix || (
@@ -49,6 +84,8 @@
         controller = new AbortController();
         var current = controller;
         content.innerHTML = '';
+        headingTitle.textContent = 'Loading…';
+        headingDetails.replaceChildren();
         loader.hidden = false;
         content.setAttribute('aria-busy', 'true');
         drawer.setAttribute('aria-labelledby', 'form-drawer-loading-title');
@@ -57,9 +94,8 @@
             var response = await request(url);
             var html = await response.text();
             if (current !== controller) return;
-            content.innerHTML = html;
-            drawer.setAttribute('aria-labelledby', 'form-drawer-title');
-            drawer.scrollTop = 0;
+            render(html);
+            body.scrollTop = 0;
             if (!content.querySelector('[data-resource-drawer-page]')) {
                 var field = content.querySelector('input:not([type="hidden"]), select, textarea');
                 if (field) field.focus();
@@ -137,7 +173,7 @@
                     await load(new URL(result.resource_url, window.location.origin));
                 } else window.location.reload();
             } else {
-                content.innerHTML = await response.text();
+                render(await response.text());
                 var invalid = content.querySelector('[aria-invalid="true"], .errorlist');
                 if (invalid) invalid.scrollIntoView({block: 'center'});
             }

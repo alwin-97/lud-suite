@@ -263,12 +263,29 @@
     height: 100dvh;
     max-height: none;
     margin: 0;
-    padding: clamp(1rem, 3vw, 2rem);
+    padding: 0;
     border: 0;
     border-left: 1px solid var(--line);
     color: var(--ink);
     background: var(--surface);
+    overflow: hidden;
+}
+
+.form-drawer[open] {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-drawer-body {
+    flex: 1;
+    min-height: 0;
     overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: clamp(1rem, 3vw, 2rem);
+}
+
+.form-drawer-body [id] {
+    scroll-margin-top: 1rem;
 }
 
 .form-drawer::backdrop {
@@ -281,8 +298,83 @@ body:has(.form-drawer[open]) {
 
 .form-drawer-header {
     display: flex;
+    flex-shrink: 0;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 1rem clamp(1rem, 3vw, 2rem);
+    border-bottom: 1px solid var(--line);
+    background: var(--surface);
+}
+
+.form-drawer-header-copy {
+    flex: 1;
+    min-width: 0;
+}
+
+.form-drawer-header h2 {
+    margin: 0;
+    font-size: 1.25rem;
+    overflow-wrap: anywhere;
+}
+
+.form-drawer-header-details {
+    max-height: 25dvh;
+    overflow-y: auto;
+}
+
+.form-drawer-header-details p {
+    margin: 0.65rem 0 0;
+}
+
+.form-drawer-header-controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
     justify-content: flex-end;
-    margin-bottom: 1rem;
+    flex-shrink: 0;
+    gap: 0.5rem;
+}
+
+[data-toggle-drawer-header] {
+    display: inline-flex;
+    align-items: center;
+    min-height: 40px;
+}
+
+[data-toggle-drawer-header] .fi {
+    transform: rotate(180deg);
+}
+
+.form-drawer--minimized .form-drawer-header-details {
+    display: none;
+}
+
+.form-drawer--minimized .form-drawer-header {
+    align-items: center;
+    padding-block: 0.5rem;
+}
+
+.form-drawer--minimized .form-drawer-header h2 {
+    font-size: 1rem;
+}
+
+.form-drawer--minimized [data-toggle-drawer-header] .fi {
+    transform: rotate(0);
+}
+
+@media (max-width: 640px) {
+    .form-drawer-header {
+        flex-wrap: wrap;
+    }
+
+    .form-drawer-header-copy {
+        flex-basis: 100%;
+    }
+
+    .form-drawer-header-controls {
+        width: 100%;
+    }
 }
 
 .form-drawer .form-card {
